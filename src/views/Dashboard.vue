@@ -11,7 +11,7 @@
             hover:border-blue-400 group
             "
           :class="[
-              'text-white p-3 w-full h-12 rounded-xl text-xl',
+              'p-3 w-full h-12 rounded-xl text-xl',
               borderColors[index % borderColors.length]
             ]"
           v-for="(item, index) in getAlbums"
@@ -188,9 +188,6 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
 import { useStore } from "@/stores/store";
-import CDialog from "@/components/CDialog.vue";
-import AppInput from "@/components/ui/AppInput.vue";
-import CButton from "@/components/CButton.vue";
 import { useRouter } from "vue-router";
 
 const dataStore = useStore();
