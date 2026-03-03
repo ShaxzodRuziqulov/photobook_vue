@@ -21,7 +21,7 @@
         <div class="flex items-start justify-between">
           <div
               :class="[
-                  'text-white bg-blue-600 p-3 w-12 h-12 rounded-xl text-xl',
+                  'text-white bg-blue-600 flex items-center justify-center w-10 h-10 rounded-xl text-xl',
                   index % 8 === 0 ? 'bg-gradient-to-br from-blue-500 to-cyan-600' :
                   index % 8 === 1 ? 'bg-gradient-to-br from-emerald-600 to-teal-600' :
                   index % 8 === 2 ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
@@ -39,7 +39,7 @@
           </div>
           <i
               :class="[
-                  'text-white bg-blue-600 p-2 w-8 h-8 rounded-xl text-xl',
+                  'text-white bg-blue-600 w-8 h-8 rounded-xl text-xl',
                   index % 8 === 0 ? 'bg-gradient-to-br from-blue-500 to-cyan-600' :
                   index % 8 === 1 ? 'bg-gradient-to-br from-emerald-600 to-teal-600' :
                   index % 8 === 2 ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
@@ -155,7 +155,7 @@
               <p class="text-lg font-semibold text-gray-700">{{ item.label }}</p>
             </div>
             <p class="text-4xl font-bold text-gray-900">{{ item.count }}</p>
-            <p class="text-sm text-gray-500 mt-1">Kategoriya</p>
+            <p class="text-sm text-gray-500 mt-1"><i class="fa-solid fa-tags"></i> Kategoriya</p>
           </div>
         </div>
       </div>
@@ -286,19 +286,20 @@ const getAlbums = ref([
   { id: 6,
     name: "Albom Kategoriy",
     itemCount: albumCategories.value,
-    icon: "fa-solid fa-tags",
+    icon: "fa-solid fa-book",
     onclick: () => clickOpenPage('/category', { group: 1 })
   },
   { id: 7,
     name: "Vinetka kategoriya",
     itemCount: vignetteCategories.value,
-    icon: "fa-solid fa-tags",
+    icon: "fa-solid fa-book-open",
     onclick: () => clickOpenPage('/category', { group: 2 })
   },
   { id: 8,
     name: "Rasmli Albom kategoriya",
     itemCount: photosCategories.value,
-    icon: "fa-solid fa-tags", onclick: () => clickOpenPage('/category', { group: 3})
+    icon: "fa-solid fa-images",
+    onclick: () => clickOpenPage('/category', { group: 3})
   }
 ])
 
