@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col container m-auto gap-2 p-4 min-h-screen w-full">
-    <div class="flex flex-col sm:flex-row items-center bg-white rounded-xl px-4 py-3 gap-4 justify-between w-full">
+    <div class="flex flex-col sm:flex-row items-center bg-white rounded-xl px-4 py-2 gap-4 justify-between w-full">
       <div class="flex items-center gap-4">
         <i class="fa-solid fa-book-open text-5xl text-blue-800"></i>
         <div>
@@ -183,6 +183,39 @@
                 v-model="itemForm.termData"
             />
           </div>
+          <FileUpload
+              ref="fileUploadRef"
+              mode="advanced"
+              :customUpload="true"
+              :auto="false"
+              :multiple="false"
+              accept="image/*"
+
+              chooseLabel="Rasm tanlash"
+              :showUploadButton="false"
+              :showCancelButton="false"
+              :showClearButton="true"
+
+              @select="onFileSelect"
+              @clear="onFileRemove"
+          />
+          <div
+              v-if="isEditing && itemForm.imageUrl && !removedOldImage"
+              class="mt-3 relative w-32 h-32"
+          >
+            <img
+                alt=""
+                :src="itemForm.imageUrl"
+                class="w-full h-full object-cover rounded-xl border"
+            />
+            <button
+                type="button"
+                @click="onFileRemove"
+                class="absolute cursor-pointer -top-2 -right-2 hover:bg-red-600 bg-red-500 text-white w-7 h-7 rounded-full"
+            >
+              ✕
+            </button>
+          </div>
           <div class="flex flex-col sm:flex-row items-stretch lg:flex-row gap-2 sm:items-center justify-end w-full">
             <CButton
                 type="button"
@@ -199,9 +232,31 @@
         </form>
       </div>
     </CDialog>
+    <div
+        v-if="previewImage"
+        class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        @click="closePreview"
+    >
+      <div class="relative max-w-5xl w-full flex justify-center">
+
+        <button
+            @click.stop="closePreview"
+            class="absolute cursor-pointer top-[-50px] right-2 sm:right-4 md:top-4 md:right-4 lg:right-10 border-2 border-red-200
+            bg-red-100 hover:bg-red-300  text-red-600 rounded-full w-10 h-10 flex items-center justify-center transition "
+        >
+          <i class="fa-solid fa-close text-lg"></i>
+        </button>
+        <img
+            alt=""
+            :src="previewImage"
+            class="max-h-[85vh] w-auto rounded-2xl shadow-2xl"
+            @click.stop
+        />
+      </div>
+    </div>
     <div class="bg-white w-full flex overflow-x-auto flex-col px-4 py-2 gap-3 min-h-0 rounded-xl shadow">
       <div class="flex flex-col border-b-2 border-gray-200">
-        <h2 class="text-2xl font-semibold">Buyurtmalar jadvali</h2>
+        <h2 class="text-xl font-semibold">Buyurtmalar jadvali</h2>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 w-[80%] items-end gap-4 py-2">
           <AppSelect
               v-model="formStatus"
@@ -244,6 +299,7 @@
           <col style="width: 12%">
           <col style="width: 12%">
           <col style="width: 12%">
+          <col style="width: 12%">
           <col style="width: 10%">
           <col style="width: 9%">
           <col style="width: 9%">
@@ -254,6 +310,7 @@
         <tr>
           <th class="p-1 text-start">№</th>
           <th class="p-2 text-start">Buyurtma nomi</th>
+          <th class="p-2 text-center">Rasm</th>
           <th class="p-2 text-start">Mijoz</th>
           <th class="p-2 text-start">Qabul qilgan</th>
           <th class="p-2 text-start">Mas'ul</th>
@@ -270,12 +327,17 @@
             v-for="(order, index) in filteredOrders" :key="index"
         >
           <td class="p-1">{{ index + 1 }}</td>
-          <!--          <td class="p-2 ">-->
-          <!--            <img :src="order.imgUrl" alt=""/>-->
-          <!--          </td>-->
           <td class="p-2 break-all">
             <p class="break-all font-semibold">{{ order.orderName }}</p>
             <p class="text-gray-500 text-sm font-semibold">{{order.categoryName}}</p>
+          </td>
+          <td class="p-3 items-center justify-center flex">
+            <img
+                v-if="order.imageUrl"
+                @click="openPreview(order.imageUrl)"
+                class="w-14 h-10 sm:h-10 lg:h-12 cursor-pointer rounded-xl"
+                :src="order.imageUrl" alt=""
+            />
           </td>
           <td class="p-2 ">{{ order.customerName }}</td>
           <td class="p-2 ">{{ order.receiverName }}</td>
@@ -354,6 +416,8 @@ import {useStore} from "@/stores/store";
 import {  Order } from "@/typeModules/useModules";
 import { useToast } from "vue-toastification";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
+import FileUpload from "primevue/fileupload";
+
 
 const Toast = useToast();
 const dataStore = useStore();
@@ -368,7 +432,49 @@ const formStatus = ref<string | null>(null);
 const formData = ref<string | null>(null);
 const endData = ref<string | null>(null);
 const formFilter = ref<string | ''>('');
+const previewImage = ref<string | null>(null)
 
+const openPreview = (url: string) => {
+  previewImage.value = url;
+}
+
+const closePreview = () => {
+  previewImage.value = null;
+}
+
+const selectedFiles = ref<File[]>([])
+const previewUrl = ref<string | null>(null)
+const fileUploadRef = ref()
+const removedOldImage = ref(false)
+
+const onFileSelect = (event: any) => {
+  const file = event.files[0]
+  if (event.files.length > 1) {
+    fileUploadRef.value.clear()
+    return
+  }
+  selectedFiles.value = file;
+
+  previewUrl.value = URL.createObjectURL(file)
+
+  itemForm.value.imageUrl = previewUrl.value
+}
+
+const onFileRemove = () => {
+  selectedFiles.value = [];
+  previewUrl.value = null;
+  itemForm.value.imageUrl = ""
+  removedOldImage.value = true
+}
+
+watch(
+    () => isEditing.value,
+    (val) => {
+      if (val) {
+        removedOldImage.value = false
+      }
+    }
+)
 
 const filteredOrders = computed(() => {
   let data = dataStore.state.vignette
@@ -415,6 +521,7 @@ const itemForm = ref<Order>({
   employeeName: '',
   termData: null,
   status: '',
+  imageUrl: '',
   // doneData: null,
   createdData: '',
   createdAt: null,
@@ -608,6 +715,7 @@ const resetForm = () => {
     employeeName: '',
     termData: null,
     status: '',
+    imageUrl: '',
     // doneData: null,
     createdData: '',
     createdAt: null,

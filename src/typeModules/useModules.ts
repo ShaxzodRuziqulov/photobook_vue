@@ -60,6 +60,7 @@ export interface Order {
     processNumber: number | null;
     termData: string | null;
     status: string;
+    imageUrl: string;
     //doneData: number | null;
     createdData: string;
     createdAt: string | null;
@@ -79,6 +80,7 @@ export interface IPicture {
     processNumber: number | null;
     termData: string | null;
     status: string;
+    imageUrl: string;
     //doneData: number | null;
     createdData: string;
     createdAt: string | null;

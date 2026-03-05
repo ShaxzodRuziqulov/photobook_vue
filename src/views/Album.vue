@@ -260,8 +260,8 @@
 
         <button
             @click.stop="closePreview"
-            class="absolute cursor-pointer top-2 right-2 sm:top-4 sm:right-4 md:top-4 md:right-4 lg:right-8 border-2 border-red-200
-            bg-red-100 hover:bg-orange-400  text-red-600 rounded-full w-10 h-10 flex items-center justify-center transition "
+            class="absolute cursor-pointer top-[-50px] right-2 sm:right-4 md:top-4 md:right-4 lg:right-10 border-2 border-red-200
+            bg-red-100 hover:bg-red-300  text-red-600 rounded-full w-10 h-10 flex items-center justify-center transition "
         >
           <i class="fa-solid fa-close text-lg"></i>
         </button>
@@ -353,27 +353,10 @@
               <p class="text-blue-600 text-sm font-semibold">{{album.itemType}}</p>
             </td>
             <td class="p-3 items-center justify-center flex">
-              <!--            <Image-->
-              <!--                v-if="album.imageUrl"-->
-              <!--                :src="album.imageUrl"-->
-              <!--                preview-->
-              <!--                class="w-15 h-15 flex p-2 m-2  bg-white rounded-xl object-cover"-->
-              <!--            >-->
-              <!--              <template #preview="{ style}">-->
-              <!--                <img-->
-              <!--                    v-if="album.imageUrl"-->
-              <!--                    alt="Rasm yuklanmadi"-->
-              <!--                    :src="album.imageUrl"-->
-              <!--                    class=" max-w-[1500px] max-h-[800px]"-->
-              <!--                    :style="style"-->
-              <!--                />-->
-              <!--                <span v-else>Rasm yuq</span>-->
-              <!--              </template>-->
-              <!--            </Image>-->
               <img
                   v-if="album.imageUrl"
                   @click="openPreview(album.imageUrl)"
-                  class="w-14 h-14 cursor-pointer rounded-xl"
+                  class="w-14 h-10 sm:h-10 lg:h-12 cursor-pointer rounded-xl"
                   :src="album.imageUrl" alt=""
               />
             </td>
