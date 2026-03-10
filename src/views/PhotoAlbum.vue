@@ -578,7 +578,7 @@ const closeFilter = () => {
 const categoryType = [
   { id: 1, value: 'Bolshoy (katta)', text: 'Bolshoy (katta)', item: '10, 12, 14, 16, 18, 20, 30, 40'},
   { id: 2, value: 'Kvadrat', text: 'Kvadrat', item: '10, 12, 14, 16, 18, 20, 30, 40'},
-  { id: 3, value: "O'rtacha (Sredniy)", text: "O'rtacha (Sredniy)", item: '10, 12, 14, 16, 18, 20, 30, 40' },
+  { id: 3, value: "Sredniy", text: "O'rtacha (Sredniy)", item: '10, 12, 14, 16, 18, 20, 30, 40' },
   { id: 4, value: 'Kichik Albom', text: 'Kichik Albom', item: '6, 8, 10, 12, 14, 16, 18, 20'},
   { id: 5, value: 'Kichik Kitob (knijniy)', text: 'Kichik Kitob (knijniy)', item: '6, 8, 10, 12, 14, 16, 18, 20' },
   { id: 6, value: 'Ikki tomonlama', text: 'Ikki tomonlama', item: '6, 8, 10, 12, 14, 16' },
