@@ -440,8 +440,10 @@ import { AllOrders } from "@/typeModules/useModules";
 import { useToast } from "vue-toastification";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
 import FileUpload from "primevue/fileupload";
+import { useRoute } from "vue-router";
 // import Image from 'primevue/image'
 
+const route = useRoute();
 const Toast = useToast();
 const dataStore = useStore();
 
@@ -558,6 +560,13 @@ const itemForm = ref<AllOrders>({
 //   }
 //   dataStore.loadGetAlbum()
 // }
+
+onMounted(() => {
+  if (route.query.status) {
+    formStatus.value = route.query.status as string;
+  }
+})
+
 const filters = computed(() => ({
   status: formStatus.value,
   from: formData.value,

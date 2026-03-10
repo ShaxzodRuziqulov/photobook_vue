@@ -80,14 +80,30 @@
         </div>
         <div class="flex border-t border-gray-200 my-4"></div>
         <div class="grid grid-cols-2 gap-4">
-          <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+          <div
+              @click="item.onClick('Jarayonda')"
+              class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
+              :class="[
+                  index % 3 === 0 ? 'border-2 border-blue-400 hover:border-blue-600' :
+                  index % 3 === 1 ? 'border-2 border-teal-500 hover:border-teal-600' :
+                  'border-2 border-purple-400 hover:border-purple-600'
+              ]"
+          >
             <div class="flex items-center justify-between">
               <p class="text-sm mb-1">Jarayonda</p>
               <i class="fa-regular fa-clock"></i>
             </div>
             <p class="text-2xl font-bold">{{ item.pending }}</p>
           </div>
-          <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+          <div
+              @click="item.onClick('Bajarilgan')"
+              class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
+              :class="[
+                  index % 3 === 0 ? 'border-2 border-blue-400 hover:border-blue-600' :
+                  index % 3 === 1 ? 'border-2 border-teal-500 hover:border-teal-600' :
+                  'border-2 border-purple-400 hover:border-purple-600'
+              ]"
+          >
             <div class="flex items-center justify-between">
               <p class="text-sm mb-1">Bajarilgan</p>
               <i class="fa-regular fa-circle-check"></i>
@@ -321,6 +337,13 @@ const allStatuses = ref([
     total: allAlbumCount.value,
     pending: albumPending.value,
     completed: albumCompleted.value,
+    onClick: (status : "Jarayonda" | "Bajarilgan") => {
+      const query = {
+        status: status,
+      };
+
+      clickOpenPage('/album', query)
+    },
   },
   {
     id: 2,
@@ -329,6 +352,12 @@ const allStatuses = ref([
     total: allVignetteCount.value,
     pending: vignettePending.value,
     completed: vignetteCompleted.value,
+    onClick: (status: "Jarayonda" | "Bajarilgan") => {
+      const query = {
+        status: status,
+      }
+      clickOpenPage('/vignette', query)
+    }
   },
   {
     id: 3,
@@ -337,6 +366,12 @@ const allStatuses = ref([
     total: photoCount.value,
     pending: photoPending.value,
     completed: photoCompleted.value,
+    onClick: (status: "Jarayonda" | "Bajarilgan") => {
+      const query = {
+        status: status,
+      }
+      clickOpenPage('/photo', query)
+    }
   }
 ])
 
