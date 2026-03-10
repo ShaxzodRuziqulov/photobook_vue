@@ -133,17 +133,17 @@
 
           <div class="flex gap-3 pt-4">
             <button
-                type="submit"
-                class="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all"
-            >
-              {{ isEditing ? 'Yangilash' : 'Saqlash' }}
-            </button>
-            <button
                 type="button"
                 @click="closeModal"
                 class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold transition-all"
             >
               Bekor qilish
+            </button>
+            <button
+                type="submit"
+                class="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all"
+            >
+              {{ isEditing ? 'Yangilash' : 'Saqlash' }}
             </button>
           </div>
         </form>

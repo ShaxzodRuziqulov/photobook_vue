@@ -76,13 +76,13 @@
             <i :class="item.icon"></i>
             {{item.label}}
           </div>
-          {{item.total}}
+          <span>Jami: {{item.total}}</span>
         </div>
         <div class="flex border-t border-gray-200 my-4"></div>
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
             <div class="flex items-center justify-between">
-              <p class="text-sm mb-1">Kutilmoqda</p>
+              <p class="text-sm mb-1">Jarayonda</p>
               <i class="fa-regular fa-clock"></i>
             </div>
             <p class="text-2xl font-bold">{{ item.pending }}</p>

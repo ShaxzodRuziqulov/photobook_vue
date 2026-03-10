@@ -84,18 +84,51 @@
         no-header
         :show="isVisible"
         @close="closeForm"
-        bodyClass="rounded-lg mt-28 py-4 mb-10 !bg-bg-primary"
+        bodyClass="rounded-lg mt-20 !bg-bg-primary"
     >
       <div
-          class="flex flex-col overflow-y-auto"
+          class="flex flex-col overflow-hidden"
       >
         <form
             @submit.prevent="submitForm"
-            class="flex flex-col gap-3 text-md overflow-y-auto px-4"
+            class="flex flex-col gap-2 p-4 text-md overflow-y-auto max-h-[80vh]"
         >
           <h2 class=" text-2xl font-semibold">
             {{isEditing ? "Formani uzgartirish" : "Forma qo'shish"}}
           </h2>
+          <FileUpload
+              ref="fileUploadRef"
+              mode="advanced"
+              :customUpload="true"
+              :auto="false"
+              :multiple="false"
+              accept="image/*"
+
+              chooseLabel="Rasm yuklash"
+              :showUploadButton="false"
+              :showCancelButton="false"
+              :showClearButton="true"
+
+              @select="onFileSelect"
+              @clear="onFileRemove"
+          />
+          <div
+              v-if="isEditing && itemForm.imageUrl && !removedOldImage"
+              class="mt-3 relative w-32 h-25"
+          >
+            <img
+                alt=""
+                :src="itemForm.imageUrl"
+                class="w-full h-full object-cover rounded-xl border"
+            />
+            <button
+                type="button"
+                @click="onFileRemove"
+                class="absolute cursor-pointer -top-2 -right-2 hover:bg-red-600 bg-red-500 text-white w-7 h-7 rounded-full"
+            >
+              ✕
+            </button>
+          </div>
           <AppSelect
               v-model="itemForm.categoryName"
               :options="categoryType"
@@ -183,40 +216,7 @@
                 v-model="itemForm.termData"
             />
           </div>
-          <FileUpload
-              ref="fileUploadRef"
-              mode="advanced"
-              :customUpload="true"
-              :auto="false"
-              :multiple="false"
-              accept="image/*"
-
-              chooseLabel="Rasm tanlash"
-              :showUploadButton="false"
-              :showCancelButton="false"
-              :showClearButton="true"
-
-              @select="onFileSelect"
-              @clear="onFileRemove"
-          />
-          <div
-              v-if="isEditing && itemForm.imageUrl && !removedOldImage"
-              class="mt-3 relative w-32 h-32"
-          >
-            <img
-                alt=""
-                :src="itemForm.imageUrl"
-                class="w-full h-full object-cover rounded-xl border"
-            />
-            <button
-                type="button"
-                @click="onFileRemove"
-                class="absolute cursor-pointer -top-2 -right-2 hover:bg-red-600 bg-red-500 text-white w-7 h-7 rounded-full"
-            >
-              ✕
-            </button>
-          </div>
-          <div class="flex flex-col sm:flex-row items-stretch lg:flex-row gap-2 sm:items-center justify-end w-full">
+          <div class="flex my-4 flex-col sm:flex-row items-stretch lg:flex-row gap-2 sm:items-center justify-end w-full">
             <CButton
                 type="button"
                 text="Bekor qilish"

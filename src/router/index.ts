@@ -70,7 +70,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: () =>import('../views/Categories.vue'),
                 meta: {
                     requiresAuth: true,
-                    icon: 'fa-solid fa-address-book'
+                    icon: 'fa-solid fa-tags'
                 },
             },
             {

@@ -11,13 +11,15 @@
     <CDialog
         :show="visibleShow"
         @close="visibleShow = false"
-        title="Add Expense"
-        body-class="bg-blue-800"
+        bodyClass="!bg-bg-primary px-6 py-4 mt-20 overflow-hidden"
     >
       <form
-          class="flex w-full flex-col text-md gap-4 p-6"
+          class="flex flex-col gap-2 overflow-y-auto max-h-[75vh]"
           @submit.prevent="submitForm"
       >
+        <h2 class=" text-2xl font-semibold">
+          {{isEditing ? "Xodim ma'lumotlarini uzgartirish" : "Xodim qo'shish"}}
+        </h2>
         <AppInput label="F.I.O"
                   type="text"
                   placeholder="Ism kiritng"

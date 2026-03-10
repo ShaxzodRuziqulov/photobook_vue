@@ -22,6 +22,7 @@
         title="Todo form"
         :show="visibleTodo"
         @close="visibleTodo = false"
+        bodyClass="rounded-lg mt-20 !bg-bg-primary"
     >
       <form
           class="flex flex-col w-full p-6 gap-6"
