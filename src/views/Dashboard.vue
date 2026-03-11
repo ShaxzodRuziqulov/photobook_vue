@@ -129,7 +129,7 @@
       </div>
     </div>
     <div class="bg-white rounded-xl shadow-lg p-4">
-      <h2 class="text-2xl font-bold text-gray-800 mb-8">Kategoriyalar Bo'yicha Taqsimot</h2>
+      <h2 class="text-xl font-bold text-gray-800 mb-8">Kategoriyalar Bo'yicha Taqsimot</h2>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div
@@ -168,14 +168,14 @@
               />
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <p class="text-5xl font-bold">{{ item.percentage }}%</p>
+              <p class="text-4xl font-bold">{{ item.percentage }}%</p>
               <p class="text-sm text-gray-500 mt-1">{{ item.label }}</p>
             </div>
           </div>
           <div class="text-center">
             <div class="flex items-center justify-center gap-2 mb-2">
               <i class="text-3xl text-blue-500" :class="item.icon"></i>
-              <p class="text-lg font-semibold text-gray-700">{{ item.label }}</p>
+              <p class="text-md font-semibold text-gray-700">{{ item.label }}</p>
             </div>
             <p class="text-4xl font-bold text-gray-900">{{ item.count }}</p>
             <p class="text-sm text-gray-500 mt-1">

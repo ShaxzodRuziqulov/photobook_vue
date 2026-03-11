@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex bg-white p-3 rounded-2xl shadow-lg items-center justify-between">
       <div class="flex items-center">
-        <h2 class="text-2xl font-bold flex items-center text-gray-500 gap-3">
+        <h2 class="text-xl font-bold flex items-center text-gray-500 gap-3">
           <i class="fa-solid fa-images text-blue-500"></i>
           Rasmli albom
         </h2>
@@ -18,7 +18,7 @@
       <div class="overflow-x-auto">
         <table
             v-if="photoCategories.length > 0"
-            class="w-full">
+            class="w-full text-sm">
           <colgroup>
             <col style="width: 5%">
             <col style="width: 18%">

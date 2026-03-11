@@ -26,8 +26,8 @@
         <div
             class="flex w-full flex-col border-b gap-1 border-gray-200"
         >
-          <h2 class="text-md uppercase font-semibold">{{cat.text}}</h2>
-          <span class="text-gray-400">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.item}}</span></span>
+          <h2 class="text-sm uppercase font-semibold">{{cat.text}}</h2>
+          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.item}}</span></span>
         </div>
         <div
             class="flex gap-4 items-center justify-between"
@@ -267,7 +267,7 @@
               faClass="fa-solid fa-arrow-left"
               @click="router.back()"
           />
-          <h2 class="text-2xl font-semibold">Buyurtmalar jadvali</h2>
+          <h2 class="text-xl font-semibold">Buyurtmalar jadvali</h2>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-end gap-4 py-2">
           <AppSelect
@@ -318,7 +318,7 @@
           <col style="width: 8%">
           <col style="width: 8%">
         </colgroup>
-        <thead class="bg-gray-200 rounded-2xl">
+        <thead class="bg-gray-200 rounded-2xl text-sm">
         <tr>
           <th class="p-1 text-start">№</th>
           <th class="p-2 text-start">Buyurtma nomi</th>

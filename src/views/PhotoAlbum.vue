@@ -26,8 +26,8 @@
         <div
             class="flex w-full flex-col border-b gap-1 border-gray-200"
         >
-          <h2 class="text-md uppercase font-semibold">{{cat.text}}</h2>
-          <span class="text-gray-400">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.item}}</span></span>
+          <h2 class="text-sm uppercase font-semibold">{{cat.text}}</h2>
+          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.item}}</span></span>
         </div>
         <div
             class="flex gap-4 items-center justify-between"
@@ -275,7 +275,7 @@
               faClass="fa-solid fa-arrow-left"
               @click="router.back()"
           />
-          <h2 class="text-2xl font-semibold">Buyurtmalar jadvali</h2>
+          <h2 class="text-xl font-semibold">Buyurtmalar jadvali</h2>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-end gap-4 py-2">
           <AppSelect
@@ -312,7 +312,7 @@
         </div>
       </div>
       <table
-          class="w-full rounded">
+          class="w-full rounded text-sm">
         <colgroup>
           <col style="width: 2%">
           <col style="width: 13%">
@@ -621,7 +621,7 @@ const closeFilter = () => {
 const categoryType = [
   { id: 1, value: 'Bolshoy (katta)', text: 'Bolshoy (katta)', item: '10, 12, 14, 16, 18, 20, 30, 40'},
   { id: 2, value: 'Kvadrat', text: 'Kvadrat', item: '10, 12, 14, 16, 18, 20, 30, 40'},
-  { id: 3, value: "Sredniy", text: "O'rtacha (Sredniy)", item: '10, 12, 14, 16, 18, 20, 30, 40' },
+  { id: 3, value: "Sredniy", text: "Sredniy", item: '10, 12, 14, 16, 18, 20, 30, 40' },
   { id: 4, value: 'Kichik Albom', text: 'Kichik Albom', item: '6, 8, 10, 12, 14, 16, 18, 20'},
   { id: 5, value: 'Kichik Kitob (knijniy)', text: 'Kichik Kitob (knijniy)', item: '6, 8, 10, 12, 14, 16, 18, 20' },
   { id: 6, value: 'Ikki tomonlama', text: 'Ikki tomonlama', item: '6, 8, 10, 12, 14, 16' },

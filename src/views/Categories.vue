@@ -27,7 +27,7 @@
                 : 'text-gray-600 border-transparent hover:bg-gray-100'"
             >
               <i class="text-2xl" :class="tab.icon"></i>
-              <div class="font-bold text-lg text-left">
+              <div class="font-bold text-md text-left">
                 {{ tab.label }}
               </div>
             </div>

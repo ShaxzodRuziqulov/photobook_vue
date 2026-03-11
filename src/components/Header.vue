@@ -20,7 +20,7 @@
             :key="index"
             :to="route?.path"
             active-class="bg-gray-600"
-            class="py-2 px-3 gap-2 text-sm flex uppercase items-center max-lg:p-1 text-center rounded-sm hover:bg-gray-700 transition duration-200"
+            class="py-2 px-3 gap-2 text-sm flex items-center max-lg:p-1 text-center rounded-sm hover:bg-gray-700 transition duration-200"
             :class="index === mainRoutes.length - 1 ? 'hidden' : 'of-hidden'"
         >
           <i class="w-4 h-4" v-if="route.meta.icon" :class="route.meta.icon"></i>
