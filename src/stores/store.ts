@@ -1,26 +1,55 @@
 import {defineStore} from "pinia";
+import axiosInstance from "@/axios";
 import {
     AllCategory,
-    AllOrders,
     ExpensesForm,
     IFormData,
-    IItems,
-    IPicture,
-    Order,
-    UserForm,
+    IItems, IPaging,
+    Order, OrderCreateDto, OrderKind, OrderStatus, PagingRequest, PagingResponse, Role,
+    UserForm, UserPagingRequest, UserTask,
 } from '@/typeModules/useModules';
 import {ref, UnwrapRef} from "vue";
-import {addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc, where} from 'firebase/firestore'
-import { db } from '@/firebase'
-
 export const useStore = defineStore('item', () => {
     const state = ref({
 
-        users: [] as UserForm[],
+        albums: {
+            items: [] as Order[],
+        } as PagingResponse<Order>,
+
+        vignettes: {
+            items: [] as Order[],
+        } as PagingResponse<Order>,
+
+        pictures: {
+            items: [] as Order[],
+        } as PagingResponse<Order>,
+
+        paging: {
+            ALBUM: { pageNumber: 0, pageSize: 100, totalElements: 0, totalPages: 0 , last: true },
+            VIGNETTE: { pageNumber: 0, pageSize: 100, totalElements: 0, totalPages: 0 , last: true },
+            PICTURE: { pageNumber: 0, pageSize: 100, totalElements: 0, totalPages: 0 , last: true },
+        },
+
+        user: {
+            items: [] as UserForm[],
+        },
+        users: {
+            items: [] as UserForm[],
+            pageNumber: 0,
+            pageSize: 15,
+            totalElements: 0,
+            totalPages: 0,
+            last: true,
+        } as PagingResponse<UserForm>,
+        tasks: {
+            content: [] as UserTask[],
+            pageNumber: 0,
+            pageSize: 100,
+            totalElements: 0,
+            totalPages: 0,
+            last: true,
+        },
         items: [] as IItems[],
-        vignette: [] as Order[],
-        albums: [] as AllOrders[],
-        pictures: [] as IPicture[],
         alCategory: [] as AllCategory[],
         vignetteCategory: [] as AllCategory[],
         photoCategory: [] as AllCategory[],
@@ -28,372 +57,271 @@ export const useStore = defineStore('item', () => {
         customers: [] as IFormData[],
     });
 
-    const loadCollection = async <T>(
-        collectionName: string,
-        filters?: {
-            status?: string | null
-            from?: string | null
-            to?: string | null
+    // const uploadImage = async (file: File) => {
+    //     const formData = new FormData();
+    //     formData.append("file", file);
+    //     const { data } = await axiosInstance.post<UploadResponse>("/api/v1/uploads", formData, {
+    //         headers: {
+    //             "Content-Type": "multipart/form-data",
+    //         },
+    //     });
+    //     return data.url;
+    // };
+    // ─── Universal order loader ───────────────────────────────────────────────────
+    const loadOrders = async (
+        kind: OrderKind,
+        params: Partial<PagingRequest> = {}
+    ) => {
+
+        const paging = state.value.paging[kind]
+
+        const body: PagingRequest = {
+            page: paging.pageNumber,
+            size: paging.pageSize,
+            kind,
+            sort: "acceptedDate",
+            ...params
         }
-    ): Promise<T[]> => {
+
+        const { data } = await axiosInstance.post(
+            "/api/v1/orders/paging",
+            body
+        )
+
+        const mapped: PagingResponse<Order> = {
+            items: data.content,
+            pageNumber: data.pageNumber,
+            pageSize: data.pageSize,
+            totalElements: data.totalElements,
+            totalPages: data.totalPages,
+            last: data.last,
+        }
+
+        if (kind === "ALBUM") state.value.albums = mapped
+        if (kind === "VIGNETTE") state.value.vignettes = mapped
+        if (kind === "PICTURE") state.value.pictures = mapped
+
+        state.value.paging[kind].pageNumber = mapped.pageNumber
+        state.value.paging[kind].totalElements = mapped.totalElements
+        state.value.paging[kind].totalPages = mapped.totalPages
+    }
+
+// ─── CRUD — barchasi faqat kind bilan chaqiradi ───────────────────────────────
+    const addOrder = async (item: OrderCreateDto) => {
+
+        await axiosInstance.post("/api/v1/orders", item)
+
+        await loadOrders(item.kind)
+    }
+
+    const updateOrder = async (id: string, item: OrderCreateDto) => {
+        await axiosInstance.put(`/api/v1/orders/${id}`, item)
+        await loadOrders(item.kind)
+    }
+
+    const deleteOrder = async (id: string, kind: OrderKind) => {
+        await axiosInstance.delete(`/api/v1/orders/${id}`)
+        await loadOrders(kind)
+    }
+
+// ─── Pagination — filter parametrlarini ham oladi ────────────────────────────
+    const changePage = async (
+        kind: OrderKind,
+        page: number,
+        params: Partial<PagingRequest> = {}  // ✅ optional
+    ) => {
+        const key = kind as OrderKind;
+        state.value.paging[key].pageNumber = page;
+        await loadOrders(kind, params);
+    };
+
+    const getOrderById = async (id: string): Promise<Order | null> => {
         try {
-            const baseRef = collection(db, collectionName)
-
-            const conditions: any[] = []
-
-            if (filters?.status) {
-                conditions.push(where("status", "==", filters.status))
-            }
-
-            if (filters?.from) {
-                conditions.push(where("createdData", "==", filters.from))
-            }
-
-            if (filters?.to) {
-                conditions.push(where("termData", "==", filters.to))
-            }
-
-            const q = conditions.length
-                ? query(baseRef, ...conditions)
-                : baseRef
-
-            const snap = await getDocs(q)
-
-            return snap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as T[]
-
+            const { data } = await axiosInstance.get<Order>(`/api/v1/orders/${id}`);
+            return data;
         } catch (error) {
-            console.log(error)
-            return []
+            console.error("getOrderById error:", error);
+            return null;
         }
+    };
+
+    const updateOrderStatus = async (
+        id: string,
+        kind: OrderKind,
+        status: OrderStatus
+    ): Promise<void> => {
+        await axiosInstance.put(`/api/v1/orders/${id}/status`, { status });
+        await loadOrders(kind);
+    };
+
+    const getStatusHistory = async (id: string) => {
+        try {
+            const { data } = await axiosInstance.get(`/api/v1/orders/${id}/status-history`);
+            return data;
+        } catch (error) {
+            console.error("getStatusHistory error:", error);
+            return [];
+        }
+    };
+
+
+    const loadGetUsers = async (filters: Partial<UserPagingRequest> = {} ) => {
+        const body: UserPagingRequest = {
+            page: state.value.users.pageNumber || 0,
+            size: state.value.users.pageSize || 100,
+            sort: ['acceptedDate', 'DESC'],
+            ...filters,
+        }
+        const response = await axiosInstance.post<PagingResponse<UserForm>>("/api/v1/users", body);
+            state.value.users = response.data;
+        };
+
+    const loadUsers = async () => {
+
+        const { data } = await axiosInstance.get<UserForm[]>("/api/v1/users")
+        state.value.user.items = data
+
     }
-
-
-    const loadComments = async () => {
-        const snap = await getDocs(collection(db, 'categories'))
-
-        state.value.customers = snap.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-        })) as IFormData[]
-    }
-
-    const addComment = async (item: IFormData) => {
-        const {id, ...itemData} = item
-        await addDoc(collection(db, 'categories'), {
-            ...itemData,
-            createdAt: Date.now()
-        })
-
-        await loadComments()
-    }
-
-    const updateComment = async (id: string | null, item: IFormData) => {
-        const { id: _, ...itemData } = item
-        await updateDoc(doc(db, 'categories', String(id)), {
-            ...itemData,
-            updatedAt: Date.now()
-        })
-
-        await loadComments()
-    }
-
-    const deleteComment = async (id: string) => {
-        await deleteDoc(doc(db, 'categories', id))
-        state.value.customers = state.value.customers.filter(c => c.id !== id)
-    }
-
-    const loadGetUsers = async () => {
-        const snap = await getDocs(collection(db, 'users'))
-        state.value.users = snap.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-        })) as UserForm[]
-     };
 
     const addUser = async (user: UserForm) => {
-        const { id, ...userData } = user
-        await addDoc(collection(db, 'users'), {
+
+        const { id, ...userData } = user;
+
+        const body = {
             ...userData,
-            createdAt: Date.now()
-        })
-        await loadGetUsers()
+        }
+
+        await axiosInstance.post("/api/v1/users", body)
     }
 
     const updateUser = async (id: string, user: UserForm) => {
-        if (!id) return;
-        const { id: _,...userData } = user
-        await updateDoc(doc(db, 'users', id), {
+
+        const { ...userData } = user;
+
+        const body = {
             ...userData,
-            updatedAt: Date.now()
-        })
-        await loadGetUsers()
+        }
+        await axiosInstance.put(`/api/v1/users/${id}`, body)
     }
 
     const deleteUser = async (id: string) => {
-        await deleteDoc(doc(db, 'users', id))
-        state.value.users = state.value.users.filter(user => user.id !== id
-        )
+        await axiosInstance.delete(`/api/v1/users/${id}`)
+        await loadUsers()
     }
 
-    const loadGetAlbum = async () => {
-        const snap = await getDocs(collection(db, 'albums'))
-        state.value.albums = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as AllOrders[]
+    const loadGetUserTasks = async (filters: Partial<IPaging> = {} ) => {
+        const res = await axiosInstance.post("/api/v1/user-tasks/me/paging",
+            {
+                search: filters.search || '',
+                statuses: filters.statuses || [],
+                from: filters.from,
+                to: filters.to,
+                deadlineFrom: filters.deadlineFrom,
+                deadlineTo: filters.deadlineTo,
+            },
+            {
+                params: {
+                    page: filters.page ?? 0,
+                    size: filters.size ?? 100,
+                    sort: filters.sort || [],
+                },
+            }
+            );
+        state.value.tasks = {
+            content: res.data.content || [],
+            pageNumber: res.data.pageNumber,
+            pageSize: res.data.pageSize,
+            totalElements: res.data.totalElements,
+            totalPages: res.data.totalPages,
+            last: res.data.last,
+        }
     }
 
-    const addAlbum = async (item: AllOrders) => {
-        const { id, ...itemData } = item;
-        // const process = item.processNumber ?? 0;
-        // const amount = item.amountNumber ?? 0;
-        //
-        // if (process === 0) {
-        //     itemData.status = 'Kutilmoqda';
-        // }
-        // else if (process > 0 && process < amount) {
-        //     itemData.status = 'Jarayonda';
-        // }
-        // else if (process >= amount && amount > 0) {
-        //     itemData.status = 'Bajarilgan';
-        // } bu kerakli logika
+    // const loadRole = async () => {
+    //     const res = await axiosInstance.get('/api/v1/roles');
+    //     state.value.roles = res.data
+    // }
 
-        await addDoc(collection(db, 'albums'), {
-            ...itemData,
-            createdAt: Date.now()
+    const loadUploadImage = async (file: File) => {
+        const fd = new FormData()
+        fd.append("file", file)
+        const { data } = await axiosInstance.post('/api/v1/uploads', fd, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         })
-        await loadGetAlbum()
-    }
-
-    const updateAlbum = async (id: string, item: AllOrders) => {
-        const { id: any, ...itemData } = item;
-        // const processItem = item.processNumber ?? 0;
-        // const amount = item.amountNumber ?? 0;
-
-        // if (processItem === 0) {
-        //     itemData.status = 'Kutilmoqda';
-        // }
-        // else if (processItem > 0 && processItem < amount) {
-        //     itemData.status = 'Jarayonda';
-        // }
-        // else if (processItem >= amount && amount > 0) {
-        //     itemData.status = 'Bajarilgan';
-        // } bu ham kerakli logika
-
-        await updateDoc(doc(db, 'albums', id), {
-            ...itemData,
-            updatedAt: Date.now()
-        })
-        await loadGetAlbum()
-    }
-
-    const deleteAlbum = async (id: string) => {
-        await deleteDoc(doc(db, 'albums', id))
-        state.value.albums = state.value.albums.filter(album => album.id !== id)
-    }
-
-    const loadGetOrders = async () => {
-        const snap = await getDocs(collection(db, 'vignette'))
-        state.value.vignette = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as Order[]
-    }
-
-    const addOrder = async (item: Order) => {
-        const { id, ...itemData } = item;
-        await addDoc(collection(db, 'vignette'), {
-            ...itemData,
-            createdAt: Date.now()
-        })
-        await loadGetOrders()
-    }
-
-    const updateOrder = async (id: string, item: Order) => {
-        const { id: _, ...itemData } = item;
-        await updateDoc(doc(db, 'vignette', id), {
-            ...itemData,
-            updatedAt: Date.now()
-        })
-        await loadGetOrders()
-    }
-
-    const deleteOrder = async (id: string) => {
-        await deleteDoc(doc(db, 'vignette', id))
-        state.value.vignette = state.value.vignette.filter(v => v.id !== id)
-    }
-
-    const loadGetPhotos = async () => {
-        const snap = await getDocs(collection(db, 'pictures'))
-        state.value.pictures = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as IPicture[]
-    }
-
-    const addPhotos = async (item: IPicture) => {
-        const { id, ...itemData } = item;
-        await addDoc(collection(db, 'pictures'), {
-            ...itemData,
-            createdAt: Date.now()
-        })
-        await loadGetPhotos()
-    }
-
-    const updatePhotos = async (id: string, item: IPicture) => {
-        const { id: _, ...itemData } = item;
-        await updateDoc(doc(db, 'pictures', id), {
-            ...itemData,
-            updatedAt: Date.now()
-        })
-        await loadGetPhotos()
-    }
-
-    const deletePhotos = async (id: string) => {
-        await deleteDoc(doc(db, 'pictures', id))
-        state.value.pictures = state.value.pictures.filter(p => p.id !== id)
+        return data
     }
 
     const loadMaterials = async () => {
-        const q = query(
-            collection(db, 'materials'),
-            orderBy('createdAt', 'desc')
-        );
-        const snap = await getDocs(q)
-        state.value.items = snap.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-        })) as IItems[]
+        const res = await axiosInstance.get('/api/v1/materials');
+        state.value.items = res.data
     }
 
     const addMaterial = async (item: Omit<UnwrapRef<IItems>, "id">) => {
-        await addDoc(collection(db, 'materials'), {
-            ...item,
-            createdAt: Date.now(),
-        })
+        await axiosInstance.post("/api/v1/materials", item)
         await loadMaterials()
     }
 
     const updateMaterial = async (id: string | null, item: IItems) => {
-        await updateDoc(doc(db, 'materials', String(id)), {
-            ...item,
-            updatedAt: Date.now(),
-        })
+        await axiosInstance.put(`/api/v1/materials/${id}`, item)
         await loadMaterials()
     }
 
     const deleteMaterial = async (id: string | null) => {
-        await deleteDoc(doc(db, 'materials', String(id)))
-        state.value.items = state.value.items.filter(item => item.id !== id)
+        await axiosInstance.delete(`/api/v1/materials/${id}`)
+        await loadMaterials()
     }
 
-    const loadAlbumCategories = async () => {
-        const snap = await getDocs(collection(db, 'alCategory'))
-        state.value.alCategory = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as AllCategory[]
+    const loadCategory = async (kind: OrderKind) => {
+        const response = await axiosInstance.get('/api/v1/product-categories', {
+            params: { kind }
+        });
+        const filtered = response.data.filter(
+            (item: AllCategory) => item.kind === kind
+        );
+
+        if (kind === "ALBUM") {
+            state.value.alCategory = filtered;
+        }
+
+        if (kind === "VIGNETTE") {
+            state.value.vignetteCategory = filtered;
+        }
+
+        if (kind === "PICTURE") {
+            state.value.photoCategory = filtered;
+        }
+    };
+
+    const addCategory = async (item: AllCategory) => {
+        await axiosInstance.post('/api/v1/product-categories', item )
+        await loadCategory(item.kind)
     }
 
-    const addAlCategory = async (item: AllCategory) => {
-        const { id, ...itemData } = item
-        await addDoc(collection(db, 'alCategory'), {
-            ...itemData,
-            createdAt: Date.now()
-        })
-        await loadAlbumCategories()
-    }
-
-    const updateAlCategory = async (id: string, item: AllCategory) => {
+    const updateCategory = async (id: string, item: AllCategory) => {
         const { id: _, ...itemData } = item;
-        await updateDoc(doc(db, 'alCategory', id), {
-            ...itemData,
-            updatedAt: Date.now()
+        await axiosInstance.put(`/api/v1/product-categories/${id}`, {
+            ...itemData
         })
-        await loadAlbumCategories()
+        await loadCategory(item.kind)
     }
 
-    const deleteAlCategory = async (id: string) => {
-        await deleteDoc(doc(db, 'alCategory', id))
-        state.value.alCategory = state.value.alCategory.filter(c => c.id !== id)
-    }
-
-    const loadVigCategory = async () => {
-        const snap = await getDocs(collection(db, 'vigCategory'))
-        state.value.vignetteCategory = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as AllCategory[]
-    }
-
-    const addVigCategory = async (item: AllCategory) => {
-        const { id, ...itemData } = item;
-        await addDoc(collection(db, 'vigCategory'), {
-            ...itemData,
-            createdAt: Date.now()
-        })
-        await loadVigCategory()
-    }
-
-    const updateVigCategory = async (id: string, item: AllCategory) => {
-        const { id: _, ...itemData } = item;
-        await updateDoc(doc(db, 'vigCategory', id), {
-            ...itemData,
-            updatedAt: Date.now()
-        })
-        await loadVigCategory()
-    }
-
-    const deleteVigCategory = async (id: string) => {
-        await deleteDoc(doc(db, 'vigCategory', id))
-        state.value.vignetteCategory = state.value.vignetteCategory.filter(c => c.id !== id)
-    }
-
-    const loadPhotoCategory = async () => {
-        const snap = await getDocs(collection(db, 'photoCategory'))
-        state.value.photoCategory = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as AllCategory[]
-    }
-
-    const addPhotoCategory = async (item: AllCategory) => {
-        const { id, ...itemData } = item;
-        await addDoc(collection(db, 'photoCategory'), {
-            ...itemData,
-            createdAt: Date.now()
-        })
-        await loadPhotoCategory()
-    }
-
-    const updatePhotoCategory = async (id: string, item: AllCategory) => {
-        const { id: _, ...itemData } = item;
-        await updateDoc(doc(db, 'photoCategory', id), {
-            ...itemData,
-            updatedAt: Date.now()
-        })
-        await loadPhotoCategory()
-    }
-
-    const deletePhotoCategory = async (id: string) => {
-        await deleteDoc(doc(db, 'photoCategory', id))
-        state.value.photoCategory = state.value.photoCategory.filter(c => c.id !== id)
+    const deleteCategory = async (id: string | null, kind: OrderKind) => {
+        await axiosInstance.delete(`/api/v1/product-categories/${id}`)
+        await loadCategory(kind)
     }
 
     return {
         state,
-        loadCollection,
-        loadComments, addComment, updateComment, deleteComment,
-        addUser, updateUser, deleteUser, loadGetUsers,
+        loadCategory,
+        changePage,
+        // loadRole,
+        loadUploadImage,
+        loadGetUserTasks,
+        addUser, updateUser, deleteUser, loadUsers,
         loadMaterials, addMaterial, updateMaterial, deleteMaterial,
-        loadGetAlbum, addAlbum, updateAlbum, deleteAlbum,
-        loadGetOrders, addOrder, updateOrder, deleteOrder,
-        loadGetPhotos, addPhotos, updatePhotos, deletePhotos,
-        loadAlbumCategories, addAlCategory, updateAlCategory, deleteAlCategory,
-        loadVigCategory, addVigCategory, updateVigCategory, deleteVigCategory,
-        loadPhotoCategory, addPhotoCategory, updatePhotoCategory, deletePhotoCategory,
+        loadOrders, addOrder, updateOrder, deleteOrder,
+        addCategory, updateCategory, deleteCategory,
     }
 })

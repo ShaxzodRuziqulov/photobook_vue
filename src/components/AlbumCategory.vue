@@ -56,10 +56,8 @@
             <td class="py-4 px-6">
               <div class="font-semibold text-gray-800">{{ vin.name }}</div>
             </td>
-            <td class="py-4 px-6">
-              {{ vin.pageNumber }}
-            </td>
-            <td class="py-4 px-6">{{vin.itemSize}}</td>
+            <td class="py-4 px-6"> {{ vin.defaultPages }} </td>
+            <td class="py-4 px-6"> {{vin.size}} </td>
             <td class="py-4 px-6 text-right items-center flex">
               <button
                   @click="editItem(vin)"
@@ -69,7 +67,7 @@
                 <i class="fa-solid fa-pencil"></i>
               </button>
               <button
-                  @click="deleteItem(vin.id)"
+                  @click="deleteItem(vin)"
                   class="text-red-600 hover:text-red-800 cursor-pointer transition-colors"
                   title="O'chirish"
               >
@@ -116,10 +114,10 @@
 
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Betlar Soni <span class="text-red-500">*</span>
+              Betlar turi <span class="text-red-500">*</span>
             </label>
             <input
-                v-model="form.pageNumber"
+                v-model="form.defaultPages"
                 type="text"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors"
                 placeholder="2,4,6,8, ..."
@@ -128,7 +126,7 @@
           <AppInput label="Ulchami"
                     type="text"
                     placeholder="20x30"
-                    v-model="form.itemSize"
+                    v-model="form.size"
           />
 
           <div class="flex gap-3 pt-4">
@@ -167,17 +165,15 @@ const alCategories = computed(() => dataStore.state.alCategory);
 
 const showModal = ref(false);
 const isEditing = ref(false);
-const selectedId = ref('');
 const showConfirmItem = ref(false);
 
 
 const form = ref<AllCategory>({
-  id: '',
+  id: null,
+  kind: 'ALBUM',
   name: '',
-  pageNumber: null,
-  itemSize: null,
-  createdAt: null,
-  updatedAt: null,
+  defaultPages: null,
+  size: null,
 });
 
 const openModal = () => {
@@ -186,12 +182,11 @@ const openModal = () => {
 
 const closeModal = () => {
   form.value = {
-    id: '',
+    id: null,
+    kind: 'ALBUM',
     name: '',
-    pageNumber: null,
-    itemSize: null,
-    createdAt: null,
-    updatedAt: null,
+    defaultPages: null,
+    size: null,
   }
   showModal.value = false;
   isEditing.value = false;
@@ -200,11 +195,11 @@ const closeModal = () => {
 const saveForm = async () => {
   try {
     if (form.value.id) {
-      await dataStore.updateAlCategory(form.value.id, form.value);
+      await dataStore.updateCategory(form.value.id, form.value);
     } else {
-      await dataStore.addAlCategory(form.value);
+      await dataStore.addCategory(form.value);
     }
-    await dataStore.loadAlbumCategories();
+    await dataStore.loadCategory(form.value.kind);
   }
   catch (error) {
     console.log(error)
@@ -221,20 +216,21 @@ const editItem = (item: AllCategory) => {
 
 const deleteConfirmItem = async () => {
   try {
-    await dataStore.deleteAlCategory(selectedId.value);
+    await dataStore.deleteCategory(form.value.id, form.value.kind);
     showConfirmItem.value = false;
+    await dataStore.loadCategory(form.value.kind);
   }
   catch (error) {
     console.log(error)
   }
 }
 
-const deleteItem = async (id: string) => {
-  selectedId.value = id;
+const deleteItem = async (item: AllCategory) => {
+  form.value = { ...item };
   showConfirmItem.value = true;
 };
 
 onMounted(() => {
-  dataStore.loadAlbumCategories();
+  dataStore.loadCategory('ALBUM');
 })
 </script>

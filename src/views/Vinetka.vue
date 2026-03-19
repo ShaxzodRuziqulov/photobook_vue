@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col container m-auto gap-2 p-4 min-h-screen w-full">
-    <div class="flex flex-col sm:flex-row items-center bg-white rounded-xl px-4 py-2 gap-4 justify-between w-full">
+    <div class="flex flex-col sm:flex-row items-center bg-white shadow rounded-xl px-4 py-2 gap-4 justify-between w-full">
       <div class="flex items-center gap-4">
         <i class="fa-solid fa-book-open text-5xl text-blue-800"></i>
         <div>
@@ -16,28 +16,29 @@
       />
     </div>
     <div
-        class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-100 rounded-xl p-2 justify-between"
+        v-if="vignetteCategory.length > 0"
+        class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-200 rounded-xl p-2 justify-between"
     >
       <div
           class="flex flex-col gap-4 bg-white rounded-xl px-4 py-2 justify-between"
-          v-for="(cat, index) in categoryType"
+          v-for="(cat, index) in vignetteCategory"
           :key="index"
       >
         <div
             class="flex w-full flex-col border-b gap-1 border-gray-200"
         >
-          <h2 class="text-sm uppercase font-semibold">{{cat.text}}</h2>
-          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.item}}</span></span>
+          <h2 class="text-sm uppercase font-semibold">{{cat.name}}</h2>
+          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400" v-if="cat.defaultPages">{{cat.defaultPages}}</span></span>
         </div>
         <div
             class="flex gap-4 items-center justify-between"
         >
           <div class="flex flex-col w-full border-r-2 border-gray-200">
             <div class="gap-1 flex flex-col items-start font-semibold">
-              <span class="text-gray-600 text-sm">Jami</span>
+              <span class="text-gray-600 text-sm flex">Jami</span>
               <div class="flex gap-2 items-center text-md">
                 <span class=" text-blue-600">
-                {{getCategoryCount(cat.value)}}
+                {{getCategoryCount(cat)}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -48,7 +49,7 @@
               <span class="text-gray-600 text-sm">Bajarilgan</span>
               <div class="flex gap-2 text-md items-center">
                 <span class="text-blue-600">
-                {{getCount(cat.value)}}
+                {{getCount(cat)}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -59,7 +60,7 @@
               <span class="text-gray-600 text-sm">Qoldi</span>
               <div class="flex gap-2 text-md items-center">
                 <span class="text-blue-600">
-                {{getRemaining(cat.value)}}
+                {{getRemaining(cat)}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -130,8 +131,8 @@
             </button>
           </div>
           <AppSelect
-              v-model="itemForm.categoryName"
-              :options="categoryType"
+              v-model="itemForm.categoryId"
+              :options="vignetteCategory"
               disabledValue="Tanlang"
               text-field="text"
               value-field="value"
@@ -144,22 +145,15 @@
                 step="2"
                 class="w-full"
                 placeholder="2,4,6"
-                v-model="itemForm.pageNumber"
+                v-model="itemForm.pageCount"
             />
             <AppInput
                 type="number"
                 class="w-full"
                 placeholder="Masalan: 10"
                 label="Buyurtma soni"
-                v-model="itemForm.amountNumber"
+                v-model="itemForm.amount"
             />
-            <AppInput
-                type="number"
-                class="w-full"
-                placeholder="Masalan: 10"
-                label="Bajarish soni"
-                v-model="itemForm.processedCount"
-          />
           </div>
           <div
               class="flex gap-2 items-center justify-between"
@@ -179,18 +173,21 @@
                 label="Mijoz ismi"
             />
           </div>
-          <AppInput
+          <AppSelect
+              :options="oderReceiver"
               v-model="itemForm.receiverName"
-              placeholder="Ism kiriting"
-              type="text"
+              disabledValue="Tanlang"
+              text-field="text"
+              value-field="value"
               label="Qabul qiluvchi"
           />
           <AppSelect
-              v-model="selectedEmployeeNames"
-              :options="allUsers"
+              :model-value="itemForm.employees"
+              @update:modelValue="handleEmployeeChange"
+              :options="orderedUsers"
               disabledValue="Xodimni tanlang"
-              text-field="name"
-              value-field="name"
+              text-field="lastName"
+              value-field="id"
               isMultiple
               label="Mas'ul xodim"
           />
@@ -206,7 +203,7 @@
               class="flex items-center w-full gap-2"
           >
             <AppInput
-                v-model="itemForm.createdData"
+                v-model="itemForm.acceptedDate"
                 label="Qabul qilingan sana"
                 type="date"
                 class="w-full"
@@ -215,7 +212,7 @@
                 label="Tugash sanasi"
                 type="date"
                 class="w-full"
-                v-model="itemForm.termData"
+                v-model="itemForm.deadline"
             />
           </div>
           <div class="flex my-4 flex-col sm:flex-row items-stretch lg:flex-row gap-2 sm:items-center justify-end w-full">
@@ -356,51 +353,53 @@
           <td class="px-1 ">
             <div
                 v-if="order.employees"
-                v-for="emp in order.employees"
-                :key="emp.id"
+                v-for="(emp, index) in getOrderedEmployees(order)"
+                :key="index"
                 class="flex text-sm items-center border-b border-gray-300 gap-2 pb-0.5"
             >
-              <i
-                  v-if="emp.status === 'COMPLETED'"
-                  class="fa-solid fa-circle-check text-green-600"
-              />
-              <i
-                  v-else-if="emp.status === 'IN_PROGRESS'"
-                  class="fa-solid fa-play text-blue-600"
-              />
-              <i
-                  v-else
-                  class="fa-regular fa-circle text-gray-400"
-              />
-              <span>{{ emp.name }}</span>
+              <div class="w-3/4 gap-1 flex items-center">
+                <i
+                    v-if="(emp.processedCount ?? 0) === order.amount"
+                    class="fa-solid fa-circle-check text-green-600"
+                />
+                <i
+                    v-else-if="(emp.processedCount ?? 0) > 0"
+                    class="fa-solid fa-play text-blue-600"
+                />
+                <i
+                    v-else
+                    class="fa-regular fa-circle text-gray-400"
+                />
+                <span class="flex p-1">{{ emp.employeeName }}</span>
+              </div>
+              <span>{{emp.processedCount}} ta</span>
             </div>
           </td>
-          <td class="p-2">
-            <div class="flex flex-col gap-1">
-              <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+          <td class="py-2 px-3">
+            <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
                 <span
-                    v-if="order.processedCount && order.amountNumber"
-                    class="block h-full bg-blue-600 transition-all duration-300"
+                    v-if="getProcessedCount(order) || order.amount"
+                    class="block h-full transition-all duration-500 ease-out"
+                    :class="getProgressColor(order)"
                     :style="{
-                    width: ((order.processedCount) / order.amountNumber * 100) + '%'
+                    width: getProgressPercent(order) + '%'
                   }"
                 ></span>
-              </div>
-              <div class="text-sm mt-1 flex items-center justify-between text-gray-600">
-                <span>{{ order.processedCount || 0 }} / {{ order.amountNumber }}</span>
-                <span>{{order.pageNumber || 0}}-Bet</span>
-              </div>
+            </div>
+            <div class="text-sm mt-1 flex px-1 items-center justify-between text-gray-600">
+              <span>{{ getProcessedCount(order) || 0 }} / {{ order.amount }}</span>
+              <span>{{order.pageCount || 0}}-Bet</span>
             </div>
           </td>
-          <td class="p-2">{{ formatDate(order.createdData) }}</td>
-          <td class="p-2">{{ formatDate(order.termData) }}</td>
+          <td class="p-2">{{ formatDate(order.acceptedDate) }}</td>
+          <td class="p-2">{{ formatDate(order.deadline) }}</td>
           <td class="p-2"
           >
             <span
                 :class="[statusColor[order.status],
                   'rounded-xl px-3 py-1 font-semibold text-sm',
                 ]">
-              {{ order.status }}
+              {{ statusLabel[order.status] }}
             </span>
           </td>
           <td class="p-2">
@@ -440,12 +439,12 @@
 
 <script setup lang="ts">
 import CButton from "@/components/CButton.vue";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, ComputedRef, onMounted, ref, watch} from "vue";
 import CDialog from "@/components/CDialog.vue";
 import AppInput from "@/components/ui/AppInput.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
 import {useStore} from "@/stores/store";
-import {  Order } from "@/typeModules/useModules";
+import {Order, OrderCreateDto} from "@/typeModules/useModules";
 import { useToast } from "vue-toastification";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
 import FileUpload from "primevue/fileupload";
@@ -456,7 +455,23 @@ const route = useRoute();
 const Toast = useToast();
 const dataStore = useStore();
 
-// const allUsers: ComputedRef = computed(() => dataStore.state.users);
+const allUsers: ComputedRef = computed(() => dataStore.state.user.items);
+const vignetteCategory: ComputedRef = computed(() => dataStore.state.vignetteCategory)
+
+const orderedUsers = computed(() => {
+  const selected = itemForm.value.employees
+
+  return [...allUsers.value].sort((a, b) => {
+    const aIndex = selected.indexOf(a.id)
+    const bIndex = selected.indexOf(b.id)
+
+    if (aIndex === -1 && bIndex === -1) return 0
+    if (aIndex === -1) return 1
+    if (bIndex === -1) return -1
+
+    return aIndex - bIndex
+  })
+})
 
 const isEditing = ref(false);
 const isVisible = ref(false);
@@ -467,7 +482,6 @@ const formData = ref<string | null>(null);
 const endData = ref<string | null>(null);
 const formFilter = ref<string | ''>('');
 const previewImage = ref<string | null>(null)
-const selectedEmployeeNames = ref<string[]>([])
 
 
 const openPreview = (url: string) => {
@@ -513,7 +527,8 @@ watch(
 )
 
 const filteredOrders = computed(() => {
-  let data = dataStore.state.vignette
+
+  let data = [...dataStore.state.vignettes.items]
 
   if (formFilter.value) {
     const search = formFilter.value.toLowerCase()
@@ -522,48 +537,88 @@ const filteredOrders = computed(() => {
         item.orderName?.toLowerCase().includes(search) ||
         item.categoryName?.toLowerCase().includes(search) ||
         item.customerName?.toLowerCase().includes(search) ||
-        item.amountNumber?.toFixed().includes(search) ||
-        item.pageNumber?.toFixed().includes(search) ||
         item.receiverName?.toLowerCase().includes(search)
     )
   }
+  return data.sort((a,b) =>
+      new Date(b.acceptedDate).getTime() -
+      new Date(a.acceptedDate).getTime()
+  )
+})
 
-  // return [...data].sort((a: any, b: any) => new Date(b.createdData).getMilliseconds() - new Date(a.createdData).getMilliseconds());
-  return [...data].sort((a, b) => {
-    const dateA =  new Date(a.createdData).getMilliseconds();
-    const dateB =  new Date(b.createdData).getMilliseconds();
-    return dateB - dateA  // oxirgi qo'shilgan birinchi
+const getOrderedEmployees = (order: any) => {
+  const saved = localStorage.getItem(`order_${order.id}_employees`)
+  if (!saved) return order.employees
+
+  const ids = JSON.parse(saved)
+
+  return [...order.employees].sort((a, b) => {
+    return ids.indexOf(a.employeeId) - ids.indexOf(b.employeeId)
   })
-})
+}
 
-const allUsers = ref([
-  {id: 1, name: 'Ali Usmonov', status: 'PENDING'},
-  {id: 2, name: 'Elyor Usmonov', status: 'PENDING'},
-  {id: 3, name: 'Akbar Salimov', status: 'PENDING'},
-  {id: 4, name: 'Murod Xalilov', status: 'PENDING'},
-  {id: 5, name: 'Samandar Kamolov', status: 'PENDING'},
-])
+const getProcessedCount = (album: any) => {
+  if (!album?.employees?.length) return 0
 
-const itemForm = ref<Order>({
-  id: '',
-  categoryName: '',
-  orderName: '',
-  processedCount: null,
-  pageNumber: null,
-  amountNumber: null,
-  customerName: '',
-  receiverName: '',
-  employeeId: [],
+  const lastEmployee = album.employees[album.employees.length - 1]
+  return lastEmployee?.processedCount || 0
+}
+
+const getProgressPercent = (album: any) => {
+  if (!album?.amount) return 0
+  return (getProcessedCount(album) / album.amount) * 100
+}
+
+const getProgressColor = (album: any) => {
+  const percent = getProgressPercent(album)
+
+  if (percent < 30) return 'bg-red-500'
+  if (percent < 70) return 'bg-yellow-500'
+  return 'bg-green-600'
+}
+
+
+type OrderForm = Omit<OrderCreateDto, "employees"> & {
+  employees: string[]
+}
+
+const itemForm = ref<OrderForm>({
+  kind: 'VIGNETTE',
+  categoryId: "",
+  categoryName: "",
+  orderName: "",
+  itemType: "",
+  customerId: "",
+  customerName: "",
+  receiverName: "",
   employees: [],
-  termData: null,
-  status: '',
-  imageUrl: '',
-  // doneData: null,
-  createdData: '',
-  createdAt: null,
-  updatedAt: null,
+  pageCount: null,
+  amount: null,
+  acceptedDate: "",
+  deadline: "",
+  status: "",
+  imageUrl: "",
+  notes: "",
+  uploadId: ""
 })
 
+const handleEmployeeChange = (newValues: string[]) => {
+  const oldValues = itemForm.value.employees || []
+
+  // yangi qo‘shilganlarni topamiz
+  const added = newValues.filter(id => !oldValues.includes(id))
+
+  // o‘chirilganlarni topamiz
+  const removed = oldValues.filter(id => !newValues.includes(id))
+
+  // eski tartibni saqlaymiz
+  let result = oldValues.filter(id => !removed.includes(id))
+
+  // yangi tanlanganlarni oxiriga qo‘shamiz
+  result = [...result, ...added]
+
+  itemForm.value.employees = result
+}
 // const changeFilter = (type: 'search' | 'status', value: string ) => {
 //   if (type === 'search') {
 //     formFilter.value = value
@@ -573,51 +628,26 @@ const itemForm = ref<Order>({
 //   dataStore.loadGetAlbum()
 // }
 
-onMounted(() => {
-  if (route.query.status) {
-    formStatus.value = route.query.status as string;
-  }
-})
+watch([formStatus, formData, endData],
+    async () => {
 
-const filters = computed(() => ({
-  status: formStatus.value,
-  from: formData.value,
-  to: endData.value
-}))
+      await dataStore.loadOrders("VIGNETTE",{
+        status: formStatus.value || undefined,
+        from: formData.value || undefined,
+        to: endData.value || undefined,
+        search: formFilter.value || undefined
+      })
 
-watch(
-    filters,
-    async (newFilters) => {
-      dataStore.state.vignette = await dataStore.loadCollection<Order>(
-          "vignette",
-          newFilters
-      )
-    },
-    { deep: true }
+    }
 )
-
-watch( () => formFilter.value, async (newStatus) => {
-  await dataStore.loadCollection(newStatus);
-})
 
 const closeFilter = () => {
   formStatus.value = '';
   formFilter.value = '';
   formData.value = '';
   endData.value = '';
-  dataStore.loadGetOrders();
+  dataStore.loadOrders('VIGNETTE');
 }
-
-const categoryType = [
-  { id: 1, value: 'Bitiruvchi (Oq)', text: 'Bitiruvchi (Oq)', item: '2, 4, 6'},
-  { id: 2, value: 'Bitiruvchi (Qora)', text: 'Bitiruvchi (Qora)', item: '2, 4, 6'},
-  { id: 3, value: "Sariq", text: "Sariq", item: '2, 4, 6' },
-  { id: 4, value: 'Kuk papka', text: 'Kuk papka', item: '2, 4, 6'},
-  { id: 5, value: 'Kuk (Bolajon)', text: 'Kuk (bolajon)', item: '2, 4, 6' },
-  { id: 6, value: 'Fioletviy', text: 'Fioletviy', item: '2, 4, 6' },
-  { id: 7, value: 'Qora papka', text: 'Qora papka', item: '2, 4, 6' },
-  { id: 8, value: 'Yashil', text: 'Yashil', item: '2, 4, 6' },
-]
 
 // const filteredCategories = computed(() => {
 //   return categoryType.filter(cat => {
@@ -631,7 +661,7 @@ const categoryType = [
 
 const pageProcessed = computed(() => {
   return filteredOrders.value.reduce(
-      (sum, item) => sum + (item.amountNumber || 0),
+      (sum, item) => sum + (item.amount || 0),
       0
   )
 })
@@ -640,108 +670,130 @@ const pageProcessed = computed(() => {
 const getCategoryCount = (value: string) => {
   return filteredOrders.value
       .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (item.amountNumber || 0), 0)
+      .reduce((total, item) => total + (item.amount || 0), 0)
 }
 
 const getCount = (value: string) => {
   return filteredOrders.value
       .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (item.processedCount || 0), 0)
+      .reduce((total, item) => total + (getProcessedCount(item) || 0), 0)
 }
 
 const getRemaining = (value: string) => {
   return filteredOrders.value
       .filter(item => item.categoryName === value)
       .reduce((total, item) => {
-        const totalNum = item.amountNumber || 0
-        const processed = item.processedCount || 0
+        const totalNum = item.amount || 0
+        const processed = getProcessedCount(item) || 0
         return total + (totalNum - processed)
       }, 0)
 }
-// "PENDING" | "IN_PROGRESS" | "COMPLETED"
 
 const itemStatus = ref( [
-  { value: 'Kutilmoqda', text: 'Kutilmoqda' },
-  { value: 'Jarayonda', text: 'Jarayonda' },
-  { value: 'Bajarilgan', text: 'Bajarilgan' },
+  { value: 'PENDING', text: 'Kutilmoqda' },
+  { value: 'IN_PROGRESS', text: 'Jarayonda' },
+  { value: 'COMPLETED', text: 'Bajarilgan' },
+])
+
+const statusColor: Record<string, string> = {
+  PENDING: 'bg-yellow-100 text-yellow-700',
+  IN_PROGRESS: 'bg-green-100 text-green-700',
+  COMPLETED: 'bg-blue-100 text-blue-700',
+}
+
+const statusLabel: Record<string, string> = {
+  PENDING:     "Kutilmoqda",
+  IN_PROGRESS: "Jarayonda",
+  COMPLETED:   "Bajarilgan",
+}
+
+const oderReceiver = ref([
+  {value: "ADMIN", text: "ADMIN" },
+  {value: "MENEGER", text: "MENEGER" },
 ])
 
 const visibleForm = () => {
   isVisible.value = true;
   resetForm()
-};
 
+};
 const closeForm = () => {
   isVisible.value = false;
-}
 
-// "PENDING" | "IN_PROGRESS" | "COMPLETED"
-
-const statusColor: Record<string, string> = {
-  Kutilmoqda: 'bg-yellow-100 text-yellow-700',
-  Jarayonda: 'bg-green-100 text-green-700',
-  Bajarilgan: 'bg-blue-100 text-blue-700',
 }
 
 const isValidForm = () => {
   const f = itemForm.value;
   return (
-      f.amountNumber !== null &&
-      f.pageNumber !== null &&
+      f.amount !== null &&
+      f.pageCount !== null &&
       f.receiverName !== null &&
-      f.categoryName !== null &&
+      f.categoryId !== null &&
       f.orderName !== null &&
       f.customerName !== null &&
       f.employees !== null &&
-      f.createdData !== null &&
-      f.termData !== null &&
+      f.acceptedDate !== null &&
+      f.deadline !== null &&
       f.status !== null
   );
 };
 
-const submitForm = async ( ) => {
-  try {
-    if (!isValidForm()) return;
-    // filteredOrders.value.push(itemForm.value);
+const submitForm = async () => {
+  if (!isValidForm()) return;
 
-    itemForm.value.employees = selectedEmployeeNames.value.map(name => {
-      const existing = itemForm.value.employees.find(e => e.name === name)
-      return existing ?? {
-        id: allUsers.value.find(u => u.name === name)?.id ?? 0,
-        name,
-        status: 'PENDING'
-      }
-    })
-    itemForm.value.employeeId = itemForm.value.employees.map(e => e.id)
+  try {
+
+    const payload: OrderCreateDto = {
+      ...itemForm.value,
+      employees: itemForm.value.employees.map((id, index) => {
+        const user = allUsers.value.find((u: any) => u.id === id)
+
+        return {
+          employeeId: id,
+          employeeName: user
+              ? `${user.firstName} ${user.lastName}`
+              : "",
+          processedCount: 0,
+          workStatus: "PENDING",
+          stepOrder: index + 1
+        }
+      })
+    }
 
     if (isEditing.value) {
-      await dataStore.updateOrder(itemForm.value.id, itemForm.value);
-      Toast.success(  "Yangilandi!");
+      await dataStore.updateOrder(itemId.value, payload)
+      Toast.success("Yangilandi")
     } else {
-      await dataStore.addOrder(itemForm.value);
-      Toast.success( "Qo'shildi!");
+      await dataStore.addOrder(payload)
+      Toast.success("Qo'shildi")
     }
-    await dataStore.loadGetOrders()
-    resetForm();
-    isVisible.value = false;
-    isEditing.value = false;
-  }
-  catch (error) {
-    console.log("Error", error);
+
+    await dataStore.loadOrders("VIGNETTE")
+    resetForm()
+    isVisible.value = false
+
+  } catch (err) {
+    console.error(err)
   }
 }
 
-const editForm = async (item: Order): Promise<void> => {
+const itemId = ref<string>('')
+
+const editForm = (item: Order) => {
   isVisible.value = true;
   isEditing.value = true;
-  itemForm.value = { ...item };
-  selectedEmployeeNames.value = (item.employees || []).map(e => e.name);
+
+  itemForm.value = {
+    ...item,
+    employees: item.employees?.map(e => e.employeeId) || []
+  }
+  itemId.value = item.id;
 };
 
 const deleteConfirmItem = async () => {
   if (!selectedItem.value) return;
   try {
-    await dataStore.deleteOrder(selectedItem.value)
+    await dataStore.deleteOrder(selectedItem.value, 'VIGNETTE')
     Toast.info("Muvoffaqiyatli uchirildi!");
     showConfirmItem.value = false;
     selectedItem.value = null;
@@ -758,25 +810,24 @@ const deleteItem = async (id: string | null) => {
 
 const resetForm = () => {
   itemForm.value = {
-    id: '',
-    categoryName: '',
-    orderName: '',
-    processedCount: null,
-    pageNumber: null,
-    amountNumber: null,
-    customerName: '',
-    receiverName: '',
-    employeeId: [],
+    kind: "VIGNETTE",
+    categoryId: "",
+    categoryName: "",
+    orderName: "",
+    itemType: "",
+    customerId: "",
+    customerName: "",
+    receiverName: "",
     employees: [],
-    termData: null,
-    status: '',
-    imageUrl: '',
-    // doneData: null,
-    createdData: '',
-    createdAt: null,
-    updatedAt: null,
+    pageCount: 0,
+    amount: 0,
+    acceptedDate: "",
+    deadline: "",
+    status: "PENDING",
+    imageUrl: "",
+    notes: "",
+    uploadId: ""
   }
-  selectedEmployeeNames.value = [];
   isEditing.value = false
 }
 
@@ -791,12 +842,18 @@ const formatDate = (dateString?: string | null): string => {
   const month = (date.getMonth() + 1).toString().padStart(2,'0');
   return `${day}-${month}-${year}`;
 };
+onMounted(() => {
+  if (route.query.status) {
+    formStatus.value = route.query.status as string;
+  }
+})
 
 onMounted(async () => {
-  await dataStore.loadGetOrders()
-  // await Promise.all([
-  //     // await dataStore.loadCategories(),
-  // ])
+  await Promise.all([
+      await dataStore.loadOrders('VIGNETTE'),
+      await dataStore.loadCategory('VIGNETTE'),
+      await dataStore.loadUsers()
+  ])
 })
 
 </script>

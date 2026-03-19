@@ -45,10 +45,8 @@
             <td class="py-4 px-6">
               <div class="font-semibold text-gray-800">{{ vin.name }}</div>
             </td>
-            <td class="py-4 px-6">
-              {{ vin.pageNumber }}
-            </td>
-            <td class="py-4 px-6">{{vin.itemSize}}</td>
+            <td class="py-4 px-6">{{ vin.defaultPages }}</td>
+            <td class="py-4 px-6">{{vin.size}}</td>
             <td class="py-4 px-6 text-left items-center flex">
               <button
                   @click="editItem(vin)"
@@ -58,7 +56,7 @@
                 <i class="fa-solid fa-pencil"></i>
               </button>
               <button
-                  @click="deleteItem(vin.id)"
+                  @click="deleteItem(vin)"
                   class="text-red-600 hover:text-red-800 cursor-pointer transition-colors"
                   title="O'chirish"
               >
@@ -105,10 +103,10 @@
 
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Betlar Soni <span class="text-red-500">*</span>
+              Betlar turi <span class="text-red-500">*</span>
             </label>
             <input
-                v-model="form.pageNumber"
+                v-model="form.defaultPages"
                 type="text"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors"
                 placeholder="2,4,6,8, ..."
@@ -117,7 +115,7 @@
           <AppInput label="Ulchami"
                     type="text"
                     placeholder="20x30"
-                    v-model="form.itemSize"
+                    v-model="form.size"
           />
 
           <div class="flex gap-3 pt-4">
@@ -155,12 +153,11 @@ const vinCategories = computed(() => dataStore.state.vignetteCategory);
 const showModal = ref(false);
 const isEditing = ref(false);
 const form = ref<AllCategory>({
-  id: '',
+  id: null,
+  kind: 'VIGNETTE',
   name: '',
-  pageNumber: null,
-  itemSize: null,
-  createdAt: null,
-  updatedAt: null,
+  defaultPages: null,
+  size: null,
 });
 
 const openModal = () => {
@@ -169,12 +166,11 @@ const openModal = () => {
 
 const closeModal = () => {
   form.value = {
-    id: '',
+    id: null,
+    kind: 'VIGNETTE',
     name: '',
-    pageNumber: null,
-    itemSize: null,
-    createdAt: null,
-    updatedAt: null,
+    defaultPages: null,
+    size: null,
   }
   showModal.value = false;
   isEditing.value = false;
@@ -182,12 +178,12 @@ const closeModal = () => {
 
 const saveForm = async () => {
   try {
-    if (isEditing.value) {
-      await dataStore.updateVigCategory(form.value.id, form.value);
+    if (isEditing.value && form.value.id) {
+      await dataStore.updateCategory(form.value.id, form.value);
     } else {
-      await dataStore.addVigCategory(form.value);
+      await dataStore.addCategory(form.value);
     }
-    await dataStore.loadVigCategory();
+    await dataStore.loadCategory(form.value.kind);
   }
   catch (error) {
     console.log(error)
@@ -202,9 +198,10 @@ const editItem = (item: AllCategory) => {
   form.value = { ...item };
 }
 
-const deleteItem = async (id: string) => {
+const deleteItem = async (item: AllCategory) => {
   try {
-    await dataStore.deleteVigCategory(id);
+    await dataStore.deleteCategory(item.id, item.kind);
+    await dataStore.loadCategory(item.kind);
   }
   catch (error) {
     console.log(error)
@@ -213,6 +210,6 @@ const deleteItem = async (id: string) => {
 };
 
 onMounted(() => {
-  dataStore.loadVigCategory();
+  dataStore.loadCategory('VIGNETTE');
 })
 </script>

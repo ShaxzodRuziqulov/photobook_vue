@@ -54,130 +54,6 @@
           </div>
           <h2 class="text-3xl font-bold text-white uppercase">Photobook</h2>
         </div>
-
-        <!-- Login Card -->
-<!--        <div class="flex flex-col bg-white w-[400px] h-[400px] rounded-3xl p-8 shadow-2xl">-->
-<!--          &lt;!&ndash; Header &ndash;&gt;-->
-<!--          <div class="mb-8 flex flex-col p-4">-->
-<!--            <h2 class="text-3xl font-bold text-gray-800 mb-2">Xush kelibsiz! 👋</h2>-->
-<!--            <p class="text-gray-600">Davom ettirish uchun hisobingizga kiring</p>-->
-<!--          </div>-->
-
-<!--          &lt;!&ndash; Form &ndash;&gt;-->
-<!--          <form @submit.prevent="submitLogin" class="space-y-6">-->
-<!--            &lt;!&ndash; Username &ndash;&gt;-->
-<!--            <div>-->
-<!--              <label class="block text-sm font-semibold text-gray-700 mb-2">-->
-<!--                Login-->
-<!--              </label>-->
-<!--              <div class="relative group">-->
-<!--                <div class=" flex items-center pointer-events-none">-->
-<!--                  <i class="fa-regular fa-user text-gray-400"></i>-->
-<!--                </div>-->
-<!--                <input-->
-<!--                    v-model="form.userName"-->
-<!--                    type="text"-->
-<!--                    required-->
-<!--                    :disabled="isLoading"-->
-<!--                    class="input-premium w-full pl-12 pr-4 py-4 rounded-xl text-gray-800 placeholder-gray-400 font-medium focus:outline-none"-->
-<!--                    placeholder="Loginni kiriting"-->
-<!--                >-->
-<!--              </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Password &ndash;&gt;-->
-<!--            <div>-->
-<!--              <label class="block text-sm font-semibold text-gray-700 mb-2">-->
-<!--                Parol-->
-<!--              </label>-->
-<!--              <div class="relative group">-->
-<!--                <div class="flex items-center pointer-events-none">-->
-<!--                  <svg class="w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>-->
-<!--                  </svg>-->
-<!--                </div>-->
-<!--                <input-->
-<!--                    v-model="form.password"-->
-<!--                    :type="showPassword ? 'text' : 'password'"-->
-<!--                    required-->
-<!--                    :disabled="isLoading"-->
-<!--                    class="input-premium w-full pl-12 pr-12 py-4 rounded-xl text-gray-800 placeholder-gray-400 font-medium focus:outline-none"-->
-<!--                    placeholder="Parolni kiriting"-->
-<!--                >-->
-<!--                <button-->
-<!--                    type="button"-->
-<!--                    @click="showPassword = !showPassword"-->
-<!--                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-purple-600 transition-colors"-->
-<!--                >-->
-<!--                  <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>-->
-<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>-->
-<!--                  </svg>-->
-<!--                  <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>-->
-<!--                  </svg>-->
-<!--                </button>-->
-<!--              </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Login Button &ndash;&gt;-->
-<!--            <button-->
-<!--                type="submit"-->
-<!--                :disabled="isLoading"-->
-<!--                class="btn-premium bg-purple-200 w-full py-4 rounded-xl text-white font-bold text-lg relative overflow-hidden"-->
-<!--            >-->
-<!--                                        <span v-if="!isLoading" class="relative z-10 flex items-center justify-center gap-2">-->
-<!--                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>-->
-<!--                                            </svg>-->
-<!--                                            Kirish-->
-<!--                                        </span>-->
-<!--              <span v-else class="relative z-10 flex items-center justify-center gap-2">-->
-<!--                                            <svg class="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
-<!--                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>-->
-<!--                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>-->
-<!--                                            </svg>-->
-<!--                                            Yuklanmoqda...-->
-<!--                                        </span>-->
-<!--            </button>-->
-
-<!--            &lt;!&ndash; Divider &ndash;&gt;-->
-<!--            <div class="relative">-->
-<!--              <div class="absolute inset-0 flex items-center">-->
-<!--                <div class="w-full border-t border-gray-200"></div>-->
-<!--              </div>-->
-<!--              <div class="relative flex justify-center text-sm">-->
-<!--                <span class="px-4 bg-white text-gray-500 font-medium">Demo hisoblar</span>-->
-<!--              </div>-->
-<!--            </div>-->
-
-<!--            &lt;!&ndash; Demo Accounts &ndash;&gt;-->
-<!--            <div class="space-y-2">-->
-<!--              <div class="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">-->
-<!--                <div class="flex items-center justify-between">-->
-<!--                  <span class="text-sm font-semibold text-gray-700">👨‍💼 Admin:</span>-->
-<!--                  <code class="text-sm font-mono bg-white px-3 py-1 rounded-lg text-purple-600 font-bold">admin / admin123</code>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--              <div class="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">-->
-<!--                <div class="flex items-center justify-between">-->
-<!--                  <span class="text-sm font-semibold text-gray-700">👤 Xodim:</span>-->
-<!--                  <code class="text-sm font-mono bg-white px-3 py-1 rounded-lg text-blue-600 font-bold">sardor / 123</code>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </form>-->
-
-<!--          &lt;!&ndash; Footer &ndash;&gt;-->
-<!--          <div class="mt-8 text-center">-->
-<!--            <p class="text-sm text-gray-600">-->
-<!--              Hisobingiz yo'qmi?-->
-<!--              <a href="#" class="font-semibold text-purple-600 hover:text-purple-700 transition-colors ml-1">-->
-<!--                Ro'yxatdan o'ting →-->
-<!--              </a>-->
-<!--            </p>-->
-<!--          </div>-->
-<!--        </div>-->
         <div class="bg-white rounded-2xl flex flex-col w-full p-4 max-w-md shadow-xl">
           <div class="mb-8 flex flex-col p-4">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Xush kelibsiz! 👋</h2>
@@ -190,7 +66,7 @@
             <AppInput
                 type="text"
                 label="Login"
-                v-model="form.userName"
+                v-model="form.username"
                 placeholder="Login kiriting"
             />
             <AppInput
@@ -224,9 +100,9 @@
 <!--              Register-->
 <!--            </router-link>-->
 <!--          </span>-->
-          <p class="text-center text-md mt-8">
-            © 2026 PHOTOBOOK. Barcha huquqlar himoyalangan.
-          </p>
+          <div class="text-center text-md mt-8">
+            © 2026 PHOTOBOOK. <span class="text-sm text-gray-700">Barcha huquqlar himoyalangan.</span>
+          </div>
         </div>
       </div>
     </div>
@@ -239,45 +115,56 @@ import CButton from "@/components/CButton.vue";
 import { ref } from "vue";
 import { UserLogin } from "@/typeModules/useModules";
 import {authService} from "@/service/authService";
+import { useToast } from "vue-toastification";
 
+const Toast = useToast();
 const useAuthService = authService();
 
 const isPasswordVisible = ref(false);
 const isPasswordEyeOpen = ref(false);
 
 const form = ref<UserLogin>({
-  userName: "",
+  username: "",
   password: "",
 })
-// const isLoading = ref(false);
-
 
 const validateRegister = () => {
-  if (!form.value.userName.trim()) return "Name is required";
+  if (!form.value.username.trim()) return "Name is required";
   if (!form.value.password.trim()) return "Password is required";
 
-  return null; // ✔ Valid
+  return null;
 };
 
 
 const submitLogin = async () => {
   try {
-    if (form.value.userName && form.value.password) {
-
-      const error = validateRegister();
-      if (error) {
-        alert(error);
-        return;
-      }
-
+    if (form.value.username && form.value.password) {
+      console.log('form', form.value)
+      // const error = validateRegister();
+      // if (error) {
+      //   alert(error);
+      //   return;
+      // }
+      console.log('2222',form.value.username);
       await useAuthService.login({
-        userName: form.value.userName,
+        username: form.value.username,
         password: form.value.password,
       });
 
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log("Login error:", error);
+    switch (true) {
+      case error.message === 'Network Error':
+        Toast.warning('Serverda xatolik yuz berdi');
+        break;
+      case error.response.data.description === 'The username or password is incorrect':
+        Toast.warning('Foydalanuvchi nomi yoki parol xato.');
+        break;
+    }
+  }finally
+  {
+    console.log('final',form.value.username);
   }
 }
 

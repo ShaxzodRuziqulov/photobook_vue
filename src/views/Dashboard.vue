@@ -116,14 +116,14 @@
             <span class="">Bajarilish foizi</span>
             <span class="font-bold">
               <i class="fa-solid fa-arrow-trend-up"></i>
-            {{ item.total > 0 ? Math.round((Number(item.completed) / item.total) * 100) : 0 }}%
+<!--            {{ item.total > 0 ? Math.round((Number(item.completed) / item.total) * 100) : 0 }}%-->
           </span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-                class="bg-blue-500 h-2.5 rounded-full transition-all duration-500"
-                :style="{ width: (item.total > 0 ? (Number(item.completed) / item.total) * 100 : 0) + '%' }"
-            ></div>
+<!--            <div-->
+<!--                class="bg-blue-500 h-2.5 rounded-full transition-all duration-500"-->
+<!--                :style="{ width: (item.total > 0 ? (Number(item.completed) / item.total) * 100 : 0) + '%' }"-->
+<!--            ></div>-->
           </div>
         </div>
       </div>
@@ -215,6 +215,7 @@
 import {computed, onMounted, ref} from "vue";
 import { useStore } from "@/stores/store";
 import { useRouter } from "vue-router";
+import axiosInstance from "@/axios";
 
 const dataStore = useStore();
 const router = useRouter();
@@ -237,42 +238,52 @@ const clickOpenPage = (path: string, query?: any) => {
   });
 }
 
-const allAlbumCount = computed(() => dataStore.state.albums?.length || 0
-)
+const allAlbumCount = ref<string[]>([]);
+
+const getAlDashboardCounts = async () => {
+  try {
+    const res = await axiosInstance.get("/api/v1/dashboard/summary")
+    allAlbumCount.value = res.data
+    console.log('All counts',res.data)
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
 
 const albumPending = computed(() => {
-  return dataStore.state.albums?.filter(item => item.status === 'Jarayonda').length || 0;
+  // return dataStore.state.albums.items?.filter(item => item.status === 'Jarayonda').length || 0;
 })
 
 const albumCompleted = computed(() => {
-  return dataStore.state.albums?.filter(
-      item => item.status === 'Bajarilgan'
-  ).length || 0
+  // return dataStore.state.albums.items?.filter(
+  //     item => item.status === 'Bajarilgan'
+  // ).length || 0
 })
 const allVignetteCount = computed(() => {
-  return dataStore.state.vignette?.length || 0
+  // return dataStore.state.vignettes?.length || 0
 })
 
 const vignettePending = computed(() => {
-  return dataStore.state.vignette?.filter(item => item.status === 'Jarayonda').length || 0
+  // return dataStore.state.vignettes?.filter(item => item.status === 'Jarayonda').length || 0
 })
 const vignetteCompleted = computed(() => {
-  return dataStore.state.vignette?.filter(item => item.status === 'Bajarilgan').length || 0
+  // return dataStore.state.vignettes?.filter(item => item.status === 'Bajarilgan').length || 0
 })
 
 const photoCount = computed(() => {
-  return dataStore.state.pictures?.length || 0
+  // return dataStore.state.pictures?.length || 0
 })
 
 const photoPending = computed(() => {
-  return dataStore.state.pictures?.filter(item => item.status === 'Jarayonda').length || 0
+  // return dataStore.state.pictures?.filter(item => item.status === 'Jarayonda').length || 0
 })
 
 const photoCompleted = computed(() => {
-  return dataStore.state.pictures?.filter(item => item.status === 'Bajarilgan').length || 0
+  // return dataStore.state.pictures?.filter(item => item.status === 'Bajarilgan').length || 0
 })
 
-const allUsers = computed(() => dataStore.state.users?.length || 0)
+// const allUsers = computed(() => dataStore.state.users?.length || 0)
 const allMaterialCount = computed(() => dataStore.state.items?.length || 0)
 const albumCategories = computed(() => dataStore.state.alCategory?.length || 0)
 const vignetteCategories = computed(() => dataStore.state.vignetteCategory?.length || 0)
@@ -299,7 +310,7 @@ const getAlbums = ref([
   },
   { id: 4,
     name: 'Xodimlar',
-    itemCount: allUsers.value,
+    itemCount: '0',
     icon: 'fa-solid fa-users',
     onclick: () => clickOpenPage('/employee')
   },
@@ -461,6 +472,7 @@ const formatDate = (dateString?: string | null): string => {
 };
 
 onMounted(async (): Promise<void> => {
+  await getAlDashboardCounts()
   // await getCategory();
 })
 </script>

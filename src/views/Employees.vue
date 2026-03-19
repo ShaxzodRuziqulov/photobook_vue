@@ -21,48 +21,44 @@
     <CDialog
         :show="visibleShow"
         @close="visibleShow = false"
-        bodyClass="!bg-bg-primary px-6 py-4 mt-20 overflow-hidden"
+        bodyClass="!bg-bg-primary mt-20 overflow-hidden"
     >
       <form
-          class="flex flex-col gap-2 overflow-y-auto max-h-[75vh]"
+          class="flex flex-col gap-2 overflow-y-auto px-6 py-4 max-h-[75vh]"
           @submit.prevent="submitForm"
       >
         <h2 class=" text-2xl font-semibold">
           {{isEditing ? "Xodim ma'lumotlarini uzgartirish" : "Xodim qo'shish"}}
         </h2>
-        <AppInput label="F.I.O"
+        <AppInput label="Ism"
                   type="text"
-                  placeholder="Ism kiritng"
-                  v-model="form.fullName"
+                  placeholder="Ism kiriting"
+                  v-model="form.lastName"
+        />
+        <AppInput label="Familiya"
+                  type="text"
+                  placeholder="Familiya kiriting"
+                  v-model="form.firstName"
+        />
+        <AppInput label="User nomi"
+                  type="text"
+                  placeholder="user kiriting"
+                  v-model="form.username"
         />
         <AppInput label="Kasbi"
                   type="text"
                   placeholder="Kasbni kiriting"
                   v-model="form.profession"
         />
-        <AppInput label="Login"
-                  type="text"
-                  placeholder="Loginni kiriting"
-                  v-model="form.isLogin"
-        />
         <AppInput label="Password"
-                  type="number"
+                  type="text"
                   placeholder="123..."
-                  v-model="form.isPassword"
+                  v-model="form.password"
         />
         <AppInput label="Phone number"
-                  type="number"
+                  type="text"
                   placeholder="+998 -"
-                  v-model="form.phoneNumber"
-        />
-        <AppSelect
-            v-model="form.roles"
-            label="Role"
-            :options="userRoles"
-            disabledValue="Tanlang"
-            text-field="text"
-            value-field="value"
-            is-multiple
+                  v-model="form.phone"
         />
 <!--        <AppInput-->
 <!--            label="Payment method"-->
@@ -74,12 +70,12 @@
 <!--                  type="date"-->
 <!--                  v-model="form.date"-->
 <!--        />-->
-<!--        <AppInput-->
-<!--            label="Receipt image"-->
-<!--            type="file"-->
-<!--            accept="image/*"-->
-<!--            @change="changeFile($event)"-->
-<!--        />-->
+        <AppInput
+            label="Receipt image"
+            type="file"
+            accept="image/*"
+            @change="changeFile($event)"
+        />
 <!--        <AppSelect-->
 <!--            :options="allItems"-->
 <!--            label="All Items"-->
@@ -88,11 +84,11 @@
 <!--            disabled-value="Select item"-->
 <!--            v-model="form.itemId"-->
 <!--        />-->
-<!--        <AppInput label="Description"-->
-<!--                  type="textarea"-->
-<!--                  placeholder="Enter Description"-->
-<!--                  v-model="form.description"-->
-<!--        />-->
+        <AppInput label="Bio"
+                  type="textarea"
+                  placeholder="Enter Description"
+                  v-model="form.bio"
+        />
         <div class="flex justify-end gap-4 items-center">
           <CButton
               type="button"
@@ -109,6 +105,45 @@
       </form>
     </CDialog>
     <CDialog
+        :show="selectedRole"
+        @close="selectedRole = false"
+        body-class="justify-center bg-blue-800 text-center px-4 pb-8"
+    >
+      <div
+          class="shadow-xl rounded-2xl p-6 text-gray-800 max-w-2xl mx-auto transition-colors"
+      >
+        <form
+            @submit.prevent="saveRole"
+            class="w-full"
+        >
+          <p class=" transition-all duration-200 font-semibold">
+            {{ selectedUsers?.lastName }} {{ selectedUsers?.firstName }}
+          </p>
+          <AppSelect
+              v-model="selectedRoles"
+              :options="roles"
+              disabledValue="Role tanlang"
+              text-field="name"
+              value-field="id"
+              isMultiple
+          />
+          <div class="flex mt-4 gap-2 items-center justify-end">
+            <CButton
+                type="button"
+                text="Cancel"
+                variant="ghost-accent"
+                @click="selectedRole = false"
+            />
+            <CButton
+                type="submit"
+                text="Saqlash"
+                variant="primary"
+            />
+          </div>
+        </form>
+      </div>
+    </CDialog>
+    <CDialog
         :show="showModal"
         @close="showModal = false"
         body-class="justify-center bg-blue-800 text-center px-4 pb-8"
@@ -123,28 +158,48 @@
         class="animate-fade-in gap-5 flex-col w-full bg-white p-6 rounded-xl h-full"
     >
       <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-           v-if="allUsers.length"
+           v-if="allUsers.items.length > 0"
       >
         <div
             class="flex flex-col rounded-xl p-4 shadow-md gap-4 bg-gradient-to-br from-blue-50 to-purple-50"
-            v-for="(user, index) in allUsers"
+            v-for="(user, index) in allUsers.items"
             :key="index"
         >
           <div class="flex items-center gap-2 justify-between">
             <div class="flex items-center gap-4">
             <span
-                class="font-semibold text-xl w-12 h-12 p-4 flex items-center justify-center rounded-full text-white bg-blue-800"
+                class="font-semibold text-xl p-4 flex items-center justify-center rounded-full "
             >
-              {{getInitials(user.fullName)}}
+              <span
+                  v-if="user.avatarUrl"
+                  class="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+                <img
+                    :src="user.avatarUrl"
+                    class="w-full h-full object-cover"
+                    alt=""
+                />
+              </span>
+              <span v-else
+                    class="font-semibold text-xl bg-cover w-12 h-12 p-4 flex items-center justify-center rounded-full bg-blue-800 text-white"
+              >
+                  {{ user.firstName?.charAt(0)?.toUpperCase() || 'X' }}{{ user.lastName?.charAt(0)?.toUpperCase() || '' }}
+              </span>
             </span>
               <div
                   class="flex flex-col"
               >
-                <span class="font-semibold break-all">{{user.fullName}}</span>
+                <span class="font-semibold">{{user.firstName}}</span>
+                <span class="font-semibold">{{user.lastName}}</span>
                 <span class="text-sm text-gray-600 break-all">{{user.profession}}</span>
               </div>
             </div>
             <div class="flex items-center gap-2">
+              <CButton
+                  type="button"
+                  text="Role"
+                  variant="ghost-accent"
+                  @click="changeRole(user)"
+              />
               <CButton
                   is-has-fa-icon
                   fa-class="fas fa-pencil"
@@ -167,29 +222,26 @@
               class="flex items-end gap-2 justify-between"
           >
             <div class="flex flex-col items-start text-md font-semibold">
-              <div>Login: <span class="text-gray-600">{{user.isLogin}}</span></div>
-              <div>Parol: <span class="text-gray-600">{{user.isPassword}}</span></div>
+              <span>User:  {{user.username}}</span>
+              <div>Parol: <span class="text-gray-600">{{user.password}}</span></div>
               <div
-                  class="flex gap-1"
+                  class="flex flex-col gap-1"
               >
-                Role:
                 <div class="flex items-center gap-2">
+                  Role:
                   <div class="text-gray-600 flex flex-col w-full gap-2"
                        v-for="(role, index) in user.roles"
                        :key="index"
                   >
-                    {{role}}
+                    {{role.name}}
                   </div>
                 </div>
-              </div>
-            </div>
-            <div
-                class="flex flex-col items-start text-md font-semibold"
-            >
-              <div class="flex">
+                <div class="flex">
+                 Ega: {{user.bio}}
+                </div>
+                <span><i class="fas fa-phone text-blue-600"></i> Tel: {{user.phone}}</span>
 
               </div>
-              <span><i class="fas fa-phone text-blue-600"></i> Tel: {{user.phoneNumber}}</span>
             </div>
           </div>
         </div>
@@ -201,58 +253,11 @@
         Xodim topilmadi!
       </div>
     </div>
-<!--      allUsers-->
-
-
-<!--      <div class="grid grid-cols-3 gap-6 p-4">-->
-<!--        <div-->
-<!--            class="flex flex-col rounded-xl p-4 gap-2 border border-gray-300 bg-white"-->
-<!--            v-for="(item, index) in allExpenses"-->
-<!--            :key="index"-->
-<!--        >-->
-<!--          <h2>Product card</h2>-->
-<!--          <img-->
-<!--              :src="getAvatarUrl(item.receipt_image)"-->
-<!--              alt=""-->
-<!--              class="object-cover p-1 flex rounded-xl w-full h-20">-->
-<!--          <span>Item name: {{item.name}}</span>-->
-<!--          <span>Item price: {{item.price}}</span>-->
-<!--          <span>Payment method: {{item.paymentMethod}}</span>-->
-<!--          <span>Data: {{getDate(item.date)}}</span>-->
-<!--          <span>Item: {{getItemName(item.itemId)}}</span>-->
-<!--          <span>Description: {{item.description}}</span>-->
-<!--          <div class="flex justify-center items-center gap-2">-->
-<!--            <CButton-->
-<!--            type="button"-->
-<!--            text="Edit"-->
-<!--            variant="ghost-accent"-->
-<!--            @click="editItem(item._id)"-->
-<!--            />-->
-<!--            <CButton-->
-<!--                type="button"-->
-<!--                text="Delete"-->
-<!--                @click="deleteItem(item._id)"-->
-<!--            />-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-
-<!--      bu rangli input-->
-<!--      <div class="flex w-[800px] flex-col bg-white gap-5 p-6">-->
-<!--        <span>This is a picture of a horse</span>-->
-<!--        <input type="range" min="0" max="1" step="0.1" v-model="changeColor">-->
-<!--        {{changeColor}}-->
-<!--        <div id="imageItem">-->
-<!--          <div :style="{ backgroundColor: `rgba(99, 0, 89, ${changeColor})` }">-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      -->
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ref, onMounted} from "vue";
+import {computed, ref, onMounted, ComputedRef, Ref} from "vue";
 import AppInput from "@/components/ui/AppInput.vue";
 import CButton from "@/components/CButton.vue";
 import CDialog from "@/components/CDialog.vue";
@@ -261,95 +266,105 @@ import {Role, UserForm} from "@/typeModules/useModules";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
 import { useRouter } from "vue-router";
+import axiosInstance from "@/axios";
+import {authService} from "@/service/authService";
+import {useToast} from "vue-toastification";
 
+const Toast = useToast();
 const router = useRouter();
 const store = useStore();
+const loadStore = authService()
 
 const visibleShow = ref(false);
 const isLoading = ref(false);
 const showModal = ref(false);
-const selectedUser = ref('');
-const role = ref<Role[]>([])
-// const selectedFile = ref<File | null>(null);
+const selectedUser = ref<string | null>(null);
+const selectedUsers = ref<UserForm | null>(null);
+const selectedUserRoleId = ref<string | null>(null);
+const selectedRoles: Ref = ref<string[]>([]);
+const selectedRole = ref(false)
+const roles = ref<Role[]>([]);
+const selectedFile = ref<File | null>(null);
 const isEditing = ref(false);
-// const avatarPreview = ref<string>("");
+const avatarPreview = ref<string>("");
 
-const allUsers = computed(() => store.state.users);
-// const allItems = computed(() => store.state.items);
+const allUsers: ComputedRef = computed(() => store.state.user);
 
 const form = ref<UserForm>({
   id: '',
-  fullName: '',
+  firstName: '',
+  lastName: '',
+  username: '',
   profession: '',
-  isLogin: '',
-  isPassword: '',
-  roles: [],
-  phoneNumber: null,
-  createdAt: null,
-  updatedAt: null,
+  password: '',
+  avatarUrl: '',
+  phone: null,
+  bio: '',
+  isActive: true,
+  uploadId: '',
+  roles: []
 });
 
 const clickVisibleForm = () => {
   visibleShow.value = true;
   form.value = {
     id: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     profession: '',
-    isLogin: '',
-    isPassword: '',
-    roles: [],
-    phoneNumber: null,
-    createdAt: null,
-    updatedAt: null,
+    password: '',
+    avatarUrl: '',
+    phone: null,
+    bio: '',
+    isActive: true,
+    uploadId: '',
+    roles: []
   }
 }
-
-const userRoles = ref([
-  { id: 0, value: 'USER', text: 'USER' },
-  { id: 1, value: 'ADMIN', text: 'ADMIN' },
-])
-
-const getInitials = (fullName?: string) => {
-  if (!fullName) return ''
-
-  return fullName
-      .trim()
-      .split(' ')
-      .filter(Boolean)
-      .map(word => word.charAt(0).toUpperCase())
-      .slice(0, 2)
-      .join('')
-}
-
 
 // const getItemName = (itemId: string) => {
 //   const item = allItems.value.find(item => item._id === itemId);
 //   return item?.name || 'Unknown';
 // };
 
-// const changeFile = (event: Event) => {
-//   const fileInput = event.target as HTMLInputElement;
-//
-//   if (!fileInput.files?.length) return;
-//
-//   selectedFile.value = fileInput.files[0];
-//   avatarPreview.value = URL.createObjectURL(selectedFile.value);
-// };
+const changeFile = (event: Event) => {
+  const fileInput = event.target as HTMLInputElement;
 
-// const getAvatarUrl = (path: string | null | undefined) => {
-//   if (!path) return "";
-  // return path.startsWith("https")
-  //     ? path
-  //     : `${import.meta.env.VITE_BASE_API}${path}`;
-// };
+  if (!fileInput.files?.length) return;
+
+  selectedFile.value = fileInput.files[0];
+  avatarPreview.value = URL.createObjectURL(selectedFile.value);
+};
+
+const uploadAvatar = async () => {
+  if (!selectedFile.value) return null
+
+  const formData = new FormData()
+  formData.append("file", selectedFile.value)
+
+  const { data } = await axiosInstance.post("/api/v1/uploads", formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+  )
+
+  return data.url
+}
+
+
 
 const submitForm = async () => {
 
-  if (!form.value.fullName || !form.value.profession || !form.value.phoneNumber || !form.value.isLogin || !form.value.isPassword || !form.value.roles) {
-    return alert("Iltimos formani to'ldiring!");
-  }
   isLoading.value = true;
   try {
+    const uploadUrl = await uploadAvatar();
+
+    if (uploadUrl) {
+      form.value.avatarUrl = uploadUrl
+    }
     if (isEditing.value) {
       await store.updateUser(form.value.id, form.value);
     } else {
@@ -359,23 +374,60 @@ const submitForm = async () => {
     visibleShow.value = false;
     isEditing.value = false;
 
-    await store.loadGetUsers()
+    await store.loadUsers()
     form.value = {
       id: '',
-      fullName: '',
+      firstName: '',
+      lastName: '',
+      username: '',
       profession: '',
-      isLogin: '',
-      isPassword: '',
-      roles: [],
-      phoneNumber: null,
-      createdAt: null,
-      updatedAt: null,
+      password: '',
+      avatarUrl: '',
+      phone: null,
+      bio: '',
+      isActive: false,
+      uploadId: '',
+      roles: []
     }
     isLoading.value = false;
   } catch (error) {
     console.log(error);
   }
 };
+
+
+const saveRole = async () => {
+  if (!selectedRoles.value.length || !selectedUserRoleId.value) return;
+
+  try {
+
+    await loadStore.loadChangeRole(
+        selectedUserRoleId.value,
+        selectedRoles.value
+    )
+
+    Toast.success("Role yangilandi")
+    selectedRole.value = false
+    selectedRoles.value = []
+    await store.loadUsers()
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const changeRole = async (user: UserForm) => {
+  selectedUserRoleId.value = user.id
+  selectedUsers.value = user
+
+  selectedRoles.value = user.roles?.map(role => String(role.id)) || [];
+
+  if (!roles.value.length) {
+    await loadStore.loadRole()
+  }
+
+  selectedRole.value = true
+}
 
 const editItem = (user: UserForm) => {
   form.value = { ...user };
@@ -384,9 +436,13 @@ const editItem = (user: UserForm) => {
 };
 
 const confirmDelete = async () => {
+  if (!selectedUser.value) return;
+
   try {
     await store.deleteUser(selectedUser.value);
-    await store.loadGetUsers()
+    showModal.value = false;
+    console.log('User delete',selectedUser.value);
+    selectedUser.value = null
   } catch (error) {
     console.log(error);
   }
@@ -415,21 +471,35 @@ const closeForm = () => {
   visibleShow.value = false;
   form.value = {
     id: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     profession: '',
-    isLogin: '',
-    isPassword: '',
-    roles: [],
-    phoneNumber: null,
-    createdAt: null,
-    updatedAt: null,
+    password: '',
+    avatarUrl: '',
+    phone: null,
+    bio: '',
+    isActive: false,
+    uploadId: '',
+    roles: []
   }
 };
+
+const loadRole = async () => {
+  try {
+    const res = await loadStore.loadRole()
+    roles.value = res.data
+  }
+  catch (error) {
+    console.log(error);
+  }
+}
 
 onMounted(async () => {
   isLoading.value = true;
   try {
-    await store.loadGetUsers();
+    await store.loadUsers();
+    await loadRole()
     isLoading.value = false;
   }
   catch (error) {

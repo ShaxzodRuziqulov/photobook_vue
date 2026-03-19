@@ -1,14 +1,18 @@
+import {Role} from "@/typeModules/useModules";
+
 export interface IUser {
     id: string;
-    name: string;
-    email: string;
-    roles: string;
-    avatar: string;
+    firstName: string;
+    lastName: string;
+    profession: string;
+    username: string;
+    password: string;
+    avatarUrl: string;
+    phone: string | null;
     bio: string;
     isActive: boolean;
-    phone: string;
-    address: string;
-    createdAt: string | null;
+    uploadId: string;
+    roles: Role[];
 }
 // id: number;
 // firstName: string;

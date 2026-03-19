@@ -1,12 +1,12 @@
 <template>
-<div class="flex flex-col w-full overflow-hidden min-h-screen">
+<div class="flex flex-col font-sans w-full overflow-hidden min-h-screen">
   <Header
       :routes="menuItems"
       :isMenuOpen="isMenuVisible"
       @toggleMenu="toggleMenu"
       class="fixed z-50"
   />
-  <div class="flex flex-col mt-20 w-full flex-1 relative bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
+  <div class="flex flex-col mt-20 w-full flex-1 relative bg-gray-50">
     <Sidebar
         :isMenuVisible="isMenuVisible"
         @toggleMenu="toggleMenu"

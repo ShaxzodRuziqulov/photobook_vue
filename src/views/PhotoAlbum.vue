@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col container m-auto gap-2 p-4 min-h-screen w-full">
-    <div class="flex flex-col sm:flex-row gap-4 items-center bg-white rounded-xl py-3 px-4 justify-between w-full">
+    <div class="flex flex-col sm:flex-row gap-4 items-center bg-white shadow rounded-xl py-3 px-4 justify-between w-full">
       <div class="flex items-center gap-4">
         <i class="fa-solid fa-images text-5xl text-blue-800"></i>
         <div>
@@ -16,18 +16,19 @@
       />
     </div>
     <div
-        class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-100 rounded-xl p-2 justify-between"
+        v-if="photoCategory.length > 0"
+        class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-200 rounded-xl p-2 justify-between"
     >
       <div
           class="flex flex-col gap-4 bg-white rounded-xl py-2 px-4 justify-between"
-          v-for="(cat, index) in categoryType"
+          v-for="(cat, index) in photoCategory"
           :key="index"
       >
         <div
             class="flex w-full flex-col border-b gap-1 border-gray-200"
         >
-          <h2 class="text-sm uppercase font-semibold">{{cat.text}}</h2>
-          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.item}}</span></span>
+          <h2 class="text-sm uppercase font-semibold">{{cat.name}}</h2>
+          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.defaultPages}}</span></span>
         </div>
         <div
             class="flex gap-4 items-center justify-between"
@@ -37,7 +38,7 @@
               <span class="text-gray-600 text-sm">Jami</span>
               <div class="flex text-md items-center gap-2">
                 <span class="text-blue-600">
-                {{getCategoryCount(cat.value)}}
+                {{getCategoryCount(cat)}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -48,7 +49,7 @@
               <span class="text-gray-600 text-sm">Bajarilgan</span>
               <div class="flex text-md items-center gap-2">
                 <span class="text-blue-600">
-                {{getCount(cat.value)}}
+                {{getCount(cat)}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -59,7 +60,7 @@
               <span class="text-gray-600 text-sm">Qoldi</span>
               <div class="flex text-md items-center gap-2">
                 <span class="text-blue-600">
-                {{getRemaining(cat.value)}}
+                {{getRemaining(cat)}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -130,8 +131,8 @@
             </button>
           </div>
           <AppSelect
-              v-model="itemForm.categoryName"
-              :options="categoryType"
+              v-model="itemForm.categoryId"
+              :options="photoCategory"
               disabledValue="Tanlang"
               text-field="text"
               value-field="value"
@@ -144,22 +145,15 @@
                 step="2"
                 class="w-full"
                 placeholder="2,4,6,10,...,"
-                v-model="itemForm.pageNumber"
+                v-model="itemForm.pageCount"
             />
             <AppInput
                 type="number"
                 class="w-full"
                 placeholder="Masalan: 10"
                 label="Buyurtma soni"
-                v-model="itemForm.amountNumber"
+                v-model="itemForm.amount"
             />
-            <AppInput
-              type="number"
-              class="w-full"
-              placeholder="Masalan: 10"
-              label="Bajarish soni"
-              v-model="itemForm.processedCount"
-          />
           </div>
           <div class="flex items-center justify-between w-full gap-2">
             <AppInput
@@ -185,28 +179,32 @@
                label="Mijoz ismi"
                class="w-full"
            />
-           <AppInput
+           <AppSelect
+               :options="oderReceiver"
                v-model="itemForm.receiverName"
-               placeholder="Ism kiriting"
-               type="text"
-               class="w-full"
+               disabledValue="Tanlang"
+               text-field="text"
+               value-field="value"
                label="Qabul qiluvchi"
            />
          </div>
           <AppSelect
-              v-model="selectedEmployeeNames"
-              :options="allUsers"
+              :model-value="itemForm.employees"
+              @update:modelValue="handleEmployeeChange"
+              :options="orderedUsers"
               disabledValue="Xodimni tanlang"
-              text-field="name"
+              text-field="lastName"
               value-field="name"
               isMultiple
+              @click.stop
+              required
               label="Mas'ul xodim"
           />
           <div
               class="flex items-center w-full gap-2"
           >
             <AppInput
-                v-model="itemForm.createdData"
+                v-model="itemForm.acceptedDate"
                 label="Qabul qilingan sana"
                 type="date"
                 class="w-full"
@@ -215,7 +213,7 @@
                 label="Tugash sanasi"
                 type="date"
                 class="w-full"
-                v-model="itemForm.termData"
+                v-model="itemForm.deadline"
             />
           </div>
           <AppSelect
@@ -364,52 +362,53 @@
           <td class="p-2">{{ album.receiverName }}</td>
           <td class="px-1">
             <div
-                v-if="album.employees"
                 v-for="emp in album.employees"
-                :key="emp.id"
-                class="flex text-sm items-center border-b border-gray-300 gap-2 pb-0.5"
+                :key="emp.employeeId"
+                class="flex text-sm gap-1 items-center border-b border-gray-300 pb-0.5"
             >
-              <i
-                  v-if="emp.status === 'COMPLETED'"
-                  class="fa-solid fa-circle-check text-green-600"
-              />
-              <i
-                  v-else-if="emp.status === 'IN_PROGRESS'"
-                  class="fa-solid fa-play text-blue-600"
-              />
-              <i
-                  v-else
-                  class="fa-regular fa-circle text-gray-400"
-              />
-              <span>{{ emp.name }}</span>
+              <div class="w-3/4 gap-1 flex items-center">
+                <i
+                    v-if="(emp.processedCount ?? 0) === album.amount"
+                    class="fa-solid fa-circle-check text-green-600"
+                />
+                <i
+                    v-else-if="(emp.processedCount ?? 0) > 0"
+                    class="fa-solid fa-play text-blue-600"
+                />
+                <i
+                    v-else
+                    class="fa-regular fa-circle text-gray-400"
+                />
+                <span class="flex p-1">{{ emp.employeeName }}</span>
+              </div>
+              <span>{{emp.processedCount}} ta</span>
             </div>
           </td>
           <td class="py-2 px-3">
-            <div>
-              <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+            <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
                 <span
-                    v-if="album.processedCount && album.amountNumber"
-                    class="block h-full bg-blue-600 transition-all duration-300"
+                    v-if="getProcessedCount(album) && album.amount"
+                    class="block h-full transition-all duration-500 ease-out"
+                    :class="getProgressColor(album)"
                     :style="{
-                    width: ((album.processedCount) / album.amountNumber * 100) + '%'
+                    width: getProgressPercent(album) + '%'
                   }"
                 ></span>
-              </div>
-              <div class="text-sm mt-1 flex px-1 items-center justify-between text-gray-600">
-                <span>{{ album.processedCount || 0 }} / {{ album.amountNumber }}</span>
-                <span>{{album.pageNumber || 0}}-Bet</span>
-              </div>
+            </div>
+            <div class="text-sm mt-1 flex px-1 items-center justify-between text-gray-600">
+              <span>{{ getProcessedCount(album) || 0 }} / {{ album.amount }}</span>
+              <span>{{album.pageCount || 0}}-Bet</span>
             </div>
           </td>
-          <td class="py-2 px-1">{{ formatDate(album.createdData) }}</td>
-          <td class="p-2 ">{{ formatDate(album.termData) }}</td>
+          <td class="py-2 px-1">{{ formatDate(album.acceptedDate) }}</td>
+          <td class="p-2 ">{{ formatDate(album.deadline) }}</td>
           <td class="p-2 "
           >
             <span
                 :class="[statusColor[album.status],
                   'rounded-xl px-3 py-1 font-semibold text-sm',
                 ]">
-              {{ album.status }}
+              {{ statusLabel[album.status] }}
             </span>
           </td>
           <td class="p-2 ">
@@ -451,12 +450,12 @@
 
 <script setup lang="ts">
 import CButton from "@/components/CButton.vue";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, ComputedRef, onMounted, ref, watch} from "vue";
 import CDialog from "@/components/CDialog.vue";
 import AppInput from "@/components/ui/AppInput.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
 import {useStore} from "@/stores/store";
-import { IPicture } from "@/typeModules/useModules";
+import {Order, OrderCreateDto} from "@/typeModules/useModules";
 import { useToast } from "vue-toastification";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
 import FileUpload from "primevue/fileupload";
@@ -467,7 +466,41 @@ const route = useRoute();
 const Toast = useToast();
 const dataStore = useStore();
 
-// const allUsers: ComputedRef = computed(() => dataStore.state.users);
+const allUsers: ComputedRef = computed(() => dataStore.state.user.items);
+const photoCategory: ComputedRef = computed(() => dataStore.state.photoCategory);
+
+const orderedUsers = computed(() => {
+  const selected = itemForm.value.employees
+
+  return [...allUsers.value].sort((a, b) => {
+    const aIndex = selected.indexOf(a.id)
+    const bIndex = selected.indexOf(b.id)
+
+    if (aIndex === -1 && bIndex === -1) return 0
+    if (aIndex === -1) return 1
+    if (bIndex === -1) return -1
+
+    return aIndex - bIndex
+  })
+})
+
+const handleEmployeeChange = (newValues: string[]) => {
+  const oldValues = itemForm.value.employees || []
+
+  // yangi qo‘shilganlarni topamiz
+  const added = newValues.filter(id => !oldValues.includes(id))
+
+  // o‘chirilganlarni topamiz
+  const removed = oldValues.filter(id => !newValues.includes(id))
+
+  // eski tartibni saqlaymiz
+  let result = oldValues.filter(id => !removed.includes(id))
+
+  // yangi tanlanganlarni oxiriga qo‘shamiz
+  result = [...result, ...added]
+
+  itemForm.value.employees = result
+}
 
 const isEditing = ref(false);
 const isVisible = ref(false);
@@ -478,7 +511,6 @@ const formData = ref<string | null>(null);
 const endData = ref<string | null>(null);
 const formFilter = ref<string | ''>('');
 const previewImage = ref<string | null>(null)
-const selectedEmployeeNames = ref<string[]>([]);
 
 const openPreview = (url: string) => {
   previewImage.value = url;
@@ -521,59 +553,68 @@ watch(
 )
 
 const filteredPictures = computed(() => {
-  let data = dataStore.state.pictures
+  let data = [...dataStore.state.pictures.items]
 
   if (formFilter.value) {
     const search = formFilter.value.toLowerCase()
 
     data = data.filter(item =>
         item.orderName?.toLowerCase().includes(search) ||
-        item.itemType?.toLowerCase().includes(search) ||
         item.categoryName?.toLowerCase().includes(search) ||
         item.customerName?.toLowerCase().includes(search) ||
-        item.amountNumber?.toFixed().includes(search) ||
-        item.pageNumber?.toFixed().includes(search) ||
         item.receiverName?.toLowerCase().includes(search)
     )
   }
-
-  // return [...data].sort((a: any, b: any) => new Date(b.createdData).getMilliseconds() - new Date(a.createdData).getMilliseconds());
-  return [...data].sort((a, b) => {
-    const dateA =  new Date(a.createdData).getMilliseconds();
-    const dateB =  new Date(b.createdData).getMilliseconds();
-    return dateB - dateA  // oxirgi qo'shilgan birinchi
-  })
+  return data.sort((a,b) =>
+      new Date(b.acceptedDate).getTime() -
+      new Date(a.acceptedDate).getTime()
+  )
 })
 
-const allUsers = ref([
-  {id: 1, name: 'Ali Usmonov', status: 'PENDING'},
-  {id: 2, name: 'Elyor Usmonov', status: 'PENDING'},
-  {id: 3, name: 'Akbar Salimov', status: 'PENDING'},
-  {id: 4, name: 'Murod Xalilov', status: 'PENDING'},
-  {id: 5, name: 'Samandar Kamolov', status: 'PENDING'},
-])
+const getProcessedCount = (album: any) => {
+  if (!album?.employees?.length) return 0
 
-const itemForm = ref<IPicture>({
-  id: '',
-  categoryName: '',
-  orderName: '',
-  itemType: '',
-  processedCount: null,
-  pageNumber: null,
-  amountNumber: null,
-  customerName: '',
-  receiverName: '',
-  employeeId: [],
+  const lastEmployee = album.employees[album.employees.length - 1]
+  return lastEmployee?.processedCount || 0
+}
+
+const getProgressPercent = (album: any) => {
+  if (!album?.amount) return 0
+  return (getProcessedCount(album) / album.amount) * 100
+}
+
+const getProgressColor = (album: any) => {
+  const percent = getProgressPercent(album)
+
+  if (percent < 30) return 'bg-red-500'
+  if (percent < 70) return 'bg-yellow-500'
+  return 'bg-green-600'
+}
+
+
+type OrderForm = Omit<OrderCreateDto, "employees"> & {
+  employees: string[]
+}
+
+const itemForm = ref<OrderForm>({
+  kind: 'PICTURE',
+  categoryId: "",
+  categoryName: "",
+  orderName: "",
+  itemType: "",
+  customerId: "",
+  customerName: "",
+  receiverName: "",
   employees: [],
-  termData: null,
-  status: '',
-  imageUrl: '',
-  // doneData: null,
-  createdData: '',
-  createdAt: null,
-  updatedAt: null,
+  pageCount: null,
+  amount: null,
+  acceptedDate: "",
+  deadline: "",
+  status: "",
+  imageUrl: "",
+  notes: "",
+  uploadId: ""
 })
-
 // const changeFilter = (type: 'search' | 'status', value: string ) => {
 //   if (type === 'search') {
 //     formFilter.value = value
@@ -583,55 +624,30 @@ const itemForm = ref<IPicture>({
 //   dataStore.loadGetAlbum()
 // }
 
-onMounted(() => {
-  if (route.query.status) {
-    formStatus.value = route.query.status as string;
-  }
-})
+watch([formStatus, formData, endData],
+    async () => {
 
-const filters = computed(() => ({
-  status: formStatus.value,
-  from: formData.value,
-  to: endData.value
-}))
+      await dataStore.loadOrders("PICTURE",{
+        status: formStatus.value || undefined,
+        from: formData.value || undefined,
+        to: endData.value || undefined,
+        search: formFilter.value || undefined
+      })
 
-watch(
-    filters,
-    async (newFilters) => {
-      dataStore.state.pictures = await dataStore.loadCollection<IPicture>(
-          "pictures",
-          newFilters
-      )
-    },
-    { deep: true }
+    }
 )
-
-watch( () => formFilter.value, async (newStatus) => {
-  await dataStore.loadCollection(newStatus);
-})
 
 const closeFilter = () => {
   formStatus.value = '';
   formFilter.value = '';
   formData.value = '';
   endData.value = '';
-  dataStore.loadGetAlbum();
+  dataStore.loadOrders('PICTURE');
 }
-
-const categoryType = [
-  { id: 1, value: 'Bolshoy (katta)', text: 'Bolshoy (katta)', item: '10, 12, 14, 16, 18, 20, 30, 40'},
-  { id: 2, value: 'Kvadrat', text: 'Kvadrat', item: '10, 12, 14, 16, 18, 20, 30, 40'},
-  { id: 3, value: "Sredniy", text: "Sredniy", item: '10, 12, 14, 16, 18, 20, 30, 40' },
-  { id: 4, value: 'Kichik Albom', text: 'Kichik Albom', item: '6, 8, 10, 12, 14, 16, 18, 20'},
-  { id: 5, value: 'Kichik Kitob (knijniy)', text: 'Kichik Kitob (knijniy)', item: '6, 8, 10, 12, 14, 16, 18, 20' },
-  { id: 6, value: 'Ikki tomonlama', text: 'Ikki tomonlama', item: '6, 8, 10, 12, 14, 16' },
-  { id: 7, value: 'Vinetka', text: 'Vinetka', item: '6, 8, 10, 12, 14, 16' },
-  { id: 8, value: 'Mini', text: 'Mini', item: '6, 8, 10, 12, 14, 16' },
-]
 
 const pageProcessed = computed(() => {
   return filteredPictures.value.reduce(
-      (sum, item) => sum + (item.amountNumber || 0),
+      (sum, item) => sum + (item.amount || 0),
       0
   )
 })
@@ -639,107 +655,130 @@ const pageProcessed = computed(() => {
 const getCategoryCount = (value: string) => {
   return filteredPictures.value
       .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (item.amountNumber || 0), 0)
+      .reduce((total, item) => total + (item.amount || 0), 0)
 }
 
 const getCount = (value: string) => {
   return filteredPictures.value
       .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (item.processedCount || 0), 0)
+      .reduce((total, item) => total + (getProcessedCount(item) || 0), 0)
 }
 
 const getRemaining = (value: string) => {
   return filteredPictures.value
       .filter(item => item.categoryName === value)
       .reduce((total, item) => {
-        const totalNum = item.amountNumber || 0
-        const processed = item.processedCount || 0
+        const totalNum = item.amount || 0
+        const processed = getProcessedCount(item) || 0
         return total + (totalNum - processed)
       }, 0)
 }
 
-// "PENDING" | "IN_PROGRESS" | "COMPLETED"
-
 const itemStatus = ref( [
-  { value: 'Kutilmoqda', text: 'Kutilmoqda' },
-  { value: 'Jarayonda', text: 'Jarayonda' },
-  { value: 'Bajarilgan', text: 'Bajarilgan' },
+  { value: 'PENDING', text: 'Kutilmoqda' },
+  { value: 'IN_PROGRESS', text: 'Jarayonda' },
+  { value: 'COMPLETED', text: 'Bajarilgan' },
+])
+
+const statusColor: Record<string, string> = {
+  PENDING: 'bg-yellow-100 text-yellow-700',
+  IN_PROGRESS: 'bg-green-100 text-green-700',
+  COMPLETED: 'bg-blue-100 text-blue-700',
+}
+
+const statusLabel: Record<string, string> = {
+  PENDING:     "Kutilmoqda",
+  IN_PROGRESS: "Jarayonda",
+  COMPLETED:   "Bajarilgan",
+}
+
+const oderReceiver = ref([
+  {value: "ADMIN", text: "ADMIN" },
+  {value: "MENEGER", text: "MENEGER" },
 ])
 
 const visibleForm = () => {
   isVisible.value = true;
   resetForm()
-};
 
+};
 const closeForm = () => {
   isVisible.value = false;
-}
-// "PENDING" | "IN_PROGRESS" | "COMPLETED"
-
-const statusColor: Record<string, string> = {
-  Kutilmoqda: 'bg-yellow-100 text-yellow-700',
-  Jarayonda: 'bg-green-100 text-green-700',
-  Bajarilgan: 'bg-blue-100 text-blue-700',
 }
 
 const isValidForm = () => {
   const f = itemForm.value;
   return (
-      f.amountNumber !== null &&
-      f.pageNumber !== null &&
+      f.amount !== null &&
+      f.pageCount !== null &&
       f.receiverName !== null &&
-      f.categoryName !== null &&
+      f.categoryId !== null &&
       f.orderName !== null &&
       f.customerName !== null &&
       f.employees !== null &&
-      f.createdData !== null &&
-      f.termData !== null &&
+      f.acceptedDate !== null &&
+      f.deadline !== null &&
       f.status !== null
   );
 };
 
-const submitForm = async ( ) => {
-  try {
-    if (!isValidForm()) return;
-    filteredPictures.value.push(itemForm.value);
+const submitForm = async () => {
+  if (!isValidForm()) return;
 
-    itemForm.value.employees = selectedEmployeeNames.value.map(name => {
-      const existing = itemForm.value.employees.find(e => e.name === name)
-      return existing ?? {
-        id: allUsers.value.find(u => u.name === name)?.id ?? 0,
-        name,
-        status: 'PENDING'
-      }
-    })
-    itemForm.value.employeeId = itemForm.value.employees.map(e => e.id)
+  try {
+
+    const payload: OrderCreateDto = {
+      ...itemForm.value,
+      employees: itemForm.value.employees.map((id, index) => {
+        const user = allUsers.value.find((u: any) => u.id === id)
+
+        return {
+          employeeId: id,
+          employeeName: user
+              ? `${user.firstName} ${user.lastName}`
+              : "",
+          processedCount: 0,
+          workStatus: user.workStatus,
+          stepOrder: index + 1
+        }
+      })
+    }
+    console.log('Payload', payload)
 
     if (isEditing.value) {
-      await dataStore.updatePhotos(itemForm.value.id, itemForm.value);
-      Toast.success( "Yangilandi!");
+      await dataStore.updateOrder(itemId.value, payload)
+      Toast.success("Yangilandi")
     } else {
-      await dataStore.addPhotos(itemForm.value);
-      Toast.success(  "Qo'shildi!");
+      await dataStore.addOrder(payload)
+      Toast.success("Qo'shildi")
     }
-    await dataStore.loadGetPhotos()
-    resetForm();
-    isVisible.value = false;
-    isEditing.value = false;
-  }
-  catch (error) {
-    console.log("Error", error);
+
+    await dataStore.loadOrders("ALBUM")
+    resetForm()
+    isVisible.value = false
+
+  } catch (err) {
+    console.error(err)
   }
 }
 
-const editForm = async (item: IPicture): Promise<void> => {
+const itemId = ref<string>('')
+
+const editForm = (item: Order) => {
   isVisible.value = true;
   isEditing.value = true;
-  itemForm.value = { ...item };
+
+  itemForm.value = {
+    ...item,
+    employees: item.employees?.map(e => e.employeeId) || []
+  }
+  itemId.value = item.id;
 };
 
 const deleteConfirmItem = async () => {
   if (!selectedItem.value) return;
   try {
-    await dataStore.deletePhotos(selectedItem.value)
+    await dataStore.deleteOrder(selectedItem.value, 'PICTURE')
     Toast.info("Muvoffaqiyatli uchirildi!");
     showConfirmItem.value = false;
     selectedItem.value = null;
@@ -756,26 +795,24 @@ const deleteItem = async (id: string | null) => {
 
 const resetForm = () => {
   itemForm.value = {
-    id: '',
-    categoryName: '',
-    orderName: '',
-    itemType: '',
-    processedCount: null,
-    pageNumber: null,
-    amountNumber: null,
-    customerName: '',
-    receiverName: '',
-    employeeId: [],
+    kind: "PICTURE",
+    categoryId: "",
+    categoryName: "",
+    orderName: "",
+    itemType: "",
+    customerId: "",
+    customerName: "",
+    receiverName: "",
     employees: [],
-    termData: null,
-    status: '',
-    imageUrl: '',
-    // doneData: null,
-    createdData: '',
-    createdAt: null,
-    updatedAt: null,
+    pageCount: 0,
+    amount: 0,
+    acceptedDate: "",
+    deadline: "",
+    status: "PENDING",
+    imageUrl: "",
+    notes: "",
+    uploadId: ""
   }
-  selectedEmployeeNames.value = [];
   isEditing.value = false
 }
 
@@ -791,14 +828,18 @@ const formatDate = (dateString?: string | null): string => {
   return `${day}-${month}-${year}`;
 };
 
-
+onMounted(() => {
+  if (route.query.status) {
+    formStatus.value = route.query.status as string;
+  }
+})
 
 onMounted(async () => {
-  await dataStore.loadGetPhotos()
-  // await Promise.all([
-  //     // await dataStore.loadCategories(),
-  // ])
-
+  await Promise.all([
+    await dataStore.loadOrders('PICTURE'),
+    await dataStore.loadCategory('PICTURE'),
+    await dataStore.loadUsers()
+  ])
 })
 
 </script>

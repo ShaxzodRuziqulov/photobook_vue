@@ -6,9 +6,12 @@
         class="w-full h-20 py-2.5 px-2 2xl:px-4  text-white grid grid-cols-[1fr_auto_1fr] grid-flow-col-dense items-center shadow-md transition-colors"
     >
       <div class="flex items-center h-full">
-        <div class="flex items-center">
+        <div class="flex text-sm items-center">
           <img class="w-17" src="../assets/logo.png" alt="">
-          <h2>PHOTOBOOK</h2>
+          <div class="flex flex-col items-center">
+            <h2>PHOTOBOOK</h2>
+            <span class="text-xs bg-yellow-600 font-semibold rounded-xl px-2">{{searchName}}</span>
+          </div>
         </div>
       </div>
 
@@ -29,8 +32,17 @@
 
       </div>
       <div
-          class="flex items-center justify-end"
+          class="flex gap-2 items-center justify-end"
       >
+        <CButton
+            v-if="isDesktop && userName"
+            type="button"
+            :text="userName"
+            is-has-fa-icon
+            faClass="fa-solid fa-arrow-right"
+            variant="ghost-accent"
+            @click="openToProfile"
+        />
         <CButton
             v-if="isDesktop"
             type="button"
@@ -87,8 +99,14 @@ import { useRouter } from "vue-router";
 import CButton from "@/components/CButton.vue";
 import {computed, ComputedRef, ref} from "vue";
 import CDialog from "@/components/CDialog.vue";
+import { authService } from "@/service/authService";
+import { useStore } from "@/stores/store";
 
+const authStore = authService();
 const router = useRouter();
+const dataStore = useStore();
+
+const profileName = ref<string>('')
 
 const emits = defineEmits(["toggleMenu"]);
 const props = defineProps({
@@ -104,30 +122,74 @@ const props = defineProps({
 
 const isExit = ref(false);
 
+const isAdmin: ComputedRef = computed(() => {
+  return authStore.state.roles.includes("ROLE_ADMIN");
+})
+
+const isUser = computed(() => {
+  return authStore.state.roles.includes("ROLE_OPERATOR");
+})
+
+const isManager = computed(() => {
+  return authStore.state.roles.includes("ROLE_MANAGER");
+})
+
+const searchName = computed(() => {
+  const roles = authStore.state.roles || [];
+  if (roles.includes("ROLE_ADMIN")) {
+    profileName.value = "ADMIN";
+  } else if (roles.includes("ROLE_OPERATOR")) {
+    profileName.value = "USER";
+  } else if (roles.includes("ROLE_MANAGER")) {
+    profileName.value = "MENEGER";
+  }
+  return profileName.value;
+})
+
 const mainRoutes: ComputedRef = computed(() => {
 
-  return props.routes
+  const routes = props.routes
 
+  if (isAdmin.value) {
+    return routes?.filter((r: any) =>
+    ["/home"].includes(r.path) || []
+    )
+  }
+
+  if (isManager.value) {
+    return routes
+  }
+  if (isUser.value) {
+    return routes?.filter( (r: any) =>
+    ["/tasks", "/profile"].includes(r.path)
+    )
+  }
+
+  return routes;
 })
-// const isMenuOpen = ref(false);
 
 const toggleBurgerMenu = () => {
   emits("toggleMenu");
 }
-
-
-// const getMenuProps = computed<MenuItem[]>(() => {
-//   return props.routes as MenuItem[];
-// });
-
 const backToLogin = () => {
   isExit.value = true;
 }
 
 const confirmBack = () => {
-  router.push("/login");
+  authStore.logout();
   isExit.value = false;
 }
+
+const userName = computed(() => {
+  try {
+    const users = dataStore.state.user.items;
+    const user = users.find(u => (u.lastName && u.firstName))
+    return user ? `${user.lastName} ${user.firstName}` : 'Foydalanuvchi';
+  }
+  catch (error) {
+    console.log(error);
+  }
+})
 
 const openToProfile = () => {
   router.push("/profile");

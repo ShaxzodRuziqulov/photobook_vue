@@ -1,5 +1,7 @@
 import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
-// import {authService} from "@/service/authService";
+import {authService} from "@/service/authService";
+import { useStore } from "@/stores/store"
+import {Role} from "@/typeModules/useModules";
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -12,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
         children: [
             {
                 path: "/home",
-                name: "Dashboard",
+                name: "Bosh sahifa",
                 component: () =>import('../views/Dashboard.vue'),
                 meta: {
                     requiresAuth: true,
@@ -56,7 +58,7 @@ const routes: Array<RouteRecordRaw> = [
                 }
             },
             {
-                path: '/employee',
+                path: '/users',
                 name: 'Xodimlar',
                 component: () =>import('../views/Employees.vue'),
                 meta: {
@@ -110,27 +112,38 @@ const router = createRouter({
     history: createWebHistory(),
 })
 
-// router.beforeEach(async (to, _, next) => {
-    // const authStore = authService();
-    // const token = localStorage.getItem("accessToken");
-    // const isAuthenticated = !!token;
-    // // const isLoginPage = to.name === "LoginVue";
-    // let roles: string[] = authStore.state.roles || [];
-    //
-    // if (to.meta.requiresAuth && !isAuthenticated) {
-    //     return next({name: 'Login'});
-    // }
-    //
-    // if (isAuthenticated && (!roles || roles.length === 0)) {
-    //     try {
-    //         await authStore.getCurrentUser()
-    //         roles = authStore.state.roles || [];
-    //     } catch (error) {
-    //         console.error('Failed to fetch user data:', error);
-    //         return next({name: 'Login'});
-    //     }
-    // }
-    //
-    // next();
-// })
+router.beforeEach(async (to, _, next) => {
+    const authStore = authService();
+    const token = localStorage.getItem("access_token");
+    const isAuthenticated = !!token;
+    const isLoginPage = to.name === "Login";
+
+    if (!to.meta.requiresAuth) {
+        if (isAuthenticated && isLoginPage) {
+            if (!authStore.state.user) {
+                await authStore.getCurrentUser();
+            }
+            const roles = authStore.state.roles;
+            if (roles.includes("ROLE_ADMIN")) return next("/home");
+            if (roles.includes("ROLE_MANAGER")) return next("/home");
+            if (roles.includes("ROLE_OPERATOR"))  return next("/tasks");
+            return next("/home");
+        }
+        return next();
+    }
+
+    if (!isAuthenticated) {
+        return next({ name: "Login" });
+    }
+
+    if (!authStore.state.user) {
+        const user = await authStore.getCurrentUser();
+        if (!user) {
+            return next({ name: "Login" });
+        }
+    }
+
+    next();
+});
+
 export default router

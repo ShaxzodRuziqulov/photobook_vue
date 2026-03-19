@@ -5,7 +5,7 @@ export interface Register {
 }
 
 export interface UserLogin {
-    userName: string;
+    username: string;
     password: string;
 }
 
@@ -19,60 +19,114 @@ export interface IItems {
     updatedAt: string | null;
 }
 
+export type OrderKind = "ALBUM" | "VIGNETTE" | "PICTURE";
+export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+
 export interface AllCategory {
-    id: string;
+    id: string | null;
+    kind: OrderKind;
     name: string;
-    pageNumber: string | null;
-    itemSize: string | null;
-    createdAt: string | null;
-    updatedAt: string | null;
+    defaultPages: string | null;
+    size: string | null;
 }
 
 export interface EmployeeStatus {
-    id: number;
-    name: string;
-    status: "PENDING" | "IN_PROGRESS" | "COMPLETED"
+    employeeId: string
+    employeeName: string
+    processedCount: number | null;
+    stepOrder: number | null;
+    workStatus: OrderStatus;
 }
 
 export interface AllOrders {
     id: string;
+    kind: OrderKind;
+    categoryId: string | null;
     categoryName: string | null; // buyurtma turi nomi
     orderName: string; // buyurtma nomi { tuy, maktab ...,}
     itemType: string;
-    pageNumber: number | null; // betlar soni
-    amountNumber: number | null; //buyurtma soni
+    pageCount: number | null; // betlar soni
+    amount: number | null; //buyurtma soni
+    customerId: string;
     customerName: string; // mijoz nomi
     receiverName: string; // qabul qiluvchi
-    employeeId: number[]; // xodim
-    employees: EmployeeStatus[];
+    employeeIds: string[]; // xodim
+    employeeNames: string[];
     processedCount: number | null; // jarayonda bajarilgan holati soni
     termData: string | null; // muddat tugash sanasi
-    status: string; // holat
+    status: OrderStatus; // holat
     imageUrl: string;
     // doneData: number | null; // bajarildi
-    createdData: string;
-    createdAt: string | null; // yaratilgan kun
-    updatedAt: string | null; // yangilangan kun
+    acceptedDate: string;
+    deadline: string;
+    notes: string | null;
+}
+
+export interface PagingRequest {
+    page: number;
+    size: number;
+    sort?: string;
+    direction?: string;
+    search?: string;
+    kind?: OrderKind;
+    status?: OrderStatus | string;
+    customerId?: string;
+    employeeId?: string;
+    categoryId?: string;
+    from?: string;
+    to?: string;
+    deadlineFrom?: string;
+    deadlineTo?: string;
+}
+
+export interface PagingResponse<T> {
+    items: T[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
 }
 
 export interface Order {
     id: string;
-    categoryName: string | null;
+    kind: OrderKind;
+    categoryId: string;
+    categoryName: string;
     orderName: string;
-    pageNumber: number | null;
-    amountNumber: number | null;
+    itemType: string;
+    customerId: string;
     customerName: string;
     receiverName: string;
-    employeeId: number[];
     employees: EmployeeStatus[];
-    processedCount: number | null;
-    termData: string | null;
-    status: string;
+    pageCount: number;
+    amount: number;
+    processedCount: number;
+    acceptedDate: string;
+    deadline: string;
+    status: OrderStatus;
     imageUrl: string;
-    //doneData: number | null;
-    createdData: string;
-    createdAt: string | null;
-    updatedAt: string | null;
+    notes: string;
+    uploadId: string;
+}
+export interface OrderCreateDto {
+    kind: OrderKind;
+    categoryId: string;
+    categoryName: string;
+    orderName: string;
+    itemType?: string;
+    customerId?: string;
+    customerName: string;
+    receiverName: string;
+    employees: EmployeeStatus[];
+    pageCount: number | null;
+    amount: number | null;
+    acceptedDate: string;
+    deadline: string;
+    status: string;
+    imageUrl?: string;
+    notes?: string;
+    uploadId: string;
 }
 
 export interface IPicture {
@@ -97,20 +151,69 @@ export interface IPicture {
 }
 export interface UserForm {
     id: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     profession: string;
-    isLogin: string;
-    isPassword: string;
+    username: string;
+    password: string;
+    avatarUrl: string;
+    phone: string | null;
+    bio: string;
+    isActive: boolean;
+    uploadId: string;
     roles: Role[];
-    phoneNumber: number | null;
-    createdAt: string | null;
-    updatedAt: string | null;
+}
+
+export interface UserTask {
+    orderId: string;
+    kind: OrderKind;
+    categoryId: string;
+    categoryName: string;
+    orderName: string;
+    itemType: string;
+    customerId: string;
+    customerName: string;
+    receiverName: string;
+    pageCount: number | null;
+    amount: number | null;
+    processedCount: number | null;
+    acceptedDate: string;
+    deadline: string;
+    status: OrderStatus;
+    imageUrl: string;
+    stepOrder: number | null;
+    canWork: boolean;
+    notes: string;
 }
 
 export interface Role {
-    id: number
-    name: string
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    name: string;
     description: string
+}
+
+
+export interface IPaging {
+    page: number;
+    size: number;
+    sort?: string[];
+    search: string;
+    statuses: OrderStatus[];
+    from: string;
+    to: string;
+    deadlineFrom: string;
+    deadlineTo: string;
+}
+
+export interface UserPagingRequest {
+    page: number
+    size: number
+    sort?: string[]
+    search?: string
+    isActive?: boolean
+    role?: string
 }
 
 export interface ExpensesForm {

@@ -8,12 +8,12 @@
         :id="id"
         v-model="model"
         :disabled="disabled"
-        class="p-2 pr-8 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-lg w-full transition-all duration-200"
+        class="p-2 pr-8 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-lg w-full transition-all duration-200 bg-white disabled:opacity-60 disabled:bg-gray-100"
         :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-red-500 focus:ring-red-200' : '']"
     >
       <option v-if="disabledValue" value="" disabled class="text-gray-400">{{ disabledValue }}</option>
       <option v-if="hasReset" :value="null" class="text-gray-900">{{ resetText }}</option>
-      <option v-if="normalizedOptions.length === 0">Malumot yoq</option>
+      <option disabled v-if="normalizedOptions.length === 0">Malumot yoq</option>
       <option
           v-for="(option, index) in normalizedOptions"
           :key="index"
@@ -28,7 +28,7 @@
       {{ errorMessage }}
     </span>
 
-    <div v-if="isMultiple" class="relative" v-click-outside="closeDropdown">
+    <div v-if="isMultiple" class="relative select__container" v-click-outside="closeDropdown">
       <button
           v-if="model.length > 0"
           class="w-6 h-6 border cursor-pointer border-field-stroke-secondary flex items-center justify-center absolute top-2 right-2 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-50"
@@ -53,7 +53,7 @@
           >
            <span class="flex flex-col">
             <span class="text-lg">  {{ optionText(option) }}</span>
-            <small class="text-xs text-[#161F2D]">{{ option.inventoryNumber }}</small>
+            <small class="text-xs text-gray-700 dark:text-gray-300">{{ option.inventoryNumber }}</small>
            </span>
             <button type="button" @click.stop="removeOption(option)"
                     class="text-lg px-1   font-bold hover:text-red-800 cursor-pointer text-blue-800">×</button>
@@ -62,12 +62,11 @@
         <span v-else class="text-gray-400">{{ disabledValue }}</span>
       </div>
 
-      <teleport to="body">
+      <teleport defer to=".select__container">
         <div
             v-if="isOpen"
             ref="dropdown"
-            :style="dropdownStyles"
-            class="absolute z-50 bg-white border border-gray-200 ml-[-200px] sm:ml-[-350px] md:ml-[-390px] lg:ml-73 rounded-lg shadow max-h-130 overflow-auto"
+            class="z-50 bg-white absolute left-0 top-full w-full border border-gray-200 rounded-lg shadow max-h-130 overflow-auto"
         >
           <span class="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
                 v-if="normalizedOptions.length === 0">Malumot yoq</span>
@@ -143,7 +142,7 @@ const validate = () => {
   )
 
   if (isEmpty) {
-    // errorMessage.value = props.errorText || t('components.selectErrorText')
+    errorMessage.value = props.errorText || t('components.selectErrorText')
     showError.value = true
     return false
   }
@@ -178,29 +177,16 @@ const isOpen = ref(false)
 const dropdown = ref<HTMLElement | null>(null)
 const target = ref<HTMLElement | null>(null)
 
-const dropdownStyles = ref<Record<string, string>>({})
-
 const toggleDropdown = async () => {
+  if (props.disabled) return
   isOpen.value = !isOpen.value
   if (isOpen.value) {
     await nextTick()
-    updateDropdownPosition()
   }
 }
 
 const closeDropdown = () => {
   isOpen.value = false
-}
-
-const updateDropdownPosition = () => {
-  if (!target.value || !dropdown.value) return
-  const rect = target.value.getBoundingClientRect()
-  dropdownStyles.value = {
-    position: 'absolute',
-    top: `${rect.top + window.scrollY}px`,
-    left: `${rect.left + window.scrollX}px`,
-    width: `${rect.width}px`,
-  }
 }
 
 const isSelected = (option: any) => {
@@ -240,18 +226,6 @@ watch(model, (newVal) => {
     showError.value = false
   }
 })
-
-
-onMounted(() => {
-  window.addEventListener('scroll', updateDropdownPosition, false)
-  window.addEventListener('resize', updateDropdownPosition)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', updateDropdownPosition, true)
-  window.removeEventListener('resize', updateDropdownPosition)
-})
-
 </script>
 
 <style scoped lang="scss">
@@ -267,6 +241,12 @@ select {
   &, &::picker(select) {
     appearance: base-select;
   }
+}
+
+.dark select {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
 }
 
 select:hover {
@@ -298,10 +278,17 @@ option {
   padding: 8px;
   transition: 0.4s;
   background: #fff;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.08);
 
   &::checkmark {
     display: none;
   }
+}
+
+.dark option {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
 }
 
 option:first-of-type {
@@ -311,6 +298,10 @@ option:first-of-type {
 option:disabled {
   cursor: not-allowed;
   background-color: #eee;
+}
+
+.dark option:disabled {
+  background-color: #374151;
 }
 
 option:last-of-type {
@@ -325,9 +316,19 @@ option:hover {
   background: rgba(236, 233, 233, 0.48);
 }
 
+.dark option:hover {
+  background: rgba(55, 65, 81, 0.8);
+}
+
 option:checked {
-  color: oklch(54.6% 0.245 262.881);
-  background-color: transparent;
+  color: #1E40AF;
+  background-color: #EFF6FF;
+  font-weight: 500;
+}
+
+.dark option:checked {
+  color: #93C5FD;
+  background-color: #1E3A8A;
 }
 
 selectedcontent .icon {
