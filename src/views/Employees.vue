@@ -60,30 +60,27 @@
                   placeholder="+998 -"
                   v-model="form.phone"
         />
-<!--        <AppInput-->
-<!--            label="Payment method"-->
-<!--            type="text"-->
-<!--            placeholder="Enter Payment method"-->
-<!--            v-model="form.paymentMethod"-->
-<!--        />-->
-<!--        <AppInput label="Data"-->
-<!--                  type="date"-->
-<!--                  v-model="form.date"-->
-<!--        />-->
+
+        <div v-if="avatarPreview || form.avatarUrl" class="flex items-center gap-3">
+          <img
+              :src="avatarPreview || getAvatarUrl(form.avatarUrl)"
+              class="w-16 h-16 rounded-full object-cover border"
+              alt="Avatar preview"
+          />
+          <CButton
+              type="button"
+              text="Rasmni o'chirish"
+              variant="danger"
+              size="sm"
+              @click="removeAvatar"
+          />
+        </div>
         <AppInput
             label="Receipt image"
             type="file"
             accept="image/*"
             @change="changeFile($event)"
         />
-<!--        <AppSelect-->
-<!--            :options="allItems"-->
-<!--            label="All Items"-->
-<!--            text-field="name"-->
-<!--            value-field="_id"-->
-<!--            disabled-value="Select item"-->
-<!--            v-model="form.itemId"-->
-<!--        />-->
         <AppInput label="Bio"
                   type="textarea"
                   placeholder="Enter Description"
@@ -100,23 +97,20 @@
               type="submit"
               text="Submit"
               variant="primary"
+              :disabled="isLoading"
           />
         </div>
       </form>
     </CDialog>
+
     <CDialog
         :show="selectedRole"
         @close="selectedRole = false"
         body-class="justify-center bg-blue-800 text-center px-4 pb-8"
     >
-      <div
-          class="shadow-xl rounded-2xl p-6 text-gray-800 max-w-2xl mx-auto transition-colors"
-      >
-        <form
-            @submit.prevent="saveRole"
-            class="w-full"
-        >
-          <p class=" transition-all duration-200 font-semibold">
+      <div class="shadow-xl rounded-2xl p-6 text-gray-800 max-w-2xl mx-auto transition-colors">
+        <form @submit.prevent="saveRole" class="w-full">
+          <p class="transition-all duration-200 font-semibold">
             {{ selectedUsers?.lastName }} {{ selectedUsers?.firstName }}
           </p>
           <AppSelect
@@ -154,45 +148,57 @@
           @confirm="confirmDelete"
       />
     </CDialog>
-    <div
-        class="animate-fade-in gap-5 flex-col w-full bg-white p-6 rounded-xl h-full"
-    >
-      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-           v-if="allUsers.items.length > 0"
-      >
-        <div
-            class="flex flex-col rounded-xl p-4 shadow-md gap-4 bg-gradient-to-br from-blue-50 to-purple-50"
+
+    <div class="animate-fade-in overflow-auto gap-5 flex-col w-full bg-white p-6 rounded-xl h-full">
+      <table class="overflow-auto table-auto">
+        <colgroup>
+          <col style="width: 5%">
+          <col style="width: 15%">
+          <col style="width: 14%">
+          <col style="width: 14%">
+          <col style="width: 14%">
+          <col style="width: 14%">
+          <col style="width: 14%">
+          <col style="width: 14%">
+        </colgroup>
+        <thead class="bg-gray-200 rounded-2xl text-sm tracking-wider">
+        <tr>
+          <th class="px-2 py-3 text-start">№</th>
+          <th class="p-2 text-start">Ism</th>
+          <th class="p-2 text-start">Rasm</th>
+          <th class="p-2 text-start">User Nomi</th>
+          <th class="p-2 text-start">Role</th>
+          <th class="p-2 text-start">Izoh</th>
+          <th class="p-2 text-start">Telefon</th>
+          <th class="p-2 text-start">Amallar</th>
+        </tr>
+        </thead>
+        <tbody v-if="allUsers.items.length">
+        <tr
+            class="border-t border-gray-600 text-sm hover:bg-gray-100"
             v-for="(user, index) in allUsers.items"
-            :key="index"
+            :key="user.id"
         >
-          <div class="flex items-center gap-2 justify-between">
-            <div class="flex items-center gap-4">
-            <span
-                class="font-semibold text-xl p-4 flex items-center justify-center rounded-full "
-            >
+          <td class="p-4">{{index + 1}}</td>
+          <td class="p-2">{{user.lastName}} {{user.firstName}}</td>
+          <td class="p-2 flex items-center">
+            <img v-if="user.avatarUrl" class="w-16 h-10 lg:h-16 rounded-full object-cover" :src="getAvatarUrl(user.avatarUrl)" alt="">
+          </td>
+          <td class="p-2">{{user.username}}</td>
+          <td class="p-3">
+            <div class="flex flex-wrap gap-1">
               <span
-                  v-if="user.avatarUrl"
-                  class="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
-                <img
-                    :src="user.avatarUrl"
-                    class="w-full h-full object-cover"
-                    alt=""
-                />
-              </span>
-              <span v-else
-                    class="font-semibold text-xl bg-cover w-12 h-12 p-4 flex items-center justify-center rounded-full bg-blue-800 text-white"
+                  v-for="role in user.roles"
+                  :key="role.id"
+                  class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs"
               >
-                  {{ user.firstName?.charAt(0)?.toUpperCase() || 'X' }}{{ user.lastName?.charAt(0)?.toUpperCase() || '' }}
+                {{ role.name }}
               </span>
-            </span>
-              <div
-                  class="flex flex-col"
-              >
-                <span class="font-semibold">{{user.firstName}}</span>
-                <span class="font-semibold">{{user.lastName}}</span>
-                <span class="text-sm text-gray-600 break-all">{{user.profession}}</span>
-              </div>
             </div>
+          </td>
+          <td class="p-2">{{user.bio}}</td>
+          <td class="p-2">{{user.phone}}</td>
+          <td class="p-2">
             <div class="flex items-center gap-2">
               <CButton
                   type="button"
@@ -201,57 +207,33 @@
                   @click="changeRole(user)"
               />
               <CButton
-                  is-has-fa-icon
-                  fa-class="fas fa-pencil"
+                  text="Tahrirlash"
                   type="button"
                   size="sm"
                   variant="warning"
                   @click="editItem(user)"
               />
               <CButton
-                  is-has-fa-icon
-                  fa-class="far fa-trash-alt"
+                  text="O'chirish"
                   type="button"
                   size="sm"
                   variant="danger"
                   @click="deleteItem(user.id)"
               />
             </div>
-          </div>
-          <div
-              class="flex items-end gap-2 justify-between"
-          >
-            <div class="flex flex-col items-start text-md font-semibold">
-              <span>User:  {{user.username}}</span>
-              <div>Parol: <span class="text-gray-600">{{user.password}}</span></div>
-              <div
-                  class="flex flex-col gap-1"
-              >
-                <div class="flex items-center gap-2">
-                  Role:
-                  <div class="text-gray-600 flex flex-col w-full gap-2"
-                       v-for="(role, index) in user.roles"
-                       :key="index"
-                  >
-                    {{role.name}}
-                  </div>
-                </div>
-                <div class="flex">
-                 Ega: {{user.bio}}
-                </div>
-                <span><i class="fas fa-phone text-blue-600"></i> Tel: {{user.phone}}</span>
-
-              </div>
+          </td>
+        </tr>
+        </tbody>
+        <tbody v-else>
+        <tr>
+          <td>
+            <div class="flex items-center justify-center w-full text-gray-600 m-auto">
+              Xodim topilmadi!
             </div>
-          </div>
-        </div>
-      </div>
-      <div
-          v-else
-          class="flex items-center justify-center w-full text-gray-600 m-auto"
-      >
-        Xodim topilmadi!
-      </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -273,7 +255,7 @@ import {useToast} from "vue-toastification";
 const Toast = useToast();
 const router = useRouter();
 const store = useStore();
-const loadStore = authService()
+const loadStore = authService();
 
 const visibleShow = ref(false);
 const isLoading = ref(false);
@@ -282,15 +264,21 @@ const selectedUser = ref<string | null>(null);
 const selectedUsers = ref<UserForm | null>(null);
 const selectedUserRoleId = ref<string | null>(null);
 const selectedRoles: Ref = ref<string[]>([]);
-const selectedRole = ref(false)
+const selectedRole = ref(false);
 const roles = ref<Role[]>([]);
 const selectedFile = ref<File | null>(null);
 const isEditing = ref(false);
 const avatarPreview = ref<string>("");
 
-const allUsers: ComputedRef = computed(() => store.state.user);
+// Eski upload key ni saqlab qo'yamiz (delete uchun)
+const oldUploadKey = ref<string | null>(null);
+// Yangi upload qilingandan keyin key ni saqlaymiz
+const newUploadId = ref<string | null>(null);
 
-const form = ref<UserForm>({
+const users: ComputedRef = computed(() => store.state.user);
+const allUsers = computed(() => users.value);
+
+const emptyForm = (): UserForm => ({
   id: '',
   firstName: '',
   lastName: '',
@@ -305,209 +293,217 @@ const form = ref<UserForm>({
   roles: []
 });
 
-const clickVisibleForm = () => {
-  visibleShow.value = true;
-  form.value = {
-    id: '',
-    firstName: '',
-    lastName: '',
-    username: '',
-    profession: '',
-    password: '',
-    avatarUrl: '',
-    phone: null,
-    bio: '',
-    isActive: true,
-    uploadId: '',
-    roles: []
-  }
-}
+const form = ref<UserForm>(emptyForm());
 
-// const getItemName = (itemId: string) => {
-//   const item = allItems.value.find(item => item._id === itemId);
-//   return item?.name || 'Unknown';
-// };
+const clickVisibleForm = () => {
+  form.value = emptyForm();
+  avatarPreview.value = '';
+  selectedFile.value = null;
+  oldUploadKey.value = null;
+  newUploadId.value = null;
+  isEditing.value = false;
+  visibleShow.value = true;
+};
 
 const changeFile = (event: Event) => {
   const fileInput = event.target as HTMLInputElement;
-
   if (!fileInput.files?.length) return;
 
   selectedFile.value = fileInput.files[0];
   avatarPreview.value = URL.createObjectURL(selectedFile.value);
 };
 
-const uploadAvatar = async () => {
-  if (!selectedFile.value) return null
+const removeAvatar = async () => {
+  if (newUploadId.value) {
+    await deleteUpload(newUploadId.value);
+    newUploadId.value = null;
+  }
 
-  const formData = new FormData()
-  formData.append("file", selectedFile.value)
+  avatarPreview.value = '';
+  form.value.avatarUrl = '';
+  form.value.uploadId = '';
+};
 
-  const { data } = await axiosInstance.post("/api/v1/uploads", formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      }
-  )
+const deleteUpload = async (id: string) => {
+  if (!id) return;
 
-  return data.url
-}
+  try {
+    await axiosInstance.delete(`/api/v1/uploads/${id}`);
+  } catch (error) {
+    console.error("Upload o'chirishda xatolik:", error);
+  }
+};
 
+const uploadAvatar = async (): Promise<{ url: string; id: string } | null> => {
+  if (!selectedFile.value) return null;
 
+  const formData = new FormData();
+  formData.append("file", selectedFile.value);
+
+  const { data } = await axiosInstance.post("/api/v1/uploads", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+
+  return {
+    url: data.url,
+    id: data.id
+  };
+};
+
+const BASE_URL = import.meta.env.VITE_BASE_API
+
+const getAvatarUrl = (url: string | undefined): string => {
+  if (!url) return '';
+
+  if (url.startsWith('http')) return url;
+
+  return `${BASE_URL}${url}`;
+
+};
 
 const submitForm = async () => {
-
   isLoading.value = true;
   try {
-    const uploadUrl = await uploadAvatar();
-
-    if (uploadUrl) {
-      form.value.avatarUrl = uploadUrl
+    if (selectedFile.value) {
+      const uploaded = await uploadAvatar();
+      if (uploaded) {
+        form.value.avatarUrl = uploaded.url;
+        form.value.uploadId = uploaded.id;
+        newUploadId.value = uploaded.id;
+      }
     }
     if (isEditing.value) {
       await store.updateUser(form.value.id, form.value);
+      Toast.success("Xodim ma'lumotlari yangilandi");
     } else {
-    await store.addUser(form.value);
+      await store.addUser(form.value);
+      Toast.success("Xodim qo'shildi");
     }
 
     visibleShow.value = false;
     isEditing.value = false;
+    selectedFile.value = null;
+    avatarPreview.value = '';
+    newUploadId.value = null;
+    oldUploadKey.value = null;
+    form.value = emptyForm();
 
-    await store.loadUsers()
-    form.value = {
-      id: '',
-      firstName: '',
-      lastName: '',
-      username: '',
-      profession: '',
-      password: '',
-      avatarUrl: '',
-      phone: null,
-      bio: '',
-      isActive: false,
-      uploadId: '',
-      roles: []
-    }
-    isLoading.value = false;
+    await store.loadUsers();
   } catch (error) {
-    console.log(error);
+    Toast.error("Xatolik yuz berdi");
+    console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
-
 
 const saveRole = async () => {
   if (!selectedRoles.value.length || !selectedUserRoleId.value) return;
 
   try {
-
-    await loadStore.loadChangeRole(
-        selectedUserRoleId.value,
-        selectedRoles.value
-    )
-
-    Toast.success("Role yangilandi")
-    selectedRole.value = false
-    selectedRoles.value = []
-    await store.loadUsers()
-
+    await loadStore.loadChangeRole(selectedUserRoleId.value, selectedRoles.value);
+    Toast.success("Role yangilandi");
+    selectedRole.value = false;
+    selectedRoles.value = [];
+    await store.loadUsers();
   } catch (error) {
-    console.log(error)
+    console.error(error);
   }
-}
+};
 
 const changeRole = async (user: UserForm) => {
-  selectedUserRoleId.value = user.id
-  selectedUsers.value = user
-
+  selectedUserRoleId.value = user.id;
+  selectedUsers.value = user;
   selectedRoles.value = user.roles?.map(role => String(role.id)) || [];
 
   if (!roles.value.length) {
-    await loadStore.loadRole()
+    await loadStore.loadRole();
   }
 
-  selectedRole.value = true
-}
+  selectedRole.value = true;
+};
 
 const editItem = (user: UserForm) => {
   form.value = { ...user };
+  avatarPreview.value = '';
+  selectedFile.value = null;
+  newUploadId.value = null;
+
+  oldUploadKey.value = user.uploadId || null;
+
   isEditing.value = true;
   visibleShow.value = true;
 };
+
+// const extractKeyFromUrl = (url: string | undefined): string | null => {
+//   if (!url) return null;
+//   const parts = url.split('/');
+//   return parts[parts.length - 1] || null;
+// };
 
 const confirmDelete = async () => {
   if (!selectedUser.value) return;
 
   try {
-    await store.deleteUser(selectedUser.value);
-    showModal.value = false;
-    console.log('User delete',selectedUser.value);
-    selectedUser.value = null
-  } catch (error) {
-    console.log(error);
-  }
-}
+    const user = allUsers.value.items.find((u: UserForm) => u.id === selectedUser.value);
+    const uploadKey = user?.uploadId;
+    // const uploadKey = user?.uploadId || extractKeyFromUrl(user?.avatarUrl);
 
-const deleteItem = async (id: string) => {
-  selectedUser.value = id
+    if (uploadKey) {
+      await deleteUpload(uploadKey);
+    }
+
+    await store.deleteUser(selectedUser.value);
+    Toast.success("Xodim o'chirildi");
+    showModal.value = false;
+    selectedUser.value = null;
+  } catch (error) {
+    Toast.error("O'chirishda xatolik");
+    console.error(error);
+  }
+};
+
+const deleteItem = (id: string) => {
+  selectedUser.value = id;
   showModal.value = true;
 };
 
-const getDate = (date: string | null) => {
-  if (!date) return null;
-  const data = new Date(date);
-  const year = data.getFullYear();
-  const month = data.getMonth();
-  const day = data.getDate();
-  return `${day}.${month}.${year}`;
-};
-
 const resetForm = () => {
-  visibleShow.value = false;
-  closeForm();
-};
-
-const closeForm = () => {
-  visibleShow.value = false;
-  form.value = {
-    id: '',
-    firstName: '',
-    lastName: '',
-    username: '',
-    profession: '',
-    password: '',
-    avatarUrl: '',
-    phone: null,
-    bio: '',
-    isActive: false,
-    uploadId: '',
-    roles: []
+  // Agar yangi upload qilingan bo'lsa, bekor qilamiz
+  if (newUploadId.value) {
+    deleteUpload(newUploadId.value);
+    newUploadId.value = null;
   }
+  visibleShow.value = false;
+  selectedFile.value = null;
+  avatarPreview.value = '';
+  form.value = emptyForm();
 };
 
 const loadRole = async () => {
   try {
-    const res = await loadStore.loadRole()
-    roles.value = res.data
+    const res = await loadStore.loadRole();
+    roles.value = res.data;
+  } catch (error) {
+    console.error(error);
   }
-  catch (error) {
-    console.log(error);
-  }
-}
+};
 
 onMounted(async () => {
   isLoading.value = true;
   try {
     await store.loadUsers();
-    await loadRole()
+    await loadRole();
+  } catch (error) {
+    console.error(error);
+  } finally {
     isLoading.value = false;
   }
-  catch (error) {
-    console.log(error);
-  }
 });
-
 </script>
+
 <style scoped>
 .animate-fade-in {
   animation: fadeIn 0.4s ease-in-out;
@@ -524,19 +520,3 @@ onMounted(async () => {
   }
 }
 </style>
-<!--<style>-->
-<!--#imageItem {-->
-<!--  position: relative;-->
-<!--  background-image: url("@/assets/white_horse.jpg");-->
-<!--  background-size: cover;-->
-<!--  width: 300px;-->
-<!--  height: 200px;-->
-<!--  border: dashed 1px black;-->
-
-<!--  div {-->
-<!--    position: absolute;-->
-<!--    inset: 0;-->
-<!--  }-->
-<!--}-->
-
-<!--</style>-->

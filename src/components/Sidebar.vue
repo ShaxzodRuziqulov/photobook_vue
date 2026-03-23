@@ -23,11 +23,11 @@
         <i :class="item.meta.icon"></i>
         {{item.name}}
       </router-link>
-      <div>
+      <div class="gap-2">
         <div
             v-if="!isDesktop"
             @click="backToLogin"
-            class="flex items-center w-full rounded-sm hover:bg-gray-600 cursor-pointer p-2 gap-2"
+            class="flex mb-2 items-center w-full rounded-sm hover:bg-gray-600 cursor-pointer p-2 gap-2"
         >
           <i class="fa-solid fa-arrow-right-from-bracket"/>
           <span class="flex items-start">Chiqish</span>
@@ -76,7 +76,6 @@
 <script setup lang="ts">
 import {computed, ComputedRef, ref} from "vue";
 import { authService } from "@/service/authService";
-import { useStore } from "@/stores/store";
 import {watch} from "vue";
 import { useRouter } from "vue-router";
 import CButton from "@/components/CButton.vue";
@@ -84,7 +83,6 @@ import CDialog from "@/components/CDialog.vue";
 
 const router = useRouter();
 const authStore = authService();
-const dataStore = useStore();
 
 const isExit = ref(false);
 
@@ -104,8 +102,40 @@ const toggleMenu = () => {
   emits("toggleMenu" );
 }
 
+const isAdmin: ComputedRef = computed(() => {
+  return authStore.state.roles.includes("ROLE_ADMIN");
+})
+
+const isOperator: ComputedRef = computed(() => {
+  return authStore.state.roles.includes("ROLE_OPERATOR");
+})
+
+const isManager: ComputedRef = computed(() => {
+  return authStore.state.roles.includes("ROLE_MANAGER");
+})
+
 const mainMenuItems: ComputedRef = computed(() => {
-    return props.menuItems;
+
+  const routes = props.menuItems
+
+  if (isAdmin.value) {
+    return routes?.filter((r: any) =>
+        ["/home"].includes(r.path) || []
+    )
+  }
+
+  if (isManager.value) {
+    return routes.filter((r: any) =>
+    ["/home"].includes(r.path) || []
+    )
+  }
+  if (isOperator.value) {
+    return routes?.filter( (r: any) =>
+        ["/tasks", "/profile"].includes(r.path)
+    )
+  }
+
+  return routes;
 })
 
 const isDesktop = computed(() => window.innerWidth > 768);
@@ -122,18 +152,19 @@ const confirmBack = () => {
 
 const openToProfile = () => {
   router.push("/profile");
+  emits("toggleMenu");
 }
 
 const userName = computed(() => {
   try {
-    const users = dataStore.state.user.items;
-    const user = users.find(u => (u.lastName && u.firstName))
-    return user ? `${user.lastName} ${user.firstName}` : 'Foydalanuvchi';
+    const user = authStore.state.user;
+
+    return user ? `${user.lastName} ${user.firstName}`.trim() : 'Foydalanuvchi';
   }
   catch (error) {
     console.log(error);
   }
-})
+});
 
 watch(
     () => props.isMenuVisible,
@@ -145,4 +176,11 @@ watch(
       }
     }
 )
+watch(
+    () => authStore.state.user,
+    (val) => {
+      console.log("USER UPDATE:", val);
+    },
+    { immediate: true }
+);
 </script>

@@ -3,31 +3,31 @@
       class="flex flex-col overflow-x-auto bg-gray-800 w-full"
   >
     <div
-        class="w-full h-20 py-2.5 px-2 2xl:px-4  text-white grid grid-cols-[1fr_auto_1fr] grid-flow-col-dense items-center shadow-md transition-colors"
+        class="w-full h-20 py-2.5 px-2 2xl:px-4 gap-2  text-white grid grid-cols-[1fr_auto_1fr] grid-flow-col-dense items-center shadow-md transition-colors"
     >
       <div class="flex items-center h-full">
-        <div class="flex text-sm items-center">
-          <img class="w-17" src="../assets/logo.png" alt="">
-          <div class="flex flex-col items-center">
+        <div class="flex text-md items-center">
+          <img class="w-16" src="../assets/logo.png" alt="">
+          <div class="flex gap-1 flex-col items-center">
             <h2>PHOTOBOOK</h2>
-            <span class="text-xs bg-yellow-600 font-semibold rounded-xl px-2">{{searchName}}</span>
+            <span class="text-xs bg-yellow-600 font-semibold rounded-xl py-0.5 px-2">{{searchName}}</span>
           </div>
         </div>
       </div>
 
       <div
           v-if="isDesktop"
-          class="flex items-center w-full gap-2 flex-row">
+          class="flex items-center w-full gap-1 flex-row">
         <router-link
             v-for="(route, index) in mainRoutes"
             :key="index"
             :to="route?.path"
             active-class="bg-gray-600"
-            class="py-2 px-3 gap-2 text-sm flex items-center max-lg:p-1 text-center rounded-sm hover:bg-gray-700 transition duration-200"
+            class="p-2 gap-1 text-md flex max-lg:p-1 items-center text-center rounded-sm hover:bg-gray-700 transition duration-200"
             :class="index === mainRoutes.length - 1 ? 'hidden' : 'of-hidden'"
         >
-          <i class="w-4 h-4" v-if="route.meta.icon" :class="route.meta.icon"></i>
-          {{ route.name }}
+          <i class="w-4 text-sm h-3 flex" v-if="route.meta.icon" :class="route.meta.icon"></i>
+          <span class="">{{ route.name }}</span>
         </router-link>
 
       </div>
@@ -100,11 +100,9 @@ import CButton from "@/components/CButton.vue";
 import {computed, ComputedRef, ref} from "vue";
 import CDialog from "@/components/CDialog.vue";
 import { authService } from "@/service/authService";
-import { useStore } from "@/stores/store";
 
 const authStore = authService();
 const router = useRouter();
-const dataStore = useStore();
 
 const profileName = ref<string>('')
 
@@ -126,7 +124,7 @@ const isAdmin: ComputedRef = computed(() => {
   return authStore.state.roles.includes("ROLE_ADMIN");
 })
 
-const isUser = computed(() => {
+const isOperator = computed(() => {
   return authStore.state.roles.includes("ROLE_OPERATOR");
 })
 
@@ -139,9 +137,9 @@ const searchName = computed(() => {
   if (roles.includes("ROLE_ADMIN")) {
     profileName.value = "ADMIN";
   } else if (roles.includes("ROLE_OPERATOR")) {
-    profileName.value = "USER";
+    profileName.value = "OPERATOR";
   } else if (roles.includes("ROLE_MANAGER")) {
-    profileName.value = "MENEGER";
+    profileName.value = "MANAGER";
   }
   return profileName.value;
 })
@@ -159,7 +157,7 @@ const mainRoutes: ComputedRef = computed(() => {
   if (isManager.value) {
     return routes
   }
-  if (isUser.value) {
+  if (isOperator.value) {
     return routes?.filter( (r: any) =>
     ["/tasks", "/profile"].includes(r.path)
     )
@@ -181,15 +179,12 @@ const confirmBack = () => {
 }
 
 const userName = computed(() => {
-  try {
-    const users = dataStore.state.user.items;
-    const user = users.find(u => (u.lastName && u.firstName))
-    return user ? `${user.lastName} ${user.firstName}` : 'Foydalanuvchi';
-  }
-  catch (error) {
-    console.log(error);
-  }
-})
+  const user = authStore.state.user;
+
+  if (!user) return 'Foydalanuvchi';
+
+  return `${user.lastName} ${user.firstName}`;
+});
 
 const openToProfile = () => {
   router.push("/profile");

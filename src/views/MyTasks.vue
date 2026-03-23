@@ -180,7 +180,7 @@
                   class="w-14 h-10 sm:h-10 lg:h-12 cursor-pointer rounded-xl"
                   :src="task.imageUrl" alt="">
             </td>
-            <td class="p-2 text-blue-600 text-sm">{{statusOrder[task.kind]}}</td>
+            <td class="p-2 text-blue-600 font-semibold text-sm">{{statusOrder[task.kind]}}</td>
             <td class="p-2">{{task.customerName}}</td>
             <td class="p-2">{{task.receiverName}}</td>
             <td class="p-2">{{task.acceptedDate}}</td>
@@ -266,8 +266,8 @@ const selectedTask = ref<UserTask | null>(null);
 const previewImage = ref<string | null>(null)
 const formFilter = ref<string | ''>('');
 const formStatus = ref<OrderStatus | null>(null);
-const formData = ref<string | null>(null);
-const endData = ref<string | null>(null);
+const formData = ref<string | null | undefined>(null);
+const endData = ref<string | null | undefined>(null);
 
 
 
@@ -354,7 +354,8 @@ const filteredOrders = computed(() => {
         item.categoryName?.toLowerCase().includes(search) ||
         item.customerName?.toLowerCase().includes(search) ||
         item.receiverName?.toLowerCase().includes(search) ||
-        item.itemType?.toLowerCase().includes(search)
+        item.itemType?.toLowerCase().includes(search) ||
+        item.kind?.toLowerCase().includes(search)
     )
   }
   return data.sort((a,b) =>
@@ -392,13 +393,13 @@ const completedTask = async () => {
 }
 
 watch(
-    [formStatus, formData, endData],
+    [formStatus, formFilter, formData, endData],
     async () => {
       await dataStore.loadGetUserTasks({
         statuses: formStatus.value ? [formStatus.value] : [],
         from: formData.value || undefined,
         deadlineTo: endData.value || undefined,
-        search: formFilter.value || undefined
+        search: formFilter.value ?? null
       })
     }
 )

@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-8">
     <div class="max-w-7xl mx-auto">
       <div class="bg-white rounded-2xl shadow-lg p-2">
-        <div class="flex gap-4 p-2 w-full items-center flex-col sm:flex-col md:flex-row lg:flex-row">
+        <div class="flex gap-2 p-2 w-full items-center flex-col sm:flex-col md:flex-row lg:flex-row">
           <CButton
               type="button"
               text="Ortga"
@@ -21,12 +21,12 @@
               ]"
           >
             <div
-                class="flex items-center gap-2 py-2 px-4 transition-all border-b-2"
+                class="flex items-center gap-2 py-1 px-4 transition-all border-b-2"
                 :class="activeTabs === tab.id
                 ? 'text-blue-600 border-blue-500'
                 : 'text-gray-600 border-transparent hover:bg-gray-100'"
             >
-              <i class="text-2xl" :class="tab.icon"></i>
+              <i class="text-md" :class="tab.icon"></i>
               <div class="font-bold text-md text-left">
                 {{ tab.label }}
               </div>
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <div class="animate-fade-in mt-8" :key="activeTabs">
+      <div class="animate-fade-in mt-4" :key="activeTabs">
         <Albums v-if="activeTabs === 1 " />
 
         <Vignette v-else-if="activeTabs === 2 " />

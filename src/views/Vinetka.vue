@@ -16,12 +16,12 @@
       />
     </div>
     <div
-        v-if="vignetteCategory.length > 0"
+        v-if="categoryStatus.length > 0"
         class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-200 rounded-xl p-2 justify-between"
     >
       <div
           class="flex flex-col gap-4 bg-white rounded-xl px-4 py-2 justify-between"
-          v-for="(cat, index) in vignetteCategory"
+          v-for="(cat, index) in categoryStatus"
           :key="index"
       >
         <div
@@ -38,7 +38,7 @@
               <span class="text-gray-600 text-sm flex">Jami</span>
               <div class="flex gap-2 items-center text-md">
                 <span class=" text-blue-600">
-                {{getCategoryCount(cat)}}
+                {{cat.total}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -49,7 +49,7 @@
               <span class="text-gray-600 text-sm">Bajarilgan</span>
               <div class="flex gap-2 text-md items-center">
                 <span class="text-blue-600">
-                {{getCount(cat)}}
+                {{cat.processed}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -60,7 +60,7 @@
               <span class="text-gray-600 text-sm">Qoldi</span>
               <div class="flex gap-2 text-md items-center">
                 <span class="text-blue-600">
-                {{getRemaining(cat)}}
+                {{cat.remaining}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -546,6 +546,33 @@ const filteredOrders = computed(() => {
   )
 })
 
+const categoryStatus = computed(() => {
+  return vignetteCategory.value.map((cat: any) => {
+    const items = filteredOrders.value.filter(
+        item => item.categoryId === cat.id
+    )
+
+    const total = items.reduce(
+        (sum, item) => sum + (item.amount || 0),
+        0
+    )
+
+    const processed = items.reduce(
+        (sum, item) => sum + (getProcessedCount(item) || 0),
+        0
+    )
+
+    const remaining = total - processed
+
+    return {
+      ...cat,
+      total,
+      processed,
+      remaining
+    }
+  })
+})
+
 const getOrderedEmployees = (order: any) => {
   const saved = localStorage.getItem(`order_${order.id}_employees`)
   if (!saved) return order.employees
@@ -665,29 +692,6 @@ const pageProcessed = computed(() => {
       0
   )
 })
-
-
-const getCategoryCount = (value: string) => {
-  return filteredOrders.value
-      .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (item.amount || 0), 0)
-}
-
-const getCount = (value: string) => {
-  return filteredOrders.value
-      .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (getProcessedCount(item) || 0), 0)
-}
-
-const getRemaining = (value: string) => {
-  return filteredOrders.value
-      .filter(item => item.categoryName === value)
-      .reduce((total, item) => {
-        const totalNum = item.amount || 0
-        const processed = getProcessedCount(item) || 0
-        return total + (totalNum - processed)
-      }, 0)
-}
 
 const itemStatus = ref( [
   { value: 'PENDING', text: 'Kutilmoqda' },

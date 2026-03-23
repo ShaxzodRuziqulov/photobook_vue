@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex bg-white p-3 rounded-2xl shadow-lg items-center justify-between">
       <div class="flex items-center">
-        <h2 class="text-xl font-bold flex items-center text-gray-500 gap-3">
+        <h2 class="text-xl font-bold flex items-center text-gray-700 gap-3">
           <i class="fa-solid fa-book-open text-blue-500"></i>
           Vinetka
         </h2>
@@ -26,7 +26,7 @@
             <col style="width: 18%">
             <col style="width: 18%">
           </colgroup>
-          <thead class="bg-gray-300 border-b border-gray-200">
+          <thead class="bg-gray-300">
           <tr>
             <th class="text-left py-4 px-6 font-semibold">№</th>
             <th class="text-left py-4 px-6 font-semibold">Nomi</th>
@@ -39,7 +39,7 @@
           <tr
               v-for="(vin, index) in vinCategories"
               :key="index"
-              class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              class="border-t border-gray-300 hover:bg-gray-50 transition-colors"
           >
             <td class="py-4 px-6 text-gray-600">{{ index + 1 }}</td>
             <td class="py-4 px-6">

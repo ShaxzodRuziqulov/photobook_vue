@@ -54,9 +54,6 @@ export const authService = defineStore("authService", () => {
 
     const login = async (user: UserLogin) => {
         const { data } = await axiosInstance.post("/api/v1/auth/login", user);
-        // if (!data?.access_token) {
-        //     throw new Error("Token kelmadi");
-        // }
 
         setToken(data.access_token);
         setUser(data.user);

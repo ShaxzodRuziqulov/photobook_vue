@@ -16,12 +16,12 @@
       />
     </div>
     <div
-        v-if="allCategory.length > 0"
+        v-if="categoryStatus.length > 0"
         class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-200 rounded-xl p-2 justify-between"
     >
       <div
           class="flex flex-col gap-4 bg-white rounded-xl py-2 px-4 justify-between"
-          v-for="(cat, index) in allCategory"
+          v-for="(cat, index) in categoryStatus"
           :key="index"
       >
         <div
@@ -38,7 +38,7 @@
               <span class="text-gray-600 text-sm flex">Jami</span>
               <div class="flex text-md gap-2 items-center">
                 <span class="text-blue-600">
-                {{getCategoryCount(cat)}}
+                {{cat.total}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -49,7 +49,7 @@
               <span class="text-gray-600 text-sm">Bajarilgan</span>
               <div class="flex text-md gap-2 items-center">
                 <span class="text-blue-600">
-                {{getCount(cat)}}
+                {{cat.processed}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -60,7 +60,7 @@
               <span class="text-gray-600 text-sm">Qoldi</span>
               <div class="flex text-md gap-2 items-center">
                 <span class="text-blue-600">
-                {{getRemaining(cat)}}
+                {{cat.remaining}}
                 </span>
                 <span class="text-gray-400">dona</span>
               </div>
@@ -498,16 +498,12 @@ const orderedUsers = computed(() => {
 const handleEmployeeChange = (newValues: string[]) => {
   const oldValues = form.value.employees || []
 
-  // yangi qo‘shilganlarni topamiz
   const added = newValues.filter(id => !oldValues.includes(id))
 
-  // o‘chirilganlarni topamiz
   const removed = oldValues.filter(id => !newValues.includes(id))
 
-  // eski tartibni saqlaymiz
   let result = oldValues.filter(id => !removed.includes(id))
 
-  // yangi tanlanganlarni oxiriga qo‘shamiz
   result = [...result, ...added]
 
   form.value.employees = result
@@ -581,6 +577,33 @@ const filteredAlbums = computed(() => {
       new Date(b.acceptedDate).getTime() -
       new Date(a.acceptedDate).getTime()
   )
+})
+
+const categoryStatus = computed(() => {
+  return allCategory.value.map((cat: any) => {
+    const items = filteredAlbums.value.filter(
+        item => item.categoryId === cat.id
+    )
+
+    const total = items.reduce(
+        (sum, item) => sum + (item.amount || 0),
+        0
+    )
+
+    const processed = items.reduce(
+        (sum, item) => sum + (getProcessedCount(item) || 0),
+        0
+    )
+
+    const remaining = total - processed
+
+    return {
+      ...cat,
+      total,
+      processed,
+      remaining
+    }
+  })
 })
 
 const getProcessedCount = (album: any) => {
@@ -667,28 +690,6 @@ const pageProcessed = computed(() => {
   )
 })
 
-const getCategoryCount = (value: string) => {
-  return filteredAlbums.value
-      .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (item.amount || 0), 0)
-}
-
-const getCount = (value: string) => {
-  return filteredAlbums.value
-      .filter(item => item.categoryName === value)
-      .reduce((total, item) => total + (getProcessedCount(item) || 0), 0)
-}
-
-const getRemaining = (value: string) => {
-  return filteredAlbums.value
-      .filter(item => item.categoryName === value)
-      .reduce((total, item) => {
-        const totalNum = item.amount || 0
-        const processed = getProcessedCount(item) || 0
-        return total + (totalNum - processed)
-      }, 0)
-}
-
 const itemStatus = ref( [
   { value: "PENDING",     text: "Kutilmoqda" },
   { value: "IN_PROGRESS", text: "Jarayonda"  },
@@ -753,7 +754,7 @@ const submitForm = async () => {
   if (!isValidForm()) return;
 
   try {
-
+    filteredAlbums.value
     const payload: OrderCreateDto = {
       ...form.value,
       employees: form.value.employees.map((id, index) => {

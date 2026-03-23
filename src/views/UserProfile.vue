@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center justify-center flex-col overflow-hidden w-full px-4 min-h-screen bg-gradient-to-br from-gray-200 to-gray-500 m-auto">
     <div class="bg-white rounded-2xl flex overflow-hidden flex-col w-full max-w-md p-4 sm:p-6 shadow-xl">
-      <div class="flex items-start ">
+      <div class="flex items-start gap-2">
         <CButton
             type="button"
             text="Ortga"
@@ -10,19 +10,35 @@
             faClass="fa-solid fa-arrow-left"
             @click="router.back()"
         />
+        <h2 class="text-2xl pt-2 font-semibold">User Profile</h2>
       </div>
-      <h2 class="text-2xl pt-2 font-semibold">User Profile</h2>
+
       <form
           @submit.prevent="profileSubmit"
-          class="flex flex-col gap-3 overflow-y-auto max-h-[80vh] sm:max-h-[80vh]"
+          class="flex flex-col gap-3 p-2 overflow-y-auto max-h-[70vh] sm:max-h-[80vh]"
       >
         <div class="flex items-center gap-3 flex-col justify-center w-full">
-          <img
-              class="w-20 h-20 sm:w-24 sm:h-24 border-2 border-gray-800 rounded-full object-cover"
-              :src="avatarPreview || form.avatarUrl"
-              alt=""
-          />
-
+          <div class="relative">
+            <img
+                v-if="form.avatarUrl"
+                class="w-24 h-24 border-2 border-gray-300 rounded-full object-cover bg-gray-100"
+                :src="avatarPreview || getAvatarUrl(form.avatarUrl)"
+                alt="Avatar"
+                @error="onImgError"
+            />
+            <span v-else class="text-2xl rounded-full border-2 bg-gray-800 text-white border-gray-300 flex w-20 h-20 items-center justify-center">
+            <i class="fa-solid fa-user"></i>
+            </span>
+            <div
+                v-if="avatarUploading"
+                class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center"
+            >
+              <svg class="animate-spin w-6 h-6 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+            </div>
+          </div>
           <input
               type="file"
               accept="image/*"
@@ -31,26 +47,41 @@
               @change="changeAvatar($event)"
           />
 
-          <button
-              class="text-sm sm:text-base cursor-pointer text-gray-600 border px-3 py-2 rounded-xl border-dashed border-gray-600"
-              @click="profileImageInput?.click()"
-              type="button"
-          >
-            Rasmni o'zgartirish
-          </button>
+          <div class="flex gap-2">
+            <button
+                class="text-sm cursor-pointer text-white bg-gray-600 hover:bg-gray-700 px-3 py-2 rounded-xl border border-dashed border-gray-500 disabled:opacity-50"
+                @click="profileImageInput?.click()"
+                type="button"
+                :disabled="avatarUploading"
+            >
+              Rasmni o'zgartirish
+            </button>
+            <button
+                v-if="form.avatarUrl || avatarPreview"
+                class="text-sm cursor-pointer text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded-xl disabled:opacity-50"
+                @click="removeAvatar"
+                type="button"
+                :disabled="avatarUploading"
+            >
+              O'chirish
+            </button>
+          </div>
         </div>
-        <AppInput
-            label="Ism"
-            placeholder="Ism kiriting"
-            type="text"
-            v-model="form.lastName"
-        />
-        <AppInput
-            label="Familiya"
-            placeholder="Familiya kiriting"
-            type="text"
-            v-model="form.firstName"
-        />
+
+        <div class="flex items-center gap-2">
+          <AppInput
+              label="Ism"
+              placeholder="Ism kiriting"
+              type="text"
+              v-model="form.lastName"
+          />
+          <AppInput
+              label="Familiya"
+              placeholder="Familiya kiriting"
+              type="text"
+              v-model="form.firstName"
+          />
+        </div>
         <AppInput
             label="Kasbi"
             placeholder="Kasbi kiriting"
@@ -59,16 +90,17 @@
         />
         <AppInput
             label="Phone Number"
-            placeholder="+998... "
+            placeholder="+998..."
             type="text"
             v-model="form.phone"
         />
         <AppInput
             label="Bio"
-            placeholder="Inter bio"
+            placeholder="Bio kiriting"
             type="text"
             v-model="form.bio"
         />
+
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
           <CButton
               type="button"
@@ -79,8 +111,9 @@
           />
           <CButton
               type="submit"
-              text="Submit"
+              text="Saqlash"
               variant="primary"
+              :disabled="isLoading || avatarUploading"
               class="w-full sm:w-auto"
           />
         </div>
@@ -89,20 +122,30 @@
   </div>
 </template>
 
-
 <script setup lang="ts">
 import AppInput from "@/components/ui/AppInput.vue";
-import {onMounted, reactive, ref} from "vue";
+import { onMounted, reactive, ref } from "vue";
 import CButton from "@/components/CButton.vue";
 import { authService } from "@/service/authService";
 import axiosInstance from "@/axios";
-import { useStore } from "@/stores/store";
 import { useRouter } from "vue-router";
-import {UserForm} from "@/typeModules/useModules";
+import { UserForm } from "@/typeModules/useModules";
+import { useToast } from "vue-toastification";
 
-const dataStore = useStore();
 const router = useRouter();
 const auth = authService();
+const Toast = useToast();
+
+const isLoading = ref(false);
+const avatarUploading = ref(false);
+const selectedFile = ref<File | null>(null);
+const avatarPreview = ref<string>("");
+const profileImageInput = ref<HTMLInputElement>();
+
+const currentUploadKey = ref<string>("");
+
+const BASE_URL = axiosInstance.defaults.baseURL || import.meta.env.VITE_BASE_API || "";
+
 const form = reactive<UserForm>({
   id: "",
   firstName: "",
@@ -111,113 +154,149 @@ const form = reactive<UserForm>({
   username: "",
   password: "",
   avatarUrl: "",
-  phone: '',
-  bio: '',
+  phone: "",
+  bio: "",
   isActive: true,
   uploadId: "",
   roles: [],
 });
 
-const selectedFile = ref<File | null>(null);
-const avatarPreview = ref<string>("");
-const profileImageInput = ref<HTMLInputElement>();
+const getAvatarUrl = (url: string | undefined): string => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${BASE_URL}${url}`;
+};
+
+const onImgError = (e: Event) => {
+  (e.target as HTMLImageElement).src = "";
+};
+
+const uploadAvatar = async (): Promise<{ url: string; id: string; key: string } | null> => {
+  if (!selectedFile.value) return null;
+  try {
+    const formData = new FormData();
+    formData.append("file", selectedFile.value);
+
+    const { data } = await axiosInstance.post("/api/v1/uploads", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
+
+    return {
+      url: data.url,
+      id: data.id,
+      key: data.key
+    };
+  } catch (e) {
+    console.error("UPLOAD ERROR:", e);
+    Toast.error("Rasm yuklashda xatolik");
+    return null;
+  }
+};
+
+const removeAvatar = async () => {
+  if (currentUploadKey.value) {
+    await deleteUpload(currentUploadKey.value);
+    currentUploadKey.value = "";
+  }
+
+  avatarPreview.value = "";
+  form.avatarUrl = "";
+  form.uploadId = "";
+};
+
+const deleteUpload = async (id: string) => {
+  if (!id) return;
+
+  try {
+    await axiosInstance.delete(`/api/v1/uploads/${id}`);
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+  }
+};
 
 const changeAvatar = async (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (!input.files?.length) return
+  const input = event.target as HTMLInputElement;
+  if (!input.files?.length) return;
 
-  const file = input.files[0]
+  selectedFile.value = input.files[0];
 
-  console.log("Uploading file:", file)
-  const res = await dataStore.loadUploadImage(file)
-
-  form.avatarUrl = res.url;
-  avatarPreview.value = URL.createObjectURL(file)
-  // form.avatarUrl = URL.createObjectURL(file)
-}
-
-const getAvatarUrl = (avatarField?: string) => {
-  if (!avatarField) return ""
-
-  if (avatarField.startsWith("http")) return avatarField
-
-  return `${import.meta.env.VITE_BASE_URL}/${avatarField}`
-}
-//
-// const changeAvatar = (event: Event) => {
-//   const target = event.target as HTMLInputElement;
-//   if (!target.files?.length) return;
-//
-//   selectedFile.value = target.files[0];
-//   avatarPreview.value = URL.createObjectURL(selectedFile.value);
-// };
+  avatarPreview.value = URL.createObjectURL(selectedFile.value);
+  // avatarUploading.value = true;
+};
 
 const profileSubmit = async () => {
+  isLoading.value = true;
   try {
-    const fd = new FormData()
-
-    fd.append("id", String(form.id))
-    fd.append("firstName", form.firstName)
-    fd.append("lastName", form.lastName)
-    fd.append("profession", form.profession)
-    fd.append("uploadId", form.uploadId)
-    fd.append("avatarUrl", form.avatarUrl)
-    fd.append("phone", form.phone || "")
-    fd.append("bio", form.bio || "")
-
     if (selectedFile.value) {
-      fd.append("avatar", selectedFile.value)
+      const uploaded = await uploadAvatar()
+
+      if (uploaded) {
+        form.avatarUrl = uploaded.url;
+        form.uploadId = uploaded.id;
+        currentUploadKey.value = uploaded.key;
+      }
     }
+    const { data } = await axiosInstance.put("/api/v1/users/me", {
+      id:         form.id,
+      firstName:  form.firstName,
+      lastName:   form.lastName,
+      profession: form.profession,
+      phone:      form.phone,
+      bio:        form.bio,
+      avatarUrl:  form.avatarUrl,
+      uploadId:   form.uploadId || '',
+    });
 
-    const { data } = await axiosInstance.put('/api/v1/users/me', fd)
+    await loadProfile()
 
-    Object.assign(form, data)
+    currentUploadKey.value = data.uploadId || "";
+    avatarPreview.value = "";
 
-    auth.setUser(data)
-    avatarPreview.value = ""
-    selectedFile.value = null
-
+    auth.setUser(data);
+    Toast.success("Profil yangilandi");
   } catch (error) {
-    console.error(error)
+    Toast.error("Saqlashda xatolik");
+    console.error(error);
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 
 const loadProfile = async () => {
   try {
-    const { data } = await axiosInstance.get('/api/v1/users/me')
+    const { data } = await axiosInstance.get("/api/v1/users/me");
 
-    form.id = data.id
-    form.firstName = data.firstName
-    form.lastName = data.lastName
-    form.profession = data.profession
-    form.avatarUrl = data.avatarUrl
-    form.phone = data.phone
-    form.bio = data.bio
+    form.id         = data.id         || "";
+    form.firstName  = data.firstName  || "";
+    form.lastName   = data.lastName   || "";
+    form.profession = data.profession || "";
+    form.avatarUrl  = data.avatarUrl  || "";
+    form.phone      = data.phone      || "";
+    form.bio        = data.bio        || "";
+    form.username   = data.username   || "";
+    form.uploadId   = data.uploadId   || "";
 
-    auth.setUser(data)
+    currentUploadKey.value = data.uploadId || "";
+
+    auth.setUser(data);
   } catch (e) {
-    console.error(e)
+    console.error("Profil yuklashda xatolik:", e);
   }
-}
+};
 
 const clearForm = () => {
-  form.id = "";
-  form.firstName = "";
-  form.lastName = "";
+  form.firstName  = "";
+  form.lastName   = "";
   form.profession = "";
-  form.avatarUrl = "";
-  form.phone = "";
-  form.bio = "";
+  form.phone      = "";
+  form.avatarUrl  = "";
+  form.bio        = "";
   avatarPreview.value = "";
-  selectedFile.value = null;
 };
 
 onMounted(() => {
-  loadProfile()
-})
+  loadProfile();
+});
 </script>
-
-
-<style scoped>
-
-</style>

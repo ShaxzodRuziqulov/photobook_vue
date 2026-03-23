@@ -57,17 +57,6 @@ export const useStore = defineStore('item', () => {
         customers: [] as IFormData[],
     });
 
-    // const uploadImage = async (file: File) => {
-    //     const formData = new FormData();
-    //     formData.append("file", file);
-    //     const { data } = await axiosInstance.post<UploadResponse>("/api/v1/uploads", formData, {
-    //         headers: {
-    //             "Content-Type": "multipart/form-data",
-    //         },
-    //     });
-    //     return data.url;
-    // };
-    // ─── Universal order loader ───────────────────────────────────────────────────
     const loadOrders = async (
         kind: OrderKind,
         params: Partial<PagingRequest> = {}
