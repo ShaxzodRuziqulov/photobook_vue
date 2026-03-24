@@ -39,7 +39,7 @@
             type="button"
             :text="userName"
             is-has-fa-icon
-            faClass="fa-solid fa-arrow-right"
+            faClass="fa-solid fa-user"
             variant="ghost-accent"
             @click="openToProfile"
         />
