@@ -51,17 +51,16 @@
     <div class="w-full lg:w-1/2 premium-bg flex items-center justify-center p-4 relative">
       <div class="scan-line"></div>
       <div class="w-full max-w-lg relative z-10">
-        <!-- Mobile Logo -->
         <div class="lg:hidden text-center mb-8">
           <div class="inline-flex items-center justify-center w-20 h-20 logo-glow rounded-2xl bg-white/10 backdrop-blur-xl mb-4">
             <img class="w-16 brightness-0 invert" src="../assets/camera.png" alt="">
           </div>
           <h2 class="text-3xl font-bold text-white uppercase">Photobook</h2>
         </div>
-        <div class="bg-white rounded-2xl flex flex-col w-full p-4 max-w-md shadow-xl">
-          <div class="mb-8 flex flex-col p-4">
+        <div class="bg-white rounded-2xl flex flex-col w-full p-4 max-w-md gap-2 shadow-2xl">
+          <div class="mb-4 flex flex-col p-4">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Xush kelibsiz! 👋</h2>
-            <p class="text-gray-600">Davom ettirish uchun hisobingizga kiring</p>
+            <p class="text-gray-600">Davom ettirish uchun hisobingizga kiring!</p>
           </div>
           <form
               @submit.prevent="submitLogin"
@@ -92,19 +91,11 @@
                 variant="primary"
             />
           </form>
-<!--          <span-->
-<!--              class="mt-4 gap-2 flex items-center"-->
-<!--          >-->
-<!--            Registratsiyadan utish-->
-<!--            <i class="fa-solid fa-arrow-right"></i>-->
-<!--            <router-link-->
-<!--                class="text-blue-500 text-md font-bold p-1.5 rounded contain-paint hover:bg-gray-200"-->
-<!--                to="/register"-->
-<!--            >-->
-<!--              Register-->
-<!--            </router-link>-->
-<!--          </span>-->
-          <div class="text-center text-md mt-8">
+          <span v-if="errorMessage" class="text-red-400 gap-2 text-sm w-full items-center justify-center flex mt-2">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            {{errorMessage}}
+          </span>
+          <div class="text-center text-md mt-4">
             © 2026 PHOTOBOOK. <span class="text-sm text-gray-700">Barcha huquqlar himoyalangan.</span>
           </div>
         </div>
@@ -126,6 +117,7 @@ const useAuthService = authService();
 
 const isPasswordVisible = ref(false);
 const isPasswordEyeOpen = ref(false);
+const errorMessage = ref("");
 
 const form = ref<UserLogin>({
   username: "",
@@ -133,22 +125,22 @@ const form = ref<UserLogin>({
 })
 
 const validateRegister = () => {
-  if (!form.value.username.trim()) return "Name is required";
-  if (!form.value.password.trim()) return "Password is required";
+  if (!form.value.username) return "Name is required";
+  if (!form.value.password) return "Password is required";
 
   return null;
 };
 
 
 const submitLogin = async () => {
+  const error = validateRegister();
+  if (error) {
+    errorMessage.value = error;
+    return;
+  }
   try {
     if (form.value.username && form.value.password) {
       console.log('form', form.value)
-      // const error = validateRegister();
-      // if (error) {
-      //   alert(error);
-      //   return;
-      // }
       console.log('2222',form.value.username);
       await useAuthService.login({
         username: form.value.username,
@@ -176,7 +168,7 @@ const submitLogin = async () => {
 <style>
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Avenir", "Times New Roman", Arial, sans-serif sans-serif;
 }
 
 .premium-bg {
