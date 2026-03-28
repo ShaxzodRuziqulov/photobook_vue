@@ -132,16 +132,16 @@ router.beforeEach(async (to, _, next) => {
         return next();
     }
 
-    if (!isAuthenticated) {
-        return next({ name: "Login" });
-    }
-
-    if (!authStore.state.user) {
-        const user = await authStore.getCurrentUser();
-        if (!user) {
-            return next({ name: "Login" });
-        }
-    }
+    // if (!isAuthenticated) {
+    //     return next({ name: "Login" });
+    // }
+    //
+    // if (!authStore.state.user) {
+    //     const user = await authStore.getCurrentUser();
+    //     if (!user) {
+    //         return next({ name: "Login" });
+    //     }
+    // }
 
     next();
 });

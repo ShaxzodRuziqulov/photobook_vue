@@ -1,6 +1,6 @@
 <template>
-  <div class="flex items-center justify-center flex-col overflow-hidden w-full px-4 min-h-screen bg-gradient-to-br from-gray-200 to-gray-500 m-auto">
-    <div class="bg-white rounded-2xl flex overflow-hidden flex-col w-full max-w-md p-2 sm:p-2 shadow-xl">
+  <div class="flex items-center flex-col overflow-hidden w-full p-5 min-h-screen bg-gradient-to-br m-auto from-gray-200 to-gray-500">
+    <div class="bg-white fixed rounded-2xl overflow-hidden max-w-sm flex-col p-4 w-md sm:p-2 shadow-xl">
       <div class="flex items-center justify-between">
         <CButton
             type="button"
@@ -15,7 +15,7 @@
 
       <form
           @submit.prevent="profileSubmit"
-          class="flex flex-col gap-3 overflow-y-auto max-h-[80vh] p-4"
+          class="flex flex-col gap-3 overflow-y-auto max-h-[72vh] p-2"
       >
         <div class="flex items-center gap-3 flex-col justify-center w-full">
           <div class="relative">
