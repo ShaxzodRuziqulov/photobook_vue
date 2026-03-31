@@ -1,10 +1,11 @@
 <template>
-  <div class="flex p-6 flex-col animate-fade-in container m-auto gap-6 h-screen w-full">
-    <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 items-center"
-    >
+  <div class="flex flex-col w-full h-screen">
+    <div class="flex p-6 flex-col animate-fade-in container m-auto gap-6 w-full">
       <div
-          class="flex flex-col cursor-pointer gap-2 bg-white shadow
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 items-center"
+      >
+        <div
+            class="flex flex-col cursor-pointer gap-2 bg-white shadow
             rounded-lg p-6 relative h-full
             border-2 border-gray-200 transition-all duration-300 ease-out
             hover:-translate-y-1 hover:shadow-lg
@@ -50,22 +51,24 @@
                   'bg-gradient-to-br from-green-500 to-emerald-600'
                   ,
               ]"
-              class="fa-solid fa-arrow-right bg-blue-500 p-2 rounded-md text-white text-xl group-hover:-translate-y-1 transition-all duration-300 ease-out"></i>
-        </div>
-        <div class="flex gap-4 items-center justify-between">
-          <span class="text-gray-600 text-lg font-semibold break-all">{{item.name}}</span>
-          <span class="text-2xl text-gray-800 font-semibold break-all">{{item.itemCount}}</span>
+                class="fa-solid fa-arrow-right bg-blue-500 p-2 rounded-md text-white text-xl group-hover:-translate-y-1 transition-all duration-300 ease-out"></i>
+          </div>
+          <div class="flex gap-4 items-center justify-between">
+            <span class="text-gray-600 text-lg font-semibold break-all">{{item.name}}</span>
+            <span class="text-2xl text-gray-800 font-semibold break-all">{{item.itemCount}}</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 items-center"
-    >
-      <div class="flex flex-col bg-white p-4 border-2 border-gray-200 rounded-xl"
-           v-for="(item, index) in allStatuses"
-           :key="index"
-           :class="[
-              'text-white bg-blue-600',
+      <div
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 items-center"
+      >
+        <div class="flex flex-col h-full border-2 border-gray-200 rounded-xl"
+             v-for="(item, index) in allStatuses"
+             :key="index"
+        >
+          <div
+              :class="[
+              'text-white p-4 bg-blue-600 rounded-tr-xl rounded-tl-xl ',
               index % 3 === 0 ? 'bg-gradient-to-br from-indigo-400 to-teal-500' :
               index % 3 === 1 ? 'bg-gradient-to-br from-teal-400 to-teal-500' :
               'bg-gradient-to-br from-purple-400 to-teal-500'
@@ -83,128 +86,172 @@
           <div
               @click="item.onClick('IN_PROGRESS')"
 
-              class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
-              :class="[
+                  class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
+                  :class="[
                   index % 3 === 0 ? 'border-2 border-blue-400 hover:border-blue-600' :
                   index % 3 === 1 ? 'border-2 border-teal-500 hover:border-teal-600' :
                   'border-2 border-purple-400 hover:border-purple-600'
               ]"
-          >
-            <div class="flex items-center justify-between">
-              <p class="text-sm mb-1">Jarayonda</p>
-              <i class="fa-regular fa-clock"></i>
-            </div>
-            <p class="text-2xl font-bold">{{ item.pending }}</p>
-          </div>
-          <div
-              @click="item.onClick('COMPLETED')"
-              class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
-              :class="[
+              >
+                <div class="flex items-center justify-between">
+                  <p class="text-sm mb-1">Jarayonda</p>
+                  <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-2xl font-bold">{{ item.pending }}</p>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </div>
+              </div>
+              <div
+                  @click="item.onClick('COMPLETED')"
+                  class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
+                  :class="[
                   index % 3 === 0 ? 'border-2 border-blue-400 hover:border-blue-600' :
                   index % 3 === 1 ? 'border-2 border-teal-500 hover:border-teal-600' :
                   'border-2 border-purple-400 hover:border-purple-600'
               ]"
-          >
-            <div class="flex items-center justify-between">
-              <p class="text-sm mb-1">Bajarilgan</p>
-              <i class="fa-regular fa-circle-check"></i>
+              >
+                <div class="flex items-center justify-between">
+                  <p class="text-sm mb-1">Bajarilgan</p>
+                  <i class="fa-regular fa-circle-check"></i>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-2xl font-bold">{{ item.completed }}</p>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </div>
+              </div>
             </div>
-            <p class="text-2xl font-bold">{{ item.completed }}</p>
           </div>
-        </div>
-        <div class="mt-4">
-          <div class="flex items-center justify-between text-sm mb-2">
-            <span class="">Bajarilish foizi</span>
-            <span class="font-bold">
+          <div class="mt-4 px-4 py-2">
+            <div class="flex items-center text-gray-600 justify-between text-sm mb-2">
+              <span class="font-bold text-md">Bajarilish foizi</span>
+              <span class="font-bold">
               <i class="fa-solid fa-arrow-trend-up"></i>
             {{ getPercent(item.completed, item.total) }}%
           </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                  class="bg-blue-500 h-2.5 rounded-full transition-all duration-500"
+                  :style="{ width: getPercent(item.completed, item.total) + '%' }"
+              ></div>
+            </div>
           </div>
-          <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div class="p-4 flex flex-col text-gray-600">
+            <h2 class="bg-blue-100 text-sm font-semibold mb-2 rounded-lg p-3">Mahsulot turi buyicha hisobot</h2>
             <div
-                class="bg-blue-500 h-2.5 rounded-full transition-all duration-500"
-                :style="{ width: getPercent(item.completed, item.total) + '%' }"
-            ></div>
+                v-for="status in item.allItems"
+                :key="status.label"
+                class="border-t border-gray-200 p-2"
+            >
+              <div
+                  class="flex justify-between text-sm"
+              >
+                <span>{{ status.label }}</span>
+                <span>{{ status.count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-4">
+        <div class="flex items-center p-2 gap-2">
+          <h2 class="text-lg font-semibold text-gray-800">Kategoriyalar bo'yicha taqsimot jami:</h2>
+          <span class="text-lg">{{totalCategories}}</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 mt-6 gap-8">
+          <div
+              v-for="item in categoryStats"
+              :key="item.id"
+              class="flex flex-col items-center"
+          >
+            <div class="relative inline-block mb-6">
+              <svg width="180" height="180" class="transform -rotate-90">
+                <circle
+                    cx="90"
+                    cy="90"
+                    r="70"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    stroke-width="16"
+                />
+                <defs>
+                  <linearGradient :id="`gradient-${item.id}`" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" :style="`stop-color:${item.gradientFrom}`"/>
+                    <stop offset="100%" :style="`stop-color:${item.gradientTo}`"/>
+                  </linearGradient>
+                </defs>
+                <circle
+                    cx="90"
+                    cy="90"
+                    r="70"
+                    fill="none"
+                    :stroke="`url(#gradient-${item.id})`"
+                    stroke-width="16"
+                    stroke-linecap="round"
+                    :stroke-dasharray="getCircleProgress(item.percentage).circumference"
+                    :stroke-dashoffset="getCircleProgress(item.percentage).offset"
+                    class="transition-all duration-1000 ease-out"
+                />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <p class="text-4xl font-bold">{{ item.percentage }}%</p>
+                <p class="text-sm text-gray-500 mt-1">{{ item.label }}</p>
+              </div>
+            </div>
+            <div
+                :class="item.bgColor"
+                class="text-center p-4 w-full rounded-2xl transition-all duration-500"
+            >
+              <div class="flex items-center justify-center gap-2 mb-2">
+                <i class="text-3xl text-blue-500" :class="item.icon"></i>
+                <p class="text-md font-semibold text-gray-700">{{ item.label }}</p>
+              </div>
+              <p class="text-4xl font-bold text-gray-900">{{ item.count }}</p>
+              <p class="text-sm text-gray-500 mt-1">
+                <i class="fa-solid fa-tags text-blue-400"></i>
+                Kategoriya
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="bg-white rounded-xl shadow-lg p-4">
-      <h2 class="text-xl font-bold text-gray-800 mb-8">Kategoriyalar Bo'yicha Taqsimot</h2>
+    <div class="w-full text-white bg-black">
+      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 container m-auto gap-10 items-center justify-center w-full p-4">
+        <div class="flex flex-col p-6 text-md gap-4">
+          <h2 class="text-xl font-bold">Zakazlar</h2>
+          <div class="flex flex-col items-start gap-2 text-gray-400 font-semibold">
+            <a href="/album" class="hover:text-purple-600">Albomlar nazorati</a>
+            <a href="/vignette" class="hover:text-purple-600">Vinetkalar nazorati</a>
+            <a href="/photo" class="hover:text-purple-600">Rasmli albomlar nazorati</a>
+          </div>
+        </div>
+        <div class="flex flex-col p-6 text-md gap-4">
+          <h2 class="text-xl font-bold">Sozlamalar</h2>
+          <div class="flex flex-col text-start gap-2 text-gray-400 font-semibold">
+            <a href="/users" class="hover:text-purple-600">Xodimlar nazorati</a>
+            <a href="/material" class="hover:text-purple-600">Omborxona nazorati</a>
+            <a href="/category" class="hover:text-purple-600">Kategoriyalar nazorati</a>
+          </div>
+        </div>
+        <div class="flex flex-col p-6 text-md gap-4">
+          <h2 class="text-xl font-bold">Vazifalar</h2>
+          <div class="flex flex-col text-start gap-2 text-gray-400 font-semibold">
+            <a href="/tasks" class="hover:text-purple-600">Mening vazifalarim</a>
+          </div>
+        </div>
+        <div class="flex flex-col text-gray-400 font-semibold text-center p-4 text-md gap-2">
+        <span class="font-bold">
+          Barcha sahifalar bo'yicha statistik tahlillar
+        </span>
+          <p>
+            © 2026 <span class="text-sm ">PHOTOBOOK. Barcha huquqlar himoyalangan.</span>
+          </p>
+        </div>
+      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div
-            v-for="item in categoryStats"
-            :key="item.id"
-            class="flex flex-col items-center"
-        >
-          <div class="relative inline-block mb-6">
-            <svg width="180" height="180" class="transform -rotate-90">
-              <circle
-                  cx="90"
-                  cy="90"
-                  r="70"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  stroke-width="16"
-              />
-              <defs>
-                <linearGradient :id="`gradient-${item.id}`" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" :style="`stop-color:${item.gradientFrom}`"/>
-                  <stop offset="100%" :style="`stop-color:${item.gradientTo}`"/>
-                </linearGradient>
-              </defs>
-              <circle
-                  cx="90"
-                  cy="90"
-                  r="70"
-                  fill="none"
-                  :stroke="`url(#gradient-${item.id})`"
-                  stroke-width="16"
-                  stroke-linecap="round"
-                  :stroke-dasharray="getCircleProgress(item.percentage).circumference"
-                  :stroke-dashoffset="getCircleProgress(item.percentage).offset"
-                  class="transition-all duration-1000 ease-out"
-              />
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <p class="text-4xl font-bold">{{ item.percentage }}%</p>
-              <p class="text-sm text-gray-500 mt-1">{{ item.label }}</p>
-            </div>
-          </div>
-          <div class="text-center">
-            <div class="flex items-center justify-center gap-2 mb-2">
-              <i class="text-3xl text-blue-500" :class="item.icon"></i>
-              <p class="text-md font-semibold text-gray-700">{{ item.label }}</p>
-            </div>
-            <p class="text-4xl font-bold text-gray-900">{{ item.count }}</p>
-            <p class="text-sm text-gray-500 mt-1">
-              <i class="fa-solid fa-tags text-blue-400"></i>
-              Kategoriya
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="mt-10 py-6 border-t border-gray-200">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="text-center p-4 bg-gray-200 rounded-xl">
-            <p class="text-sm text-gray-600 mb-1"><i class="fa-solid fa-tags text-blue-600"></i> Jami Kategoriyalar</p>
-            <p class="text-3xl font-bold text-gray-800">{{ totalCategories }}</p>
-          </div>
-          <div :class="['text-center p-4 rounded-xl', categoryStats[0].bgColor]">
-            <p class="text-sm text-gray-600 mb-1"> <i class="fa-solid fa-book text-blue-600"></i> Albomlar</p>
-            <p :class="['text-3xl font-bold', categoryStats[0].color]">{{ albumCategories }}</p>
-          </div>
-          <div :class="['text-center p-4 rounded-xl', categoryStats[1].bgColor]">
-            <p class="text-sm text-gray-600 mb-1"><i class="fa-solid fa-book-open text-blue-600"></i> Vinetka</p>
-            <p :class="['text-3xl font-bold', categoryStats[1].color]">{{ vignetteCategories }}</p>
-          </div>
-          <div :class="['text-center p-4 rounded-xl', categoryStats[2].bgColor]">
-            <p class="text-sm text-gray-600 mb-1"><i class="fa-solid fa-images text-blue-600"></i> Rasmli Albom</p>
-            <p :class="['text-3xl font-bold', categoryStats[2].color]">{{ photosCategories }}</p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -398,6 +445,17 @@ const allStatuses = computed(() =>[
       };
       clickOpenPage('/album', query)
     },
+    allItems: [
+      { id: 1, label: 'A3 albom', count: '300' },
+      { id: 2, label: 'A3 knijniy', count: '400'},
+      { id: 3, label: 'Kichik albom 6 betlik', count: '500'},
+      { id: 4, label: 'Kichik albom 8 betlik', count: '500'},
+      { id: 5, label: 'Kichik albom 10 betlik', count: '500'},
+      { id: 6, label: 'Kichik albom 14 betlik', count: '500'},
+      { id: 7, label: 'Kichik albom 120 betlik', count: '500'},
+      { id: 8, label: 'Kichik knijniy', count: '300'},
+      { id: 9, label: 'Ikki tomonlama', count: '200'}
+    ]
   },
   {
     id: 2,
@@ -411,7 +469,15 @@ const allStatuses = computed(() =>[
         status: status,
       }
       clickOpenPage('/vignette', query)
-    }
+    },
+    allItems: [
+      { id: 1, label: 'Bitiruvchi qora', count: '500'},
+      { id: 2, label: 'Bitiruvchi oq', count: '400'},
+      { id: 3, label: 'Kuk papka', count: '300'},
+      { id: 4, label: 'Yashil', count: '200'},
+      { id: 5, label: 'Sariq', count: '600'},
+      { id: 6, label: 'Qora papka', count: '600'},
+    ]
   },
   {
     id: 3,
@@ -425,7 +491,16 @@ const allStatuses = computed(() =>[
         status: status,
       }
       clickOpenPage('/photo', query)
-    }
+    },
+    allItems: [
+      { id: 1, label: 'A3 albom', count: '300'},
+      { id: 2, label: 'A3 knijniy', count: '200'},
+      { id: 3, label: 'Kichik albom', count: '400'},
+      { id: 4, label: 'Kichik knijniy', count: '500'},
+      { id: 5, label: 'Sredniy', count: '300'},
+      { id: 6, label: 'Kvadrat', count: '200'},
+      { id: 7, label: 'Ikki tomonlama', count: '300'},
+    ]
   }
 ])
 
@@ -459,7 +534,7 @@ const photosPercentage = computed(() =>
 const categoryStats = computed(() => [
   {
     id: 1,
-    label: 'Albomlar',
+    label: 'Albom',
     icon: 'fa-solid fa-book',
     count: albumCategories.value,
     percentage: albumPercentage.value,

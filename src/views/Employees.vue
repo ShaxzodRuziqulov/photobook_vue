@@ -14,7 +14,7 @@
       </div>
       <CButton
           type="button"
-          text="Add user"
+          text="Xodim qo'shish"
           @click="clickVisibleForm"
       />
     </div>
