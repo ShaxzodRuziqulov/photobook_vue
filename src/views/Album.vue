@@ -284,38 +284,40 @@
           />
           <h2 class="text-xl font-semibold">Buyurtmalar jadvali</h2>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-end gap-4 py-2">
-          <AppSelect
-              v-model="formStatus"
-              :options="itemStatus"
-              disabledValue="Tanlang"
-              label="Holat"
-              has-reset
-              resetText="Hammasi"
-          />
+        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 xl:grid-cols-2 items-end gap-2 py-2">
           <AppInput
               v-model="formFilter"
               type="search"
               label="Qidirish"
               placeholder="Qidirish..."
           />
-          <AppInput
-              v-model="formData"
-              type="date"
-              label="Qabul sanasi"
-          />
-          <AppInput
-              v-model="endData"
-              type="date"
-              label="Tugash sanasi"
-          />
-          <CButton
-              type="button"
-              text="Tozalash"
-              variant="ghost-accent"
-              @click="closeFilter"
-              class="mb-1"
-          />
+          <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end justify-around w-full gap-2">
+            <AppSelect
+                v-model="formStatus"
+                :options="itemStatus"
+                disabledValue="Tanlang"
+                label="Holat"
+                has-reset
+                resetText="Hammasi"
+            />
+            <AppInput
+                v-model="formData"
+                type="date"
+                label="Qabul sanasi"
+            />
+            <AppInput
+                v-model="endData"
+                type="date"
+                label="Tugash sanasi"
+            />
+            <CButton
+                type="button"
+                text="Tozalash"
+                variant="ghost-accent"
+                @click="closeFilter"
+                class="mb-1"
+            />
+          </div>
         </div>
       </div>
       <div class="overflow-auto">

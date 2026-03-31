@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col container m-auto w-full p-6">
-    <div class="w-full flex bg-white flex-col px-4 py-2 gap-3 min-h-0 rounded-xl shadow">
+    <div class="w-full animate-fade-in flex bg-white flex-col px-4 py-2 gap-3 min-h-0 rounded-xl shadow">
       <CDialog
           :show="activeTaskForm"
           @close="activeTaskForm = false"
@@ -94,7 +94,7 @@
         <h2 class="text-xl font-semibold">Barcha vazifalar</h2>
       </div>
       <div
-          class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-end gap-4 py-2"
+          class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 border-b-2 border-gray-200 items-end gap-4 py-2"
       >
         <AppSelect
             :options="itemStatus"
@@ -409,5 +409,18 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style>
