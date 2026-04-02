@@ -2,7 +2,7 @@
   <div class="flex flex-col w-full h-screen">
     <div class="flex p-6 flex-col animate-fade-in container m-auto gap-6 w-full">
       <div
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 items-center"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5 items-center"
       >
         <div
             class="flex flex-col cursor-pointer gap-2 bg-white shadow-md
@@ -26,7 +26,7 @@
         <div class="flex items-start justify-between">
           <div
               :class="[
-                  'text-white bg-blue-600 flex items-center justify-center w-12 h-12 rounded-xl text-xl',
+                  'text-white bg-blue-600 flex items-center justify-center w-10 h-10 rounded-xl text-xl',
                   index % 8 === 0 ? 'bg-gradient-to-br from-blue-500 to-cyan-600' :
                   index % 8 === 1 ? 'bg-gradient-to-br from-emerald-600 to-teal-600' :
                   index % 8 === 2 ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
@@ -80,18 +80,18 @@
               index % 3 === 1 ? 'bg-gradient-to-br from-teal-400 to-teal-500' :
               'bg-gradient-to-br from-purple-400 to-teal-500'
             ]"
-      >
-        <div class="flex text-xl items-center justify-between">
-          <div class="flex items-center gap-2">
-            <i :class="item.icon"></i>
-            {{item.label}}
-          </div>
-          <span>Jami: {{item.total}}</span>
-        </div>
-        <div class="flex border-t border-gray-200 my-4"></div>
-        <div class="grid grid-cols-2 gap-4">
-          <div
-              @click="item.onClick('IN_PROGRESS')"
+          >
+            <div class="flex text-lg items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i :class="item.icon"></i>
+                {{item.label}}
+              </div>
+              <span class="items-center">Jami: {{item.total}}</span>
+            </div>
+            <div class="flex border-t border-gray-200 my-4"></div>
+            <div class="grid grid-cols-2 gap-4">
+            <div
+                @click="item.onClick('IN_PROGRESS')"
 
                   class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
                   :class="[

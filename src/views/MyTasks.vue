@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col container m-auto w-full p-6">
+  <div class="flex flex-col container m-auto w-full min-h-screen p-6">
     <div class="w-full animate-fade-in flex bg-white flex-col px-4 py-2 gap-3 min-h-0 rounded-xl shadow">
       <CDialog
           :show="activeTaskForm"

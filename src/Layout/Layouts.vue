@@ -6,6 +6,15 @@
       @toggleMenu="toggleMenu"
       class="fixed z-50"
   />
+  <CButton
+      id="scrollTop"
+      :class="{'activeScroll': isOnActive}"
+      :faClass="'fa-solid fa-arrow-up'"
+      :is-has-fa-icon="true"
+      :text="''"
+      class="scrollBtn bg-red-800 hover:bg-red-700"
+      @click="scrollToTop"
+  />
   <div class="flex flex-col mt-20 w-full flex-1 relative bg-gray-50">
     <Sidebar
         :isMenuVisible="isMenuVisible"
@@ -22,11 +31,13 @@
 import { useRouter } from "vue-router";
 import Header from "@/components/Header.vue";
 import Sidebar from "@/components/Sidebar.vue";
-import {computed, ref} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref} from "vue";
+import CButton from "@/components/CButton.vue";
 
 const router = useRouter();
 
 const isMenuVisible = ref(false);
+const isOnActive = ref(false);
 
 const mainRoute = router.getRoutes().find(route => route.name === 'Main');
 
@@ -43,10 +54,47 @@ const toggleMenu = () => {
   isMenuVisible.value = !isMenuVisible.value;
 }
 
+const handleScroll = () => {
+  isOnActive.value = window.scrollY > 400
+}
 
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  })
+}
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+})
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
+})
 </script>
 
 
 <style scoped>
 
+.scrollBtn {
+  z-index: 999;
+  position: fixed;
+  color: white;
+  width: 45px;
+  height: 45px;
+  right: 5px;
+  bottom: 30px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 45px;
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all .3s ease;
+}
+.scrollBtn.activeScroll {
+  opacity: 1;
+  right: 20px;
+}
 </style>
