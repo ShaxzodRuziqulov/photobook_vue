@@ -1,6 +1,7 @@
 <template>
-  <div class="flex items-center flex-col overflow-hidden w-full p-5 min-h-screen bg-gradient-to-br m-auto from-gray-200 to-gray-500">
-    <div class="bg-white fixed rounded-2xl overflow-hidden max-w-sm flex-col p-4 w-md sm:p-2 shadow-xl">
+  <div class="flex items-center flex-col overflow-hidden w-full min-h-screen bg-gradient-to-br from-blue-950 to-gray-800 m-auto">
+    <img src="../assets/background.svg" alt="">
+    <div class="bg-white fixed rounded-2xl overflow-hidden top-[100px] max-w-sm flex-col p-4 w-md sm:p-2 shadow-xl">
       <div class="flex items-center justify-between">
         <CButton
             type="button"

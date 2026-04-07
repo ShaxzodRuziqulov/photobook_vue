@@ -148,13 +148,13 @@
             <h2 class="bg-blue-100 text-sm font-semibold mb-2 rounded-lg p-3">Mahsulot turi buyicha hisobot</h2>
             <div
                 v-for="status in item.allItems"
-                :key="status.label"
-                class="border-t border-gray-200 p-2"
+                :key="status.name"
+                class="border-t border-gray-200"
             >
               <div
-                  class="flex justify-between text-sm"
+                  class="flex justify-between p-2 cursor-pointer text-sm hover:bg-blue-100"
               >
-                <span>{{ status.label }}</span>
+                <span>{{ status.name }}</span>
                 <span>{{ status.count }}</span>
               </div>
             </div>
@@ -459,15 +459,15 @@ const allStatuses = computed(() =>[
       clickOpenPage('/album', query)
     },
     allItems: [
-      { id: 1, label: 'A3 albom', count: '300' },
-      { id: 2, label: 'A3 knijniy', count: '400'},
-      { id: 3, label: 'Kichik albom 6 betlik', count: '500'},
-      { id: 4, label: 'Kichik albom 8 betlik', count: '500'},
-      { id: 5, label: 'Kichik albom 10 betlik', count: '500'},
-      { id: 6, label: 'Kichik albom 14 betlik', count: '500'},
-      { id: 7, label: 'Kichik albom 120 betlik', count: '500'},
-      { id: 8, label: 'Kichik knijniy', count: '300'},
-      { id: 9, label: 'Ikki tomonlama', count: '200'}
+      { id: 1, name: 'A3 albom', count: '300' },
+      { id: 2, name: 'A3 knijniy', count: '400'},
+      { id: 3, name: 'Kichik albom 6 betlik', count: '500'},
+      { id: 4, name: 'Kichik albom 8 betlik', count: '500'},
+      { id: 5, name: 'Kichik albom 10 betlik', count: '500'},
+      { id: 6, name: 'Kichik albom 14 betlik', count: '500'},
+      { id: 7, name: 'Kichik albom 120 betlik', count: '500'},
+      { id: 8, name: 'Kichik knijniy', count: '300'},
+      { id: 9, name: 'Ikki tomonlama', count: '200'}
     ]
   },
   {
@@ -484,12 +484,12 @@ const allStatuses = computed(() =>[
       clickOpenPage('/vignette', query)
     },
     allItems: [
-      { id: 1, label: 'Bitiruvchi qora', count: '500'},
-      { id: 2, label: 'Bitiruvchi oq', count: '400'},
-      { id: 3, label: 'Kuk papka', count: '300'},
-      { id: 4, label: 'Yashil', count: '200'},
-      { id: 5, label: 'Sariq', count: '600'},
-      { id: 6, label: 'Qora papka', count: '600'},
+      { id: 1, name: 'Bitiruvchi qora', count: '500'},
+      { id: 2, name: 'Bitiruvchi oq', count: '400'},
+      { id: 3, name: 'Kuk papka', count: '300'},
+      { id: 4, name: 'Yashil', count: '200'},
+      { id: 5, name: 'Sariq', count: '600'},
+      { id: 6, name: 'Qora papka', count: '600'},
     ]
   },
   {
@@ -506,13 +506,13 @@ const allStatuses = computed(() =>[
       clickOpenPage('/photo', query)
     },
     allItems: [
-      { id: 1, label: 'A3 albom', count: '300'},
-      { id: 2, label: 'A3 knijniy', count: '200'},
-      { id: 3, label: 'Kichik albom', count: '400'},
-      { id: 4, label: 'Kichik knijniy', count: '500'},
-      { id: 5, label: 'Sredniy', count: '300'},
-      { id: 6, label: 'Kvadrat', count: '200'},
-      { id: 7, label: 'Ikki tomonlama', count: '300'},
+      { id: 1, name: 'A3 albom', count: '300'},
+      { id: 2, name: 'A3 knijniy', count: '200'},
+      { id: 3, name: 'Kichik albom', count: '400'},
+      { id: 4, name: 'Kichik knijniy', count: '500'},
+      { id: 5, name: 'Sredniy', count: '300'},
+      { id: 6, name: 'Kvadrat', count: '200'},
+      { id: 7, name: 'Ikki tomonlama', count: '300'},
     ]
   }
 ])
