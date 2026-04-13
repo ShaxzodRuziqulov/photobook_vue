@@ -33,7 +33,7 @@
           <span class="flex items-start">Chiqish</span>
         </div>
         <CButton
-            v-if="!isDesktop && userName"
+            v-if="false"
             type="button"
             :text="userName"
             is-has-fa-icon
@@ -41,6 +41,26 @@
             variant="ghost-accent"
             @click="openToProfile"
         />
+        <button
+            v-if="!isDesktop"
+            type="button"
+            class="mobile-user-chip"
+            @click="openToProfile"
+        >
+          <div class="mobile-user-avatar">
+            <img
+                v-if="userAvatar"
+                :src="userAvatar"
+                alt="User avatar"
+                class="w-full h-full object-cover"
+            >
+            <i v-else class="fa-solid fa-user"></i>
+          </div>
+          <div class="mobile-user-copy">
+            <span class="mobile-user-name">{{ userName }}</span>
+            <span class="mobile-user-role">{{ currentRole }}</span>
+          </div>
+        </button>
         <CDialog
             :show="isExit"
             @close="isExit = false"
@@ -166,6 +186,25 @@ const userName = computed(() => {
   }
 });
 
+const currentRole = computed(() => {
+  const roles = authStore.state.roles || [];
+
+  if (roles.includes("ROLE_ADMIN")) return "ADMIN";
+  if (roles.includes("ROLE_MANAGER")) return "MANAGER";
+  if (roles.includes("ROLE_OPERATOR")) return "OPERATOR";
+
+  return "FOYDALANUVCHI";
+});
+
+const userAvatar = computed(() => {
+  const avatarUrl = authStore.state.user?.avatarUrl;
+
+  if (!avatarUrl) return "";
+  if (avatarUrl.startsWith("http")) return avatarUrl;
+
+  return `${import.meta.env.VITE_BASE_API}${avatarUrl}`;
+});
+
 watch(
     () => props.isMenuVisible,
     (val) => {
@@ -184,3 +223,50 @@ watch(
     { immediate: true }
 );
 </script>
+
+<style scoped>
+.mobile-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mobile-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.mobile-user-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.mobile-user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.mobile-user-role {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.7);
+}
+</style>

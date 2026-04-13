@@ -33,11 +33,17 @@ import Header from "@/components/Header.vue";
 import Sidebar from "@/components/Sidebar.vue";
 import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import CButton from "@/components/CButton.vue";
+import { authService } from "@/service/authService";
+import { useStore } from "@/stores/store";
+import { socketService } from "@/service/socketService";
 
 const router = useRouter();
+const authStore = authService();
+const dataStore = useStore();
 
 const isMenuVisible = ref(false);
 const isOnActive = ref(false);
+let unsubscribeNotification: (() => void) | null = null;
 
 const mainRoute = router.getRoutes().find(route => route.name === 'Main');
 
@@ -65,10 +71,19 @@ const scrollToTop = () => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (authStore.state.token && !authStore.state.user) {
+    await authStore.getCurrentUser();
+  }
+
+  unsubscribeNotification = socketService.subscribe(async (notification) => {
+    await dataStore.refreshFromNotification(notification);
+  });
+
   window.addEventListener("scroll", handleScroll);
 })
 onBeforeUnmount(() => {
+  unsubscribeNotification?.();
   window.removeEventListener("scroll", handleScroll);
 })
 </script>

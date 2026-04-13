@@ -165,6 +165,12 @@
                 <span>{{ status.count }}</span>
               </div>
             </div>
+            <div
+                v-if="!item.allItems.length"
+                class="rounded-lg bg-gray-100 p-3 text-sm text-gray-500"
+            >
+              Ma'lumot topilmadi
+            </div>
           </div>
         </div>
       </div>
@@ -306,6 +312,9 @@ const clickOpenPage = (path: string, query?: any) => {
 const allAlbumCount = ref<number>(0);
 const allVignetteCount = ref<number>(0);
 const photoCount = ref<number>(0);
+const albumItems = ref<{ id: number; name: string; count: number }[]>([]);
+const vignetteItems = ref<{ id: number; name: string; count: number }[]>([]);
+const photoItems = ref<{ id: number; name: string; count: number }[]>([]);
 
 const getAlDashboardCounts = async () => {
   try {
@@ -321,7 +330,6 @@ const getAlDashboardCounts = async () => {
         photoCount.value = item.count
       }
     })
-    console.log('All counts',res.data)
   }
   catch (error) {
     console.error(error);
@@ -373,27 +381,43 @@ const loadAllStats = async () => {
   ])
 
   albumPending.value = album.pending
-  console.log('Album pending',albumPending.value)
   albumCompleted.value = album.completed
 
   vignettePending.value = vignette.pending
   vignetteCompleted.value = vignette.completed
-  console.log('Vignette pending', vignettePending.value)
   photoPending.value = photo.pending
   photoCompleted.value = photo.completed
 }
 
-const getExpenses = async () => {
+const getOrderBreakdown = async (type: "ALBUM" | "VIGNETTE" | "PICTURE") => {
   try {
-    const res = await axiosInstance.get("/api/v1/dashboard/revenue-trend")
-    console.log('Expenses',res.data)
-  }
-  catch (error) {
-    console.error(error);
+    const res = await axiosInstance.get("/api/v1/dashboard/orders-by-category", {
+      params: { type }
+    });
+
+    return (res.data || []).map((item: any, index: number) => ({
+      id: index + 1,
+      name: item.key,
+      count: Number(item.count) || 0,
+    }));
+  } catch (error) {
+    console.error(`orders-by-category failed for ${type}:`, error);
+    return [];
   }
 }
 
-getExpenses()
+const loadBreakdowns = async () => {
+  const [album, vignette, photo] = await Promise.all([
+    getOrderBreakdown("ALBUM"),
+    getOrderBreakdown("VIGNETTE"),
+    getOrderBreakdown("PICTURE"),
+  ]);
+
+  albumItems.value = album;
+  vignetteItems.value = vignette;
+  photoItems.value = photo;
+}
+
 const allUsers = computed(() => dataStore.state.user?.items.length || 0)
 const allMaterialCount = computed(() => dataStore.state.items?.length || 0)
 const albumCategories = computed(() => dataStore.state.alCategory?.length || 0)
@@ -423,7 +447,7 @@ const getAlbums = computed( () => [
     name: 'Xodimlar',
     itemCount: allUsers.value,
     icon: 'fa-solid fa-users',
-    onclick: () => clickOpenPage('/employee')
+    onclick: () => clickOpenPage('/users')
   },
   { id: 5,
     name: 'Jami Xomashyo',
@@ -465,17 +489,7 @@ const allStatuses = computed(() =>[
       };
       clickOpenPage('/album', query)
     },
-    allItems: [
-      { id: 1, name: 'A3 albom', count: 300 },
-      { id: 2, name: 'A3 knijniy', count: 400},
-      { id: 3, name: 'Kichik albom 6 betlik', count: 500},
-      { id: 4, name: 'Kichik albom 8 betlik', count: 500},
-      { id: 5, name: 'Kichik albom 10 betlik', count: 500},
-      { id: 6, name: 'Kichik albom 14 betlik', count: 500},
-      { id: 7, name: 'Kichik albom 120 betlik', count: 500},
-      { id: 8, name: 'Kichik knijniy', count: 300},
-      { id: 9, name: 'Ikki tomonlama', count: 200}
-    ]
+    allItems: albumItems.value
   },
   {
     id: 2,
@@ -490,14 +504,7 @@ const allStatuses = computed(() =>[
       }
       clickOpenPage('/vignette', query)
     },
-    allItems: [
-      { id: 1, name: 'Bitiruvchi qora', count: 500},
-      { id: 2, name: 'Bitiruvchi oq', count: 400},
-      { id: 3, name: 'Kuk papka', count: 300},
-      { id: 4, name: 'Yashil', count: 200},
-      { id: 5, name: 'Sariq', count: 600},
-      { id: 6, name: 'Qora papka', count: 600},
-    ]
+    allItems: vignetteItems.value
   },
   {
     id: 3,
@@ -512,15 +519,7 @@ const allStatuses = computed(() =>[
       }
       clickOpenPage('/photo', query)
     },
-    allItems: [
-      { id: 1, name: 'A3 albom', count: 300},
-      { id: 2, name: 'A3 knijniy', count: 200},
-      { id: 3, name: 'Kichik albom', count: 400},
-      { id: 4, name: 'Kichik knijniy', count: 500},
-      { id: 5, name: 'Sredniy', count: 300},
-      { id: 6, name: 'Kvadrat', count: 200},
-      { id: 7, name: 'Ikki tomonlama', count: 300},
-    ]
+    allItems: photoItems.value
   }
 ])
 
@@ -611,8 +610,16 @@ const getCircleProgress = (percentage: number) => {
 // };
 
 onMounted(async (): Promise<void> => {
-  await getAlDashboardCounts()
-  await loadAllStats();
+  await Promise.all([
+    getAlDashboardCounts(),
+    loadAllStats(),
+    loadBreakdowns(),
+    dataStore.loadUsers(),
+    dataStore.loadMaterials(),
+    dataStore.loadCategory("ALBUM"),
+    dataStore.loadCategory("VIGNETTE"),
+    dataStore.loadCategory("PICTURE"),
+  ]);
 })
 </script>
 <style scoped>

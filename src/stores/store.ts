@@ -5,10 +5,12 @@ import {
     ExpensesForm,
     IFormData,
     IItems, IPaging,
-    Order, OrderCreateDto, OrderKind, OrderStatus, PagingRequest, PagingResponse,
+    NotificationItem,
+    Order, OrderCreateDto, OrderKind, OrderStatus, PagingRequest, PagingResponse, SocketNotification,
     UserForm, UserPagingRequest, UserTask,
 } from '@/typeModules/useModules';
-import {ref, UnwrapRef} from "vue";
+import {computed, ref, UnwrapRef} from "vue";
+import router from "@/router";
 export const useStore = defineStore('item', () => {
     const state = ref({
 
@@ -55,7 +57,89 @@ export const useStore = defineStore('item', () => {
         photoCategory: [] as AllCategory[],
         expenses: [] as ExpensesForm[],
         customers: [] as IFormData[],
+        notifications: [] as NotificationItem[],
     });
+
+    const unreadNotificationsCount = computed(
+        () => state.value.notifications.filter(item => !item.read).length
+    );
+
+    const buildNotificationKey = (item: Partial<SocketNotification>) =>
+        item.id ||
+        [
+            item.type,
+            item.orderId,
+            item.employeeId,
+            item.createdAt,
+        ].filter(Boolean).join(":");
+
+    const normalizeNotification = (item: any): NotificationItem => ({
+        id: item?.id || buildNotificationKey(item) || crypto.randomUUID(),
+        type: item?.type || "ORDER_UPDATED",
+        title: item?.title || "Bildirishnoma",
+        message: item?.message || "",
+        orderId: item?.orderId || item?.order_id || "",
+        orderName: item?.orderName || item?.order_name || "",
+        orderStatus: item?.orderStatus || item?.order_status || "IN_PROGRESS",
+        employeeId: item?.employeeId || item?.employee_id || "",
+        employeeName: item?.employeeName || item?.employee_name || "",
+        stepOrder: Number(item?.stepOrder || item?.step_order || 0),
+        workStatus: item?.workStatus || item?.work_status || "PENDING",
+        actionRequired: Boolean(item?.actionRequired ?? item?.action_required),
+        createdAt: item?.createdAt || item?.created_at || new Date().toISOString(),
+        read: Boolean(item?.read ?? item?.isRead),
+        readAt: item?.readAt || item?.read_at || null,
+    });
+
+    const upsertNotification = (notification: SocketNotification | NotificationItem | any) => {
+        const normalized = normalizeNotification(notification);
+        const index = state.value.notifications.findIndex(item => item.id === normalized.id);
+
+        if (index === -1) {
+            state.value.notifications.unshift(normalized);
+            return normalized;
+        }
+
+        state.value.notifications[index] = {
+            ...state.value.notifications[index],
+            ...normalized,
+        };
+
+        const [existing] = state.value.notifications.splice(index, 1);
+        state.value.notifications.unshift(existing);
+        return existing;
+    };
+
+    const clearNotifications = () => {
+        state.value.notifications = [];
+    };
+
+    const loadNotifications = async () => {
+        const { data } = await axiosInstance.get("/api/v1/notifications/me");
+        const notifications = Array.isArray(data) ? data.map(normalizeNotification) : [];
+
+        state.value.notifications = notifications.sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+    };
+
+    const markNotificationRead = async (id: string) => {
+        await axiosInstance.put(`/api/v1/notifications/${id}/read`);
+        const target = state.value.notifications.find(item => item.id === id);
+        if (target) {
+            target.read = true;
+            target.readAt = new Date().toISOString();
+        }
+    };
+
+    const markAllNotificationsRead = async () => {
+        await axiosInstance.put("/api/v1/notifications/read-all");
+        state.value.notifications = state.value.notifications.map(item => ({
+            ...item,
+            read: true,
+            readAt: item.readAt || new Date().toISOString(),
+        }));
+    };
 
     const loadOrders = async (
         kind: OrderKind,
@@ -226,6 +310,29 @@ export const useStore = defineStore('item', () => {
         }
     }
 
+    const refreshFromNotification = async (notification: SocketNotification) => {
+        upsertNotification(notification);
+
+        const currentPath = router.currentRoute.value.path;
+
+        if (currentPath === "/tasks") {
+            await loadGetUserTasks();
+            return;
+        }
+
+        const shouldRefreshOrders =
+            ["/album", "/vignette", "/photo"].includes(currentPath) &&
+            ["ORDER_UPDATED", "ORDER_STATUS_CHANGED"].includes(notification.type);
+
+        if (!shouldRefreshOrders) return;
+
+        await Promise.all([
+            loadOrders("ALBUM"),
+            loadOrders("VIGNETTE"),
+            loadOrders("PICTURE"),
+        ]);
+    }
+
     // const loadRole = async () => {
     //     const res = await axiosInstance.get('/api/v1/roles');
     //     state.value.roles = res.data
@@ -303,10 +410,17 @@ export const useStore = defineStore('item', () => {
 
     return {
         state,
+        unreadNotificationsCount,
         loadCategory,
         changePage,
         // loadRole,
         loadUploadImage,
+        clearNotifications,
+        loadNotifications,
+        markNotificationRead,
+        markAllNotificationsRead,
+        upsertNotification,
+        refreshFromNotification,
         loadGetUserTasks,
         addUser, updateUser, deleteUser, loadUsers,
         loadMaterials, addMaterial, updateMaterial, deleteMaterial,

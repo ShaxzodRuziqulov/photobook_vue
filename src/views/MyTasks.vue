@@ -18,13 +18,18 @@
             </span>
             <span>{{selectedTask?.itemType}}</span>
 
-            <div class="flex justify-between text-sm text-gray-600">
+            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 md:grid-cols-4">
               <span>Jami: {{ selectedTask?.amount }}</span>
               <span>Bajarilgan: {{ selectedTask?.processedCount }}</span>
-              <span>
-          Qoldi:
-          {{ (selectedTask?.amount || 0) - (selectedTask?.processedCount || 0) }}
-        </span>
+              <span>Hozir mumkin: {{ selectedTask?.remainingAvailable ?? 0 }}</span>
+              <span>Umumiy qoldiq: {{ selectedTask?.remainingTotal ?? 0 }}</span>
+            </div>
+            <div
+                v-if="selectedTask?.orderNotes"
+                class="mt-2 rounded-lg bg-white px-3 py-2 text-sm text-gray-600"
+            >
+              <span class="font-semibold text-gray-800">Buyurtma izohi:</span>
+              {{ selectedTask.orderNotes }}
             </div>
           </div>
 
@@ -32,16 +37,21 @@
             <label>Bajarish</label>
             <input
                 type="number"
+                min="0"
+                :max="selectedTask?.remainingAvailable ?? 0"
                 v-model="form.processedCount"
                 class="border rounded p-2"
             />
+            <span class="text-xs text-gray-500">
+              Bir martada ko'pi bilan {{ selectedTask?.remainingAvailable ?? 0 }} ta kiritishingiz mumkin.
+            </span>
           </div>
           <div class="flex flex-col gap-2">
-            <label>Izoh</label>
+            <label>Ishchi izohi</label>
             <textarea
                 v-model="form.notes"
                 class="border rounded p-2"
-                placeholder="Izoh yozing..."
+                placeholder="Bajarilgan ish haqida yozing..."
             />
           </div>
           <div class="flex justify-end gap-2 mt-2">
@@ -247,7 +257,7 @@
 import { useStore } from "@/stores/store";
 import CButton from "@/components/CButton.vue";
 import {computed, onMounted, ref, watch} from "vue";
-import {OrderStatus, UserTask} from "@/typeModules/useModules";
+import {OrderStatus, UserTask, WorkStatus} from "@/typeModules/useModules";
 import axiosInstance from "@/axios";
 import CDialog from "@/components/CDialog.vue";
 import { useToast } from "vue-toastification";
@@ -290,6 +300,7 @@ const closePreview = () => {
 const itemStatus = ref( [
   { value: 'PENDING', text: 'Kutilmoqda' },
   { value: 'IN_PROGRESS', text: 'Jarayonda' },
+  { value: 'PAUSED', text: 'To‘xtatilgan' },
   { value: 'COMPLETED', text: 'Bajarilgan' },
 ])
 
@@ -302,12 +313,14 @@ const statusOrder: Record<string, string> = {
 const statusColor: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
   IN_PROGRESS: 'bg-green-100 text-green-700',
+  PAUSED: 'bg-orange-100 text-orange-700',
   COMPLETED: 'bg-blue-100 text-blue-700',
 }
 
 const statusLabel: Record<string, string> = {
   PENDING:     "Kutilmoqda",
   IN_PROGRESS: "Jarayonda",
+  PAUSED:      "To'xtatilgan",
   COMPLETED:   "Bajarilgan",
 };
 
@@ -337,8 +350,8 @@ const form = ref({
   amount: 0,
   processedCount: 0,
   notes: '',
+  workStatus: "STARTED" as WorkStatus,
 });
-console.log('Form',form.value)
 
 
 const filteredOrders = computed(() => {
@@ -369,19 +382,38 @@ const activeFormTask = (task: UserTask) => {
   form.value.orderName = task.orderName || ''
   form.value.itemType = task.itemType || ''
   form.value.amount = task.amount || 0
-  form.value.processedCount = task.processedCount || 0
+  form.value.processedCount = 0
   form.value.notes = task.notes || ''
   form.value.canWork = true
+  form.value.workStatus = task.remainingTotal === 0 ? "COMPLETED" : "STARTED"
   activeTaskForm.value = true;
 
 }
 
 const completedTask = async () => {
   try {
-    const res = await axiosInstance.put(`/api/v1/user-tasks/me/${selectedTask.value?.orderId}`,form.value
-    )
+    const remainingAvailable = selectedTask.value?.remainingAvailable ?? 0;
+    const remainingTotal = selectedTask.value?.remainingTotal ?? 0;
+    const increment = Number(form.value.processedCount) || 0;
+
+    if (increment <= 0) {
+      Toast.warning("Bajarilgan sonni kiriting.");
+      return;
+    }
+
+    if (increment > remainingAvailable) {
+      Toast.warning(`Ko'pi bilan ${remainingAvailable} ta kiritish mumkin.`);
+      return;
+    }
+
+    const payload = {
+      processedCount: increment,
+      notes: form.value.notes,
+      workStatus: increment >= remainingTotal ? "COMPLETED" : "STARTED"
+    };
+
+    await axiosInstance.put(`/api/v1/user-tasks/me/${selectedTask.value?.orderId}`, payload)
     activeTaskForm.value = false;
-    console.log('Bajarish', res.data)
     await dataStore.loadGetUserTasks()
     Toast.success('Bajarildi!')
   }
