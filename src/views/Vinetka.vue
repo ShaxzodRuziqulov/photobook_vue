@@ -357,9 +357,9 @@
                 v-if="order.employees"
                 v-for="(emp, index) in getOrderedEmployees(order)"
                 :key="index"
-                class="flex text-sm items-center border-b border-gray-300 gap-2 pb-0.5"
+                class="border-b border-gray-300 py-1"
             >
-              <div class="w-3/4 gap-1 flex items-center">
+              <div class="flex text-sm items-center gap-2">
                 <i
                     v-if="(emp.processedCount ?? 0) === order.amount"
                     class="fa-solid fa-circle-check text-green-600"
@@ -374,7 +374,12 @@
                 />
                 <span class="flex p-1">{{ emp.employeeName }}</span>
               </div>
-              <span>{{emp.processedCount}} ta</span>
+              <div class="flex items-center justify-between text-sm">
+                <span>{{emp.processedCount}} ta</span>
+              </div>
+              <div v-if="emp.notes" class="pl-5 text-xs text-gray-500 break-words">
+                Izoh: {{ emp.notes }}
+              </div>
             </div>
           </td>
           <td class="py-2 px-3">
@@ -499,23 +504,34 @@ const previewUrl = ref<string | null>(null)
 const fileUploadRef = ref()
 const removedOldImage = ref(false)
 
-const onFileSelect = (event: any) => {
+const onFileSelect = async (event: any) => {
   const file = event.files[0]
   if (event.files.length > 1) {
     fileUploadRef.value.clear()
     return
   }
-  selectedFiles.value = file;
+  selectedFiles.value = [file];
 
   previewUrl.value = URL.createObjectURL(file)
-
   itemForm.value.imageUrl = previewUrl.value
+
+  try {
+    const uploaded = await dataStore.loadUploadImage(file)
+    itemForm.value.uploadId = uploaded.id || ""
+    itemForm.value.imageUrl = uploaded.url
+      ? (uploaded.url.startsWith("http") ? uploaded.url : `${import.meta.env.VITE_BASE_API}${uploaded.url}`)
+      : previewUrl.value
+  } catch (error) {
+    itemForm.value.uploadId = ""
+    Toast.error("Rasmni yuklab bo'lmadi.")
+  }
 }
 
 const onFileRemove = () => {
   selectedFiles.value = [];
   previewUrl.value = null;
   itemForm.value.imageUrl = ""
+  itemForm.value.uploadId = ""
   removedOldImage.value = true
 }
 
@@ -698,18 +714,21 @@ const pageProcessed = computed(() => {
 const itemStatus = ref( [
   { value: 'PENDING', text: 'Kutilmoqda' },
   { value: 'IN_PROGRESS', text: 'Jarayonda' },
+  { value: 'PAUSED', text: "To'xtatilgan" },
   { value: 'COMPLETED', text: 'Bajarilgan' },
 ])
 
 const statusColor: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
   IN_PROGRESS: 'bg-green-100 text-green-700',
+  PAUSED: 'bg-orange-100 text-orange-700',
   COMPLETED: 'bg-blue-100 text-blue-700',
 }
 
 const statusLabel: Record<string, string> = {
   PENDING:     "Kutilmoqda",
   IN_PROGRESS: "Jarayonda",
+  PAUSED: "To'xtatilgan",
   COMPLETED:   "Bajarilgan",
 }
 
@@ -751,19 +770,10 @@ const submitForm = async () => {
 
     const payload: OrderCreateDto = {
       ...itemForm.value,
-      employees: itemForm.value.employees.map((id, index) => {
-        const user = allUsers.value.find((u: any) => u.id === id)
-
-        return {
-          employeeId: id,
-          employeeName: user
-              ? `${user.firstName} ${user.lastName}`
-              : "",
-          processedCount: 0,
-          workStatus: "PENDING",
-          stepOrder: index + 1
-        }
-      })
+      employees: itemForm.value.employees.map((id, index) => ({
+        employeeId: id,
+        stepOrder: index + 1
+      }))
     }
 
     if (isEditing.value) {

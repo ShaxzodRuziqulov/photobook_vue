@@ -20,7 +20,39 @@ export interface IItems {
 }
 
 export type OrderKind = "ALBUM" | "VIGNETTE" | "PICTURE";
-export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'PAUSED' | 'COMPLETED';
+export type WorkStatus = 'PENDING' | 'STARTED' | 'COMPLETED';
+export type NotificationType = 'ORDER_ASSIGNED' | 'TASK_ACTIVATED' | 'ORDER_UPDATED' | 'ORDER_STATUS_CHANGED';
+
+export interface SocketAuthenticatedPayload {
+    userId: string;
+    connectedAt: string;
+}
+
+export interface SocketNotification {
+    id?: string;
+    type: NotificationType;
+    title: string;
+    message: string;
+    orderId: string;
+    orderName: string;
+    orderStatus: OrderStatus;
+    employeeId: string;
+    employeeName: string;
+    stepOrder: number;
+    workStatus: WorkStatus;
+    actionRequired: boolean;
+    createdAt: string;
+    isRead?: boolean;
+    read?: boolean;
+    readAt?: string | null;
+}
+
+export interface NotificationItem extends SocketNotification {
+    id: string;
+    read: boolean;
+    readAt?: string | null;
+}
 
 export interface AllCategory {
     id: string | null;
@@ -35,7 +67,8 @@ export interface EmployeeStatus {
     employeeName: string
     processedCount: number | null;
     stepOrder: number | null;
-    workStatus: OrderStatus;
+    workStatus: WorkStatus;
+    notes?: string | null;
 }
 
 export interface AllOrders {
@@ -177,13 +210,19 @@ export interface UserTask {
     pageCount: number | null;
     amount: number | null;
     processedCount: number | null;
+    orderProcessedCount: number | null;
+    availableToProcess: number | null;
+    remainingAvailable: number | null;
+    remainingTotal: number | null;
     acceptedDate: string;
     deadline: string;
     status: OrderStatus;
     imageUrl: string;
     stepOrder: number | null;
+    workStatus: WorkStatus;
     canWork: boolean;
     notes: string;
+    orderNotes?: string | null;
 }
 
 export interface Role {

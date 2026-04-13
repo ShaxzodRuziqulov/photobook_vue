@@ -1,9 +1,11 @@
-import { defineStore } from "pinia";
+﻿import { defineStore } from "pinia";
 import { ref } from "vue";
 import { IUser } from "@/typeModules/IUser";
 import {Role, UserLogin} from "@/typeModules/useModules";
 import axiosInstance from "@/axios";
 import router from "@/router";
+import { socketService } from "@/service/socketService";
+import { useStore } from "@/stores/store";
 
 interface UserState {
     user: IUser | null;
@@ -19,12 +21,34 @@ export const authService = defineStore("authService", () => {
         roles: [],
     });
 
-    const setUser = (user: IUser) => {
-        state.value.user = user;
-        if (user.roles) {
-            state.value.roles = Array.isArray(user.roles)
-                ? user.roles.map(role => typeof role === "string" ? role : role.name)
-                : [user.roles];
+    const normalizeUser = (user: any): IUser => {
+        const fullName = String(user?.name || "").trim();
+        const [derivedFirstName = "", ...derivedLastNameParts] = fullName.split(" ");
+
+        return {
+            id: user?.id || "",
+            firstName: user?.firstName || user?.first_name || derivedFirstName || "",
+            lastName: user?.lastName || user?.last_name || derivedLastNameParts.join(" ") || "",
+            profession: user?.profession || "",
+            username: user?.username || "",
+            password: user?.password || "",
+            avatarUrl: user?.avatarUrl || user?.avatar_url || "",
+            phone: user?.phone || null,
+            bio: user?.bio || "",
+            isActive: typeof user?.isActive === "boolean" ? user.isActive : true,
+            uploadId: user?.uploadId || user?.upload_id || "",
+            roles: Array.isArray(user?.roles) ? user.roles : [],
+        };
+    };
+
+    const setUser = (user: IUser | any) => {
+        const normalizedUser = normalizeUser(user);
+
+        state.value.user = normalizedUser;
+        if (normalizedUser.roles) {
+            state.value.roles = Array.isArray(normalizedUser.roles)
+                ? normalizedUser.roles.map(role => typeof role === "string" ? role : role.name)
+                : [normalizedUser.roles];
         } else {
             state.value.roles = [];
         }
@@ -33,13 +57,17 @@ export const authService = defineStore("authService", () => {
     const setToken = (token: string) => {
         state.value.token = token;
         localStorage.setItem("access_token", token);
+        socketService.connect(token);
     };
 
     const clearUser = () => {
+        const appStore = useStore();
         state.value.user = null;
         state.value.token = null;
         state.value.roles = [];
         localStorage.removeItem("access_token");
+        appStore.clearNotifications();
+        socketService.disconnect();
     };
 
     const loadRole = async () => {
@@ -53,10 +81,12 @@ export const authService = defineStore("authService", () => {
     }
 
     const login = async (user: UserLogin) => {
+        const appStore = useStore();
         const { data } = await axiosInstance.post("/api/v1/auth/login", user);
 
         setToken(data.access_token);
         setUser(data.user);
+        await appStore.loadNotifications();
 
         const roles = state.value.roles;
         if (roles.includes("ROLE_ADMIN")) {
@@ -71,14 +101,18 @@ export const authService = defineStore("authService", () => {
     };
 
     const getCurrentUser = async (): Promise<IUser | null> => {
+        const appStore = useStore();
         const token = state.value.token || localStorage.getItem("access_token");
         if (!token) return null;
 
-        if (!state.value.token) setToken(token);
+        state.value.token = token;
+
 
         try {
             const { data } = await axiosInstance.get("/api/v1/users/me");
             setUser(data);
+            await appStore.loadNotifications();
+            socketService.connect(token);
             return data;
         } catch (error) {
             console.error("getCurrentUser error:", error);

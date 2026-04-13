@@ -250,12 +250,14 @@ const profileSubmit = async () => {
       uploadId:   form.uploadId || '',
     });
 
-    await loadProfile()
+    const freshProfile = await loadProfile()
 
     currentUploadKey.value = data.uploadId || "";
     avatarPreview.value = "";
 
-    auth.setUser(data);
+    if (freshProfile) {
+      auth.setUser(freshProfile);
+    }
     Toast.success("Profil yangilandi");
   } catch (error) {
     Toast.error("Saqlashda xatolik");
@@ -282,8 +284,10 @@ const loadProfile = async () => {
     currentUploadKey.value = data.uploadId || "";
 
     auth.setUser(data);
+    return data;
   } catch (e) {
     console.error("Profil yuklashda xatolik:", e);
+    return null;
   }
 };
 
