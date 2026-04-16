@@ -21,6 +21,8 @@ Loyiha ichida hozir ishlatilayotgan asosiy jadvallar:
 - `id` (uuid)
 - `created_at`
 - `updated_at`
+ 
+
 
 ## 1) `users`
 
