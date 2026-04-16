@@ -14,10 +14,6 @@ class SocketService {
     private hasShownConnectionError = false;
 
     private resolveSocketBaseUrl() {
-        if (import.meta.env.DEV) {
-            return window.location.origin;
-        }
-
         const baseApi = String(import.meta.env.VITE_BASE_API || "").trim();
 
         if (!baseApi) {
@@ -31,9 +27,12 @@ class SocketService {
         if (this.socket) return this.socket;
 
         this.socket = io(this.resolveSocketBaseUrl(), {
-            path: "/socket.io",
-            transports: ["polling"],
+            path: "/socket.io/",
+            transports: ["websocket"],
+            withCredentials: true,
             autoConnect: false,
+            reconnectionAttempts: 3,
+            timeout: 10000,
         });
 
         this.socket.on("connect", () => {
@@ -56,11 +55,7 @@ class SocketService {
 
         this.socket.on("connect_error", (_error: any) => {
             this.isAuthenticated = false;
-
-            if (this.hasShownConnectionError) return;
-
             this.hasShownConnectionError = true;
-            toast.error("Realtime socket serverga ulanib bo'lmadi.");
         });
 
         this.socket.on("notification", async (payload: SocketNotification) => {
