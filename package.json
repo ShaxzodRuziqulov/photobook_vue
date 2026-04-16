@@ -10,12 +10,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --host 0.0.0.0 --port ${PORT:-4173}"
+    "start": "vite preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/vite": "^4.1.17",
-    "axios": "^1.13.6",
+    "axios": "1.15.0",
     "dotenv": "^16.5.0",
     "firebase": "^12.8.0",
     "jwt-decode": "^4.0.0",
@@ -36,7 +36,7 @@
     "@vue/tsconfig": "^0.7.0",
     "sass-embedded": "^1.87.0",
     "typescript": "^5.9.3",
-    "vite": "^7.1.11",
+    "vite": "8.0.5",
     "vite-plugin-vue-devtools": "^8.0.3"
   }
 }

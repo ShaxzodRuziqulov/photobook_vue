@@ -449,3 +449,5 @@ Payload:
 - worker update requestida `status` o'rniga `workStatus` yuborish
 - notification page uchun `GET /api/v1/notifications/me` ishlatish
 - socket notification payloadida `id`, `isRead`, `orderStatus`, `createdAt` maydonlari borligini hisobga olish
+
+test qilish uchun qo'shildi
