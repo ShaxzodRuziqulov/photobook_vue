@@ -332,7 +332,44 @@
           <th class="p-2 text-start">Amallar</th>
         </tr>
         </thead>
-        <tbody v-if="filteredOrders.length > 0">
+        <tbody v-if="isLoading">
+        <tr v-for="i in 8" :key="i" class="border-t">
+          <td class="p-2"><div class="h-4 w-6 bg-gray-200 rounded animate-pulse"></div></td>
+
+          <td class="p-2 space-y-2">
+            <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+          </td>
+
+          <td class="p-2">
+            <div class="w-14 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+          </td>
+
+          <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+          <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+          <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+
+          <!-- progress -->
+          <td class="p-2">
+            <div class="w-full bg-gray-200 h-2 rounded-full animate-pulse"></div>
+            <div class="h-3 w-16 mt-2 bg-gray-200 rounded animate-pulse"></div>
+          </td>
+          <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+          <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+
+
+          <!-- status -->
+          <td class="p-2">
+            <div class="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+          </td>
+
+          <!-- button -->
+          <td class="p-2">
+            <div class="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
+          </td>
+        </tr>
+        </tbody>
+        <tbody v-else-if="filteredOrders.length > 0">
         <tr
             class="border-t border-gray-600 hover:bg-gray-100"
             v-for="(order, index) in filteredOrders" :key="index"
@@ -489,6 +526,7 @@ const formData = ref<string | null>(null);
 const endData = ref<string | null>(null);
 const formFilter = ref<string | ''>('');
 const previewImage = ref<string | null>(null)
+const isLoading = ref(false);
 
 
 const openPreview = (url: string) => {
@@ -661,16 +699,12 @@ const itemForm = ref<OrderForm>({
 const handleEmployeeChange = (newValues: string[]) => {
   const oldValues = itemForm.value.employees || []
 
-  // yangi qo‘shilganlarni topamiz
   const added = newValues.filter(id => !oldValues.includes(id))
 
-  // o‘chirilganlarni topamiz
   const removed = oldValues.filter(id => !newValues.includes(id))
 
-  // eski tartibni saqlaymiz
   let result = oldValues.filter(id => !removed.includes(id))
 
-  // yangi tanlanganlarni oxiriga qo‘shamiz
   result = [...result, ...added]
 
   itemForm.value.employees = result
@@ -684,15 +718,21 @@ const handleEmployeeChange = (newValues: string[]) => {
 //   dataStore.loadGetAlbum()
 // }
 
-watch([formStatus, formData, endData],
+watch([formStatus, formData, endData, formFilter],
     async () => {
+  isLoading.value = true
 
-      await dataStore.loadOrders("VIGNETTE",{
-        status: formStatus.value || undefined,
-        from: formData.value || undefined,
-        to: endData.value || undefined,
-        search: formFilter.value || undefined
-      })
+      try {
+        await dataStore.loadOrders("VIGNETTE",{
+          status: formStatus.value || undefined,
+          from: formData.value || undefined,
+          to: endData.value || undefined,
+          search: formFilter.value || undefined
+        })
+        isLoading.value = false
+      } catch (error) {
+    console.log(error)
+      }
 
     }
 )
@@ -775,6 +815,8 @@ const isValidForm = () => {
 };
 
 const submitForm = async () => {
+  isLoading.value = true;
+
   if (!isValidForm()) return;
 
   try {
@@ -798,6 +840,7 @@ const submitForm = async () => {
     await dataStore.loadOrders("VIGNETTE")
     resetForm()
     isVisible.value = false
+    isLoading.value = false
 
   } catch (err) {
     console.error(err)
@@ -876,11 +919,18 @@ onMounted(() => {
 })
 
 onMounted(async () => {
-  await Promise.all([
+  isLoading.value = true;
+
+  try {
+    await Promise.all([
       await dataStore.loadOrders('VIGNETTE'),
       await dataStore.loadCategory('VIGNETTE'),
       await dataStore.loadUsers()
-  ])
+    ])
+    isLoading.value = false
+  } catch (e) {
+    console.error(e)
+  }
 })
 
 </script>

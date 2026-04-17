@@ -349,7 +349,45 @@
             <th class="p-2 text-start">Amallar</th>
           </tr>
           </thead>
-          <tbody v-if="paginatedAlbums.length > 0">
+          <tbody v-if="isLoading">
+          <tr v-for="i in 8" :key="i" class="border-t">
+            <td class="p-2"><div class="h-4 w-6 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <td class="p-2 space-y-2">
+              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+            </td>
+
+            <td class="p-2">
+              <div class="w-14 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+            </td>
+
+            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+            <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+            <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <td class="p-2">
+              <div class="w-full bg-gray-200 h-2 rounded-full animate-pulse"></div>
+              <div class="h-3 w-16 mt-2 bg-gray-200 rounded animate-pulse"></div>
+            </td>
+            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <!-- progress -->
+
+            <!-- status -->
+            <td class="p-2">
+              <div class="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+            </td>
+
+            <!-- button -->
+            <td class="p-2">
+              <div class="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
+            </td>
+          </tr>
+          </tbody>
+          <tbody v-else-if="paginatedAlbums.length > 0">
           <tr
               class="border-t border-gray-600 text-sm hover:bg-gray-100"
               v-for="(album, index) in paginatedAlbums" :key="album.id"
@@ -574,6 +612,7 @@ const selectedFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null)
 const avatarPreview = ref<string>("");
 const removedOldImage = ref(false)
+const isLoading = ref(false)
 
 const BASE_URL = import.meta.env.VITE_BASE_API
 
@@ -858,6 +897,8 @@ const isValidForm = () => {
 };
 
 const submitForm = async () => {
+  isLoading.value = true;
+
   if (!isValidForm()) return;
 
   try {
@@ -887,6 +928,7 @@ const submitForm = async () => {
     await dataStore.loadOrders("ALBUM")
     resetForm()
     isVisible.value = false
+    isLoading.value = false
 
   } catch (err) {
     console.error(err)
@@ -907,12 +949,14 @@ const editForm = (item: Order) => {
 };
 
 const deleteConfirmItem = async () => {
+  isLoading.value = true;
   if (!selectedItem.value) return;
   try {
     await dataStore.deleteOrder(selectedItem.value, 'ALBUM')
     Toast.info("Muvoffaqiyatli uchirildi!");
     showConfirmItem.value = false;
     selectedItem.value = null;
+    isLoading.value = false;
   }
   catch (error) {
     console.log("Error", error);
@@ -960,14 +1004,20 @@ const formatDate = (dateString?: string | null): string => {
 };
 
 onMounted(async () => {
-  await Promise.all([
+  isLoading.value = true;
+  try {
+    await Promise.all([
       dataStore.loadOrders('ALBUM', {
         ...orderFilters.value,
         page: 0,
       }),
       dataStore.loadCategory('ALBUM'),
       dataStore.loadUsers()
-  ])
+    ])
+    isLoading.value = false
+  } catch (error) {
+    console.log(error)
+  }
 
 })
 

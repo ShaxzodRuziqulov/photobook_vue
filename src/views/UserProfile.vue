@@ -1,5 +1,41 @@
 <template>
-  <div class="flex items-center flex-col overflow-hidden w-full min-h-screen bg-gradient-to-br from-blue-950 to-gray-800 m-auto">
+  <div v-if="isLoading" class="flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-blue-950 to-gray-800">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm space-y-5 animate-pulse">
+
+      <!-- Header -->
+      <div class="flex justify-between items-center">
+        <div class="w-20 h-8 bg-gray-300 rounded"></div>
+        <div class="w-32 h-6 bg-gray-300 rounded"></div>
+      </div>
+
+      <!-- Avatar -->
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-24 h-24 bg-gray-300 rounded-full"></div>
+        <div class="flex gap-2">
+          <div class="w-28 h-8 bg-gray-300 rounded"></div>
+          <div class="w-20 h-8 bg-gray-300 rounded"></div>
+        </div>
+      </div>
+
+      <!-- Inputs -->
+      <div class="flex gap-2">
+        <div class="w-full h-12 bg-gray-200 rounded-xl"></div>
+        <div class="w-full h-12 bg-gray-200 rounded-xl"></div>
+      </div>
+
+      <div class="w-full h-12 bg-gray-200 rounded-xl"></div>
+      <div class="w-full h-12 bg-gray-200 rounded-xl"></div>
+      <div class="w-full h-12 bg-gray-200 rounded-xl"></div>
+
+      <!-- Buttons -->
+      <div class="flex gap-3">
+        <div class="w-full h-12 bg-gray-300 rounded-xl"></div>
+        <div class="w-full h-12 bg-gray-300 rounded-xl"></div>
+      </div>
+
+    </div>
+  </div>
+  <div v-else class="flex items-center flex-col overflow-hidden w-full min-h-screen bg-gradient-to-br from-blue-950 to-gray-800 m-auto">
     <img src="../assets/background.svg" alt="">
     <div class="bg-white fixed rounded-2xl overflow-hidden top-[100px] max-w-sm flex-col p-4 w-md sm:p-2 shadow-xl">
       <div class="flex items-center justify-between">
@@ -305,3 +341,20 @@ onMounted(() => {
   loadProfile();
 });
 </script>
+<style scoped>
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.animate-pulse {
+  background: linear-gradient(
+      90deg,
+      #f0f0f0 25%,
+      #e5e7eb 37%,
+      #f0f0f0 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s infinite;
+}
+</style>

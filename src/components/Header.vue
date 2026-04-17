@@ -67,18 +67,26 @@
                     Barchasini o'qildiga utkazish
                   </button>
                 </div>
-                <div class="flex items-center w-full justify-around pt-4 text-sm font-bold text-gray-600">
+                <div class="flex items-center gap-2 w-full justify-around pt-4 text-sm font-bold text-gray-600">
                   <button @click="activeTab = 'UNREAD'"
-                          class="cursor-pointer hover:text-gray-500"
-                          :class="activeTab === 'UNREAD' ? 'text-blue-500' : ''"
+                          class="cursor-pointer flex w-full hover:text-gray-500"
                   >
-                    Yangi xabar
+                    <span
+                        class="border-b-2 p-1 flex w-full hover:bg-blue-100 justify-center"
+                        :class="activeTab === 'UNREAD' ? 'text-blue-500 border-blue-500' : 'border-transparent'"
+                    >
+                      Yangi xabar
+                    </span>
                   </button>
                   <button @click="activeTab = 'ALL'"
-                          class="cursor-pointer hover:text-gray-500"
-                          :class="activeTab === 'ALL' ? 'text-blue-500' : ''"
+                          class="cursor-pointer flex- w-full hover:text-gray-500"
                   >
-                    Barchasi
+                    <span
+                        class="p-1 flex w-full hover:bg-blue-100 border-b-2 justify-center"
+                        :class="activeTab === 'ALL' ? 'text-blue-500 border-blue-500' : 'border-transparent'"
+                    >
+                      Barchasi
+                    </span>
                   </button>
                 </div>
               </div>
@@ -312,15 +320,20 @@ const markAllAsRead = async () => {
 
 const activeTab = ref<"UNREAD" | "ALL">("UNREAD");
 
-const audio = new Audio('/src/assets/sounds/note1.wav')
+const audio = new Audio(new URL('@/assets/sounds/note1.wav', import.meta.url).href)
+audio.preload = 'auto'
 
-const playSound = () => {
-  audio.currentTime = 0
-  audio.play()
+const playSound = async () => {
+  try {
+    audio.currentTime = 0
+    await audio.play()
+  } catch (err) {
+    console.warn("Audio blocked:", err)
+  }
 }
 
-watch(() => notifications.value.length, (newVal, oldVal) => {
-  if (newVal > oldVal) {
+watch(() => notifications.value[0]?.id, (newVal, oldVal) => {
+  if (newVal && newVal !== oldVal) {
     playSound()
   }
 })

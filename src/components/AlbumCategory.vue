@@ -27,8 +27,21 @@
 
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
       <div class="overflow-x-auto">
+        <div v-if="isLoading" class="p-4 space-y-3">
+          <div
+              v-for="i in 6"
+              :key="i"
+              class="grid grid-cols-5 gap-4 items-center animate-pulse"
+          >
+            <div class="h-4 bg-gray-300 rounded w-6"></div>
+            <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-4 bg-gray-300 rounded w-10"></div>
+          </div>
+        </div>
         <table
-            v-if="alCategories.length > 0"
+            v-else-if="alCategories.length > 0"
             class="w-full text-sm">
           <colgroup>
             <col style="width: 5%">
@@ -166,6 +179,7 @@ const alCategories = computed(() => dataStore.state.alCategory);
 const showModal = ref(false);
 const isEditing = ref(false);
 const showConfirmItem = ref(false);
+const isLoading = ref(false);
 
 
 const form = ref<AllCategory>({
@@ -193,6 +207,7 @@ const closeModal = () => {
 };
 
 const saveForm = async () => {
+  isLoading.value = true;
   try {
     if (form.value.id) {
       await dataStore.updateCategory(form.value.id, form.value);
@@ -200,6 +215,7 @@ const saveForm = async () => {
       await dataStore.addCategory(form.value);
     }
     await dataStore.loadCategory(form.value.kind);
+    isLoading.value = false;
   }
   catch (error) {
     console.log(error)
@@ -230,7 +246,13 @@ const deleteItem = async (item: AllCategory) => {
   showConfirmItem.value = true;
 };
 
-onMounted(() => {
-  dataStore.loadCategory('ALBUM');
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    await dataStore.loadCategory('ALBUM');
+  isLoading.value = false;
+  } catch (error) {
+    console.log(error)
+  }
 })
 </script>

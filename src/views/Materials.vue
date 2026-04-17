@@ -78,11 +78,33 @@
         class="flex animate-fade-in bg-white rounded-xl flex-col w-full p-4 gap-6"
     >
       <div
-          v-if="materialItems.length"
+          v-if="isLoading"
+          class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 py-4"
+      >
+        <div
+            v-for="i in 8"
+            :key="i"
+            class="p-4 rounded-xl bg-gray-100 animate-pulse shadow"
+        >
+          <!-- title -->
+          <div class="h-5 bg-gray-300 rounded w-3/4 mb-2"></div>
+
+          <!-- subtitle -->
+          <div class="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+
+          <!-- quantity -->
+          <div class="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
+
+          <!-- date -->
+          <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+        </div>
+      </div>
+      <div
+          v-else-if="materialItems.length"
           class=" grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 py-4"
       >
         <div
-            class="flex flex-col gap-2 shadow-md rounded-xl p-2 w-full h-full  bg-gradient-to-br from-blue-50 to-purple-50"
+            class="flex flex-col gap-2 shadow-md rounded-xl px-2 py-4 w-full h-full  bg-gradient-to-br from-blue-50 to-purple-50"
             v-for="(item, index) in materialItems"
             :key="index"
         >
@@ -115,13 +137,13 @@
               class="flex items-center justify-between"
           >
             <div
-                class="flex items-center text-green-700 text-2xl gap-2 font-semibold"
+                class="flex items-center text-green-700 text-xl gap-2 font-semibold"
             >
               <span class="break-all">{{item.quantity}}</span>
               <span class="break-all text-lg">{{item.unitName}}</span>
             </div>
             <div v-if="item.updatedAt">
-              <p>Yangilandi: {{dataItem(item.updatedAt)}}</p>
+              <p class="text-sm">Yangilandi: {{dataItem(item.updatedAt)}}</p>
             </div>
           </div>
         </div>
@@ -184,6 +206,7 @@ const visibleTodo = ref(false);
 const selectedId = ref<string | null>(null);
 const showForm = ref(false);
 const editId = ref(false);
+const isLoading = ref(false);
 // const cards = ref([
 //   { title: "Card 1", text: "Content 1" },
 //   { title: "Card 2", text: "Content 2" },
@@ -244,6 +267,7 @@ const resetForm = () => {
 }
 
 const createMaterial = async () => {
+  isLoading.value = true;
   try {
     if (form.value.id) {
       await store.updateMaterial(form.value.id, form.value);
@@ -255,6 +279,7 @@ const createMaterial = async () => {
     visibleTodo.value = false;
     closeForm();
     editId.value = false;
+    isLoading.value = false;
   }
   catch (error) {
     console.log(error);
@@ -329,7 +354,13 @@ watch(() => pagination.value.page, () => {
 //   // pagination.value.page = response.data.page;
 // };
 onMounted(async () => {
-  await store.loadMaterials()
+  isLoading.value = true;
+  try {
+    await store.loadMaterials()
+    isLoading.value = false;
+  } catch (error) {
+    console.log(error);
+  }
 })
 
 </script>

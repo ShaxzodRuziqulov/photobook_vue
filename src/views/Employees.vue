@@ -172,7 +172,14 @@
     </div>
 
     <div class="animate-fade-in overflow-auto gap-5 flex-col w-full bg-white p-6 rounded-xl h-full">
-      <table class="overflow-auto table-auto w-full">
+      <div v-if="isLoading" class="space-y-3">
+        <div
+            v-for="i in 6"
+            :key="i"
+            class="animate-pulse bg-gray-200 h-12 rounded-lg"
+        ></div>
+      </div>
+      <table v-else class="overflow-auto table-auto w-full">
         <colgroup>
           <col style="width: 5%">
           <col style="width: 15%">
@@ -447,16 +454,16 @@ const submitForm = async () => {
     newUploadId.value = null;
     oldUploadKey.value = null;
     form.value = emptyForm();
-
+    isLoading.value = false;
   } catch (error) {
     Toast.error("Xatolik yuz berdi");
     console.error(error);
-  } finally {
-    isLoading.value = false;
   }
 };
 
 const saveRole = async () => {
+  isLoading.value = true;
+
   if (!selectedRoles.value.length || !selectedUserRoleId.value) return;
 
   try {
@@ -465,6 +472,7 @@ const saveRole = async () => {
     selectedRole.value = false;
     selectedRoles.value = [];
     await store.loadUsers();
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -532,9 +540,11 @@ const resetForm = () => {
 };
 
 const loadRole = async () => {
+  isLoading.value = true;
   try {
     const res = await loadStore.loadRole();
     roles.value = res.data;
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -545,10 +555,9 @@ onMounted(async () => {
   try {
     await store.loadUsers();
     await loadRole();
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
-  } finally {
-    isLoading.value = false;
   }
 });
 </script>

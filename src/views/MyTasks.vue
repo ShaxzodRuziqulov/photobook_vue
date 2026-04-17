@@ -170,7 +170,44 @@
             <th class="p-3 text-start">Amallar</th>
           </tr>
           </thead>
-          <tbody v-if="filteredOrders.length > 0">
+          <tbody v-if="isLoading">
+          <tr v-for="i in 8" :key="i" class="border-t">
+            <td class="p-2"><div class="h-4 w-6 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <td class="p-2 space-y-2">
+              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+            </td>
+
+            <td class="p-2">
+              <div class="w-14 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+            </td>
+
+            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+            <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+            <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+
+            <!-- progress -->
+            <td class="p-2">
+              <div class="w-full bg-gray-200 h-2 rounded-full animate-pulse"></div>
+              <div class="h-3 w-16 mt-2 bg-gray-200 rounded animate-pulse"></div>
+            </td>
+
+            <!-- status -->
+            <td class="p-2">
+              <div class="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+            </td>
+
+            <!-- button -->
+            <td class="p-2">
+              <div class="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
+            </td>
+          </tr>
+          </tbody>
+          <tbody v-else-if="filteredOrders.length > 0">
           <tr
               class="py-4 border-t border-gray-600 hover:bg-gray-100"
               v-for="(task, index) in filteredOrders"
@@ -277,6 +314,7 @@ const formFilter = ref<string | ''>('');
 const formStatus = ref<OrderStatus | null>(null);
 const formData = ref<string | null | undefined>(null);
 const endData = ref<string | null | undefined>(null);
+const isLoading = ref(false);
 
 
 
@@ -402,6 +440,7 @@ const activeFormTask = (task: UserTask) => {
 }
 
 const completedTask = async () => {
+  isLoading.value = true
   try {
     const remainingAvailable = selectedTask.value?.remainingAvailable ?? 0;
     const remainingTotal = selectedTask.value?.remainingTotal ?? 0;
@@ -427,6 +466,7 @@ const completedTask = async () => {
     activeTaskForm.value = false;
     await dataStore.loadGetUserTasks()
     Toast.success('Bajarildi!')
+    isLoading.value = false
   }
   catch (error) {
     console.log(error)
@@ -437,17 +477,29 @@ const completedTask = async () => {
 watch(
     [formStatus, formFilter, formData, endData],
     async () => {
-      await dataStore.loadGetUserTasks({
-        statuses: formStatus.value ? [formStatus.value] : [],
-        from: formData.value || undefined,
-        deadlineTo: endData.value || undefined,
-        search: formFilter.value ?? null
-      })
+      isLoading.value = true
+      try {
+        await dataStore.loadGetUserTasks({
+          statuses: formStatus.value ? [formStatus.value] : [],
+          from: formData.value || undefined,
+          deadlineTo: endData.value || undefined,
+          search: formFilter.value ?? null
+        })
+        isLoading.value = false
+      } catch (error) {
+        console.log(error)
+      }
     }
 )
 
 onMounted(async () => {
-  await dataStore.loadGetUserTasks()
+  isLoading.value = true
+  try {
+    await dataStore.loadGetUserTasks()
+    isLoading.value = false
+  } catch (error) {
+    console.log(error)
+  }
 })
 </script>
 
