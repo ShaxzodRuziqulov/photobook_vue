@@ -147,7 +147,7 @@
           <div class="p-4 flex flex-col text-gray-600">
             <div class="bg-gray-300 text-gray-800 text-sm font-semibold mb-4 rounded-lg p-3 flex items-center justify-between">
               <h2>Mahsulot turi bo'yicha hisobot</h2>
-              <span>jami: {{ item.allItems.reduce((sum, i) => sum + Number(i.count), 0)}}</span>
+              <span>jami: {{ item.allItems.length }}</span>
             </div>
             <div
                 v-for="(status, index) in item.allItems"
@@ -291,6 +291,27 @@ import axiosInstance from "@/axios";
 const dataStore = useStore();
 const router = useRouter();
 
+type DashboardOrderKind = "ALBUM" | "VIGNETTE" | "PICTURE";
+type DashboardStatus = "PENDING" | "IN_PROGRESS" | "PAUSED" | "COMPLETED" | "CANCELLED";
+type DashboardCountItem = {
+  key?: string;
+  categoryName?: string;
+  count?: number | string;
+};
+type BreakdownItem = { id: number; name: string; count: number };
+type StatusCounts = Record<DashboardStatus, number>;
+
+const orderKinds: DashboardOrderKind[] = ["ALBUM", "VIGNETTE", "PICTURE"];
+
+const getItemKey = (item: DashboardCountItem) =>
+    String(item.key ?? "").trim().toUpperCase();
+
+const getItemCount = (item: DashboardCountItem) =>
+    Number(item.count ?? 0) || 0;
+
+const getItemName = (item: DashboardCountItem) =>
+    String(item.categoryName ?? item.key ?? "").trim();
+
 const borderColors = [
   {base: 'border-l-blue-500', full: 'hover:border-blue-500'},
   {base: 'border-l-emerald-600', full: 'hover:border-emerald-600'},
@@ -312,54 +333,57 @@ const clickOpenPage = (path: string, query?: any) => {
 const allAlbumCount = ref<number>(0);
 const allVignetteCount = ref<number>(0);
 const photoCount = ref<number>(0);
-const albumItems = ref<{ id: number; name: string; count: number }[]>([]);
-const vignetteItems = ref<{ id: number; name: string; count: number }[]>([]);
-const photoItems = ref<{ id: number; name: string; count: number }[]>([]);
+const albumItems = ref<BreakdownItem[]>([]);
+const vignetteItems = ref<BreakdownItem[]>([]);
+const photoItems = ref<BreakdownItem[]>([]);
 
 const getAlDashboardCounts = async () => {
+  const counts: Record<DashboardOrderKind, number> = {
+    ALBUM: 0,
+    VIGNETTE: 0,
+    PICTURE: 0,
+  };
+
   try {
-    const res = await axiosInstance.get("/api/v1/dashboard/orders-by-kind")
-    res.data?.forEach((item: any) => {
-      if (item.key === 'ALBUM') {
-        allAlbumCount.value = item.count
-      }
-      if (item.key === 'VIGNETTE') {
-        allVignetteCount.value = item.count
-      }
-      if (item.key === 'PICTURE') {
-        photoCount.value = item.count
+    const { data } = await axiosInstance.get<DashboardCountItem[]>("/api/v1/dashboard/orders-by-kind")
+    data?.forEach((item) => {
+      const key = getItemKey(item) as DashboardOrderKind;
+      if (orderKinds.includes(key)) {
+        counts[key] = getItemCount(item);
       }
     })
   }
   catch (error) {
     console.error(error);
   }
+
+  return counts;
 }
 
 const getStatusCounts = async (type: "ALBUM" | "VIGNETTE" | "PICTURE") => {
-  const res = await axiosInstance.get("/api/v1/dashboard/orders-by-status",
-      {
-        params: {type}
-      }
-  )
-
-  const result = {
-    total: 0,
-    pending: 0,
-    completed: 0,
+  const result: StatusCounts = {
+    PENDING: 0,
+    IN_PROGRESS: 0,
+    PAUSED: 0,
+    COMPLETED: 0,
+    CANCELLED: 0,
   }
 
-  res.data?.forEach((item: any) => {
-    if (item.key === "IN_PROGRESS") {
-      result.pending = item.count
-    }
+  try {
+    const { data } = await axiosInstance.get<DashboardCountItem[]>("/api/v1/dashboard/orders-by-status", {
+      params: {type}
+    })
 
-    if (item.key === "COMPLETED") {
-      result.completed = item.count
-    }
-
-    result.total += item.count
-  })
+    data?.forEach((item) => {
+      const key = getItemKey(item) as DashboardStatus;
+      const count = getItemCount(item);
+      if (key in result) {
+        result[key] = count;
+      }
+    })
+  } catch (error) {
+    console.error(`orders-by-status failed for ${type}:`, error);
+  }
 
   return result
 }
@@ -374,48 +398,48 @@ const photoPending = ref<number>(0)
 const photoCompleted = ref<number>(0)
 
 const loadAllStats = async () => {
-  const [album, vignette, photo] = await Promise.all([
+  const [kindCounts, album, vignette, photo, albumBreakdown, vignetteBreakdown, photoBreakdown] = await Promise.all([
+    getAlDashboardCounts(),
     getStatusCounts("ALBUM"),
     getStatusCounts("VIGNETTE"),
-    getStatusCounts("PICTURE")
+    getStatusCounts("PICTURE"),
+    getOrderBreakdown("ALBUM"),
+    getOrderBreakdown("VIGNETTE"),
+    getOrderBreakdown("PICTURE"),
   ])
 
-  albumPending.value = album.pending
-  albumCompleted.value = album.completed
+  albumItems.value = albumBreakdown;
+  vignetteItems.value = vignetteBreakdown;
+  photoItems.value = photoBreakdown;
 
-  vignettePending.value = vignette.pending
-  vignetteCompleted.value = vignette.completed
-  photoPending.value = photo.pending
-  photoCompleted.value = photo.completed
+  allAlbumCount.value = kindCounts.ALBUM;
+  allVignetteCount.value = kindCounts.VIGNETTE;
+  photoCount.value = kindCounts.PICTURE;
+
+  albumPending.value = album.IN_PROGRESS
+  albumCompleted.value = album.COMPLETED
+
+  vignettePending.value = vignette.IN_PROGRESS
+  vignetteCompleted.value = vignette.COMPLETED
+  photoPending.value = photo.IN_PROGRESS
+  photoCompleted.value = photo.COMPLETED
 }
 
 const getOrderBreakdown = async (type: "ALBUM" | "VIGNETTE" | "PICTURE") => {
   try {
-    const res = await axiosInstance.get("/api/v1/dashboard/orders-by-category", {
+    const res = await axiosInstance.get<DashboardCountItem[]>("/api/v1/dashboard/orders-by-category", {
       params: { type }
     });
 
-    return (res.data || []).map((item: any, index: number) => ({
+    return (res.data || []).map((item, index) => ({
       id: index + 1,
-      name: item.key,
-      count: Number(item.count) || 0,
+      name: getItemName(item),
+      count: getItemCount(item),
     }));
   } catch (error) {
     console.error(`orders-by-category failed for ${type}:`, error);
     return [];
   }
-}
-
-const loadBreakdowns = async () => {
-  const [album, vignette, photo] = await Promise.all([
-    getOrderBreakdown("ALBUM"),
-    getOrderBreakdown("VIGNETTE"),
-    getOrderBreakdown("PICTURE"),
-  ]);
-
-  albumItems.value = album;
-  vignetteItems.value = vignette;
-  photoItems.value = photo;
 }
 
 const allUsers = computed(() => dataStore.state.user?.items.length || 0)
@@ -611,9 +635,7 @@ const getCircleProgress = (percentage: number) => {
 
 onMounted(async (): Promise<void> => {
   await Promise.all([
-    getAlDashboardCounts(),
     loadAllStats(),
-    loadBreakdowns(),
     dataStore.loadUsers(),
     dataStore.loadMaterials(),
     dataStore.loadCategory("ALBUM"),
