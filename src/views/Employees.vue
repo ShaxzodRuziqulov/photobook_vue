@@ -28,7 +28,7 @@
           @submit.prevent="submitForm"
       >
         <h2 class=" text-2xl font-semibold">
-          {{isEditing ? "Xodim ma'lumotlarini uzgartirish" : "Xodim qo'shish"}}
+          {{isEditing ? "Xodim ma'lumotlarini o'zgartirish" : "Xodim qo'shish"}}
         </h2>
         <AppInput label="Ism"
                   type="text"
@@ -42,7 +42,7 @@
         />
         <AppInput label="Foydalanuvchi nomi"
                   type="text"
-                  placeholder="foydalanuvchi ismini kiriting"
+                  placeholder="Foydalanuvchi ismini kiriting"
                   v-model="form.username"
         />
         <AppInput label="Kasbi"
@@ -81,9 +81,9 @@
             accept="image/*"
             @change="changeFile($event)"
         />
-        <AppInput label="Izox uchun"
+        <AppInput label="Izoh uchun"
                   type="textarea"
-                  placeholder="Enter Description"
+                  placeholder="Izoh kiriting"
                   v-model="form.bio"
         />
         <div class="flex justify-end gap-4 items-center">

@@ -121,12 +121,12 @@
         </div>
         <AppInput
             label="Kasbi"
-            placeholder="Kasbi kiriting"
+            placeholder="Kasbni kiriting"
             type="text"
             v-model="form.profession"
         />
         <AppInput
-            label="Phone Number"
+            label="Telefon nomer"
             placeholder="+998..."
             type="text"
             v-model="form.phone"
