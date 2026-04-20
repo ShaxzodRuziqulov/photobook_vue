@@ -424,7 +424,7 @@
             class="border-t border-gray-600 hover:bg-gray-100"
             v-for="(order, index) in filteredOrders" :key="index"
         >
-          <td class="p-1">{{ index + 1 }}</td>
+          <td class="p-1">{{ rowNumber(index) }}</td>
           <td class="p-2 break-all">
             <p class="break-all font-semibold">{{ order.orderName }}</p>
             <p class="text-gray-500 text-sm font-semibold">{{order.categoryName}}</p>
@@ -527,6 +527,43 @@
         </tr>
         </tbody>
       </table>
+      <div
+          v-if="totalPages > 1"
+          class="flex h-20 items-center sticky bottom-0 z-10 justify-center mt-4 pb-2 gap-2 bg-white border-t"
+      >
+        <button
+            type="button"
+            @click="changePage(page - 1)"
+            :disabled="page === 1"
+            class="flex w-10 h-10 justify-center items-center rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed bg-gray-700 text-white hover:bg-gray-800"
+        >
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+        <div
+            v-for="(pageItem, idx) in allPagesNumbers"
+            :key="idx"
+            class="flex justify-center items-center px-3 py-1 h-11 w-11 rounded-3xl select-none"
+            :class="{
+              'bg-blue-500 text-white font-bold': pageItem === page,
+              'cursor-pointer hover:bg-gray-300': pageItem !== '...' && pageItem !== page,
+              'text-gray-400 cursor-default text-lg': pageItem === '...',
+            }"
+            @click="pageItem !== '...' && changePage(pageItem)"
+        >
+          {{ pageItem }}
+        </div>
+        <button
+            type="button"
+            @click="changePage(page + 1)"
+            :disabled="page >= totalPages"
+            class="flex w-10 h-10 justify-center items-center rounded-full transition"
+            :class="page >= totalPages
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-700 text-white cursor-pointer hover:bg-gray-800'"
+        >
+          <i class="fa-solid fa-chevron-right text-sm"></i>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -768,31 +805,71 @@ const handleEmployeeChange = (newValues: string[]) => {
 //   dataStore.loadGetAlbum()
 // }
 
-watch([formStatus, formData, endData, formFilter],
-    async () => {
-  isLoading.value = true
+const currentPage = computed(() => dataStore.state.paging.VIGNETTE.pageNumber)
+const page = computed(() => currentPage.value + 1)
+const totalPages = computed(() => dataStore.state.paging.VIGNETTE.totalPages)
+const pageSize = computed(() => dataStore.state.paging.VIGNETTE.pageSize)
+const rowNumber = (index: number) => currentPage.value * pageSize.value + index + 1
 
-      try {
-        await dataStore.loadOrders("VIGNETTE",{
-          status: formStatus.value || undefined,
-          from: formData.value || undefined,
-          to: endData.value || undefined,
-          search: formFilter.value || undefined
-        })
-        isLoading.value = false
-      } catch (error) {
-    console.log(error)
-      }
+const orderFilters = computed(() => ({
+  status: formStatus.value || undefined,
+  acceptedDate: formData.value || undefined,
+  deadline: endData.value || undefined,
+  search: formFilter.value || undefined,
+}))
 
+const allPagesNumbers = computed(() => {
+  const total = totalPages.value
+  const current = page.value
+  const delta = 2
+  const pages: (number | '...')[] = []
+
+  for (let i = 1; i <= total; i++) {
+    if (
+        i === 1 ||
+        i === total ||
+        (i >= current - delta && i <= current + delta)
+    ) {
+      pages.push(i)
+    } else if (pages[pages.length - 1] !== '...') {
+      pages.push('...')
     }
-)
+  }
+
+  return pages
+})
+
+const changePage = async (targetPage: number | '...') => {
+  if (targetPage === '...' || typeof targetPage !== 'number') return
+  if (targetPage < 1 || targetPage > totalPages.value) return
+
+  await dataStore.changePage("VIGNETTE", targetPage - 1, orderFilters.value)
+}
+
+watch([formStatus, formData, endData, formFilter], (_newValue, _oldValue, onCleanup) => {
+  const timer = window.setTimeout(async () => {
+    isLoading.value = true
+    try {
+      await dataStore.loadOrders("VIGNETTE", {
+        ...orderFilters.value,
+        page: 0,
+      })
+    } catch (error) {
+      console.log(error)
+    } finally {
+      isLoading.value = false
+    }
+  }, 300)
+
+  onCleanup(() => window.clearTimeout(timer))
+})
 
 const closeFilter = () => {
-  formStatus.value = '';
+  formStatus.value = null;
   formFilter.value = '';
-  formData.value = '';
-  endData.value = '';
-  dataStore.loadOrders('VIGNETTE');
+  formData.value = null;
+  endData.value = null;
+  dataStore.loadOrders('VIGNETTE', { page: 0 });
 }
 
 // const filteredCategories = computed(() => {
@@ -806,10 +883,7 @@ const closeFilter = () => {
 // }) bu categoriyalarda yo'g'ini chiqarmaydi
 
 const pageProcessed = computed(() => {
-  return filteredOrders.value.reduce(
-      (sum, item) => sum + (item.amount || 0),
-      0
-  )
+  return dataStore.state.paging.VIGNETTE.totalElements
 })
 
 const itemStatus = ref( [
@@ -982,7 +1056,10 @@ onMounted(async () => {
 
   try {
     await Promise.all([
-      await dataStore.loadOrders('VIGNETTE'),
+      await dataStore.loadOrders('VIGNETTE', {
+        ...orderFilters.value,
+        page: 0,
+      }),
       await dataStore.loadCategory('VIGNETTE'),
       await dataStore.loadUsers()
     ])

@@ -450,7 +450,7 @@
               class="border-t border-gray-600 text-sm hover:bg-gray-100"
               v-for="(album, index) in paginatedAlbums" :key="album.id"
           >
-            <td class="py-2 px-3">{{ index + 1 }}</td>
+            <td class="py-2 px-3">{{ rowNumber(index) }}</td>
             <td class="p-2 break-all">
               <p class="font-semibold">{{ album.orderName }}</p>
               <p class="text-gray-500 text-sm font-semibold">{{album.categoryName}}</p>
@@ -827,11 +827,13 @@ const form = ref<OrderForm>({
 const currentPage = computed(() => dataStore.state.paging.ALBUM.pageNumber);
 const page = computed(() => currentPage.value + 1);
 const totalPages = computed(() => dataStore.state.paging.ALBUM.totalPages)
+const pageSize = computed(() => dataStore.state.paging.ALBUM.pageSize)
+const rowNumber = (index: number) => currentPage.value * pageSize.value + index + 1
 
 const orderFilters = computed(() => ({
   status: formStatus.value || undefined,
-  from: formData.value || undefined,
-  to: endData.value || undefined,
+  acceptedDate: formData.value || undefined,
+  deadline: endData.value || undefined,
   search: formFilter.value || undefined,
 }))
 

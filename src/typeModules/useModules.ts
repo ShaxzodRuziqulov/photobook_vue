@@ -98,6 +98,8 @@ export interface AllOrders {
 export interface PagingRequest {
     page: number;
     size: number;
+    pageNumber?: number;
+    pageSize?: number;
     sort?: string;
     direction?: string;
     search?: string;
@@ -106,6 +108,8 @@ export interface PagingRequest {
     customerId?: string;
     employeeId?: string;
     categoryId?: string;
+    acceptedDate?: string;
+    deadline?: string;
     from?: string;
     to?: string;
     deadlineFrom?: string;
@@ -135,12 +139,26 @@ export interface Order {
     pageCount: number;
     amount: number;
     processedCount: number;
+    currentStepProcessedCount?: number;
+    activeEmployeeId?: string | null;
+    activeEmployeeName?: string | null;
     acceptedDate: string;
     deadline: string;
     status: OrderStatus;
     imageUrl: string;
     notes: string;
     uploadId: string;
+    statusHistory?: OrderStatusHistory[];
+}
+
+export interface OrderStatusHistory {
+    id: string;
+    orderId: string;
+    fromStatus: OrderStatus | null;
+    toStatus: OrderStatus;
+    changedById: string;
+    changedByName: string;
+    changedAt: string;
 }
 export interface OrderCreateDto {
     kind: OrderKind;
