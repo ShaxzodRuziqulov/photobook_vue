@@ -147,27 +147,44 @@ export const useStore = defineStore('item', () => {
     ) => {
 
         const paging = state.value.paging[kind]
+        const page = params.page ?? params.pageNumber ?? paging.pageNumber
+        const size = params.size ?? params.pageSize ?? paging.pageSize
 
         const body: PagingRequest = {
-            page: paging.pageNumber,
-            size: paging.pageSize,
+            page,
+            size,
+            pageNumber: page,
+            pageSize: size,
             kind,
             sort: "acceptedDate",
-            ...params
+            ...params,
+            acceptedDate: params.acceptedDate ?? params.from,
+            deadline: params.deadline ?? params.to ?? params.deadlineTo,
         }
 
         const { data } = await axiosInstance.post(
             "/api/v1/orders/paging",
-            body
+            body,
+            {
+                params: {
+                    page,
+                    size,
+                    sort: body.sort,
+                },
+            }
         )
 
+        const items = data.content || data.items || []
+        const totalElements = data.totalElements ?? data.total_elements ?? items.length
+        const pageSize = data.pageSize ?? data.size ?? data.page_size ?? size
+
         const mapped: PagingResponse<Order> = {
-            items: data.content || data.items || [],
-            pageNumber: data.pageNumber ?? data.number ?? body.page,
-            pageSize: data.pageSize ?? data.size ?? body.size,
-            totalElements: data.totalElements ?? 0,
-            totalPages: data.totalPages ?? 0,
-            last: data.last ?? true,
+            items,
+            pageNumber: data.pageNumber ?? data.number ?? data.page_number ?? page,
+            pageSize,
+            totalElements,
+            totalPages: data.totalPages ?? data.total_pages ?? Math.ceil(totalElements / pageSize),
+            last: data.last ?? page + 1 >= (data.totalPages ?? data.total_pages ?? Math.ceil(totalElements / pageSize)),
         }
 
         if (kind === "ALBUM") state.value.albums = mapped
