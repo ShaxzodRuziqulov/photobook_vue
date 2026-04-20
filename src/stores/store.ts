@@ -14,6 +14,13 @@ import router from "@/router";
 
 const NOTIFICATION_LIMIT = 100;
 const REALTIME_NOTIFICATION_CLOCK_SKEW_MS = 5000;
+const ORDER_FETCH_SIZE = 100;
+const DEFAULT_ORDER_SORT = "updatedAt,desc";
+const orderStateKeyByKind: Record<OrderKind, "albums" | "vignettes" | "pictures"> = {
+    ALBUM: "albums",
+    VIGNETTE: "vignettes",
+    PICTURE: "pictures",
+};
 
 export const useStore = defineStore('item', () => {
     const state = ref({
@@ -31,9 +38,9 @@ export const useStore = defineStore('item', () => {
         } as PagingResponse<Order>,
 
         paging: {
-            ALBUM: { pageNumber: 0, pageSize: 15, totalElements: 0, totalPages: 0 , last: true },
-            VIGNETTE: { pageNumber: 0, pageSize: 15, totalElements: 0, totalPages: 0 , last: true },
-            PICTURE: { pageNumber: 0, pageSize: 15, totalElements: 0, totalPages: 0 , last: true },
+            ALBUM: { pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 0 , last: true },
+            VIGNETTE: { pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 0 , last: true },
+            PICTURE: { pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 0 , last: true },
         },
 
         user: {
@@ -199,15 +206,19 @@ export const useStore = defineStore('item', () => {
             }
         );
 
-        const notifications = (data.content || data.items || []).map(normalizeNotification);
+        const notifications: NotificationItem[] = (data.content || data.items || []).map(normalizeNotification);
         const paging = normalizePaging(data, page, size, notifications);
-        const nextItems = append
+        const nextItems: NotificationItem[] = append
             ? [...state.value.notifications, ...notifications]
             : notifications;
 
         state.value.notifications = nextItems
-            .filter((item, index, list) => list.findIndex(current => current.id === item.id) === index)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .filter((item: NotificationItem, index: number, list: NotificationItem[]) =>
+                list.findIndex((current: NotificationItem) => current.id === item.id) === index
+            )
+            .sort((a: NotificationItem, b: NotificationItem) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
             .slice(0, NOTIFICATION_LIMIT);
 
         state.value.notificationsPaging = {
@@ -244,71 +255,111 @@ export const useStore = defineStore('item', () => {
         state.value.notificationsUnreadCount = 0;
     };
 
+    const removeEmptyFields = <T extends Record<string, unknown>>(item: T) =>
+        Object.fromEntries(
+            Object.entries(item).filter(([, value]) => value !== undefined && value !== null && value !== "")
+        ) as Partial<T>;
+
+    const buildOrderPagingBody = (params: Partial<PagingRequest>): Partial<PagingRequest> => {
+        const acceptedDate = params.acceptedDate ?? params.from;
+        const deadline = params.deadline ?? params.to ?? params.deadlineTo;
+
+        return removeEmptyFields({
+            search: params.search?.trim() || undefined,
+            status: params.status || undefined,
+            acceptedDate: acceptedDate || undefined,
+            deadline: deadline || undefined,
+        });
+    };
+
+    const createOrderPage = (
+        items: Order[],
+        page: number,
+        size: number
+    ): PagingResponse<Order> => {
+        const totalElements = items.length;
+        const totalPages = Math.ceil(totalElements / size);
+        const pageNumber = totalPages === 0 ? 0 : Math.min(page, totalPages - 1);
+
+        return {
+            items: items.slice(pageNumber * size, pageNumber * size + size),
+            pageNumber,
+            pageSize: size,
+            totalElements,
+            totalPages,
+            last: totalPages === 0 || pageNumber + 1 >= totalPages,
+        };
+    };
+
+    const setOrderPaging = (kind: OrderKind, pageData: PagingResponse<Order>) => {
+        state.value[orderStateKeyByKind[kind]] = pageData;
+
+        state.value.paging[kind] = {
+            ...state.value.paging[kind],
+            pageNumber: pageData.pageNumber,
+            pageSize: pageData.pageSize,
+            totalElements: pageData.totalElements,
+            totalPages: pageData.totalPages,
+            last: pageData.last,
+        };
+    };
+
+    const isLastOrderPage = (data: any, items: Order[], backendPage: number) => {
+        const totalPages = data.totalPages ?? data.total_pages;
+
+        return Boolean(data.last)
+            || items.length === 0
+            || (totalPages !== undefined && backendPage + 1 >= totalPages);
+    };
+
+    const fetchAllOrders = async (
+        body: Partial<PagingRequest>,
+        sort: string
+    ): Promise<Order[]> => {
+        const orders: Order[] = [];
+        let backendPage = 0;
+
+        while (true) {
+            const { data } = await axiosInstance.post(
+                "/api/v1/orders/paging",
+                body,
+                {
+                    params: {
+                        page: backendPage,
+                        size: ORDER_FETCH_SIZE,
+                        sort,
+                    },
+                }
+            );
+
+            const items: Order[] = data.content || data.items || [];
+            orders.push(...items);
+
+            if (isLastOrderPage(data, items, backendPage)) break;
+            backendPage += 1;
+        }
+
+        return orders;
+    };
+
     const loadOrders = async (
         kind: OrderKind,
         params: Partial<PagingRequest> = {}
     ) => {
+        const paging = state.value.paging[kind];
+        const page = params.page ?? params.pageNumber ?? paging.pageNumber;
+        const size = params.size ?? params.pageSize ?? paging.pageSize;
+        const body = buildOrderPagingBody(params);
+        const sort = params.sort || DEFAULT_ORDER_SORT;
+        const orders = await fetchAllOrders(body, sort);
+        const kindOrders = orders.filter(item => item.kind === kind);
 
-        const paging = state.value.paging[kind]
-        const page = params.page ?? params.pageNumber ?? paging.pageNumber
-        const size = params.size ?? params.pageSize ?? paging.pageSize
+        setOrderPaging(kind, createOrderPage(kindOrders, page, size));
+    };
 
-        const body: PagingRequest = {
-            ...params,
-            page,
-            size,
-            pageNumber: page,
-            pageSize: size,
-            kind,
-            sort: "acceptedDate",
-            acceptedDate: params.acceptedDate ?? params.from,
-            deadline: params.deadline ?? params.to ?? params.deadlineTo,
-        }
-
-        const { data } = await axiosInstance.post(
-            "/api/v1/orders/paging",
-            body,
-            {
-                params: {
-                    page,
-                    size,
-                    sort: body.sort,
-                },
-            }
-        )
-
-        const items = (data.content || data.items || []).filter((item: Order) => item.kind === kind)
-        const totalElements = data.totalElements ?? data.total_elements ?? items.length
-        const pageSize = data.pageSize ?? data.size ?? data.page_size ?? size
-
-        const mapped: PagingResponse<Order> = {
-            items,
-            pageNumber: data.pageNumber ?? data.number ?? data.page_number ?? page,
-            pageSize,
-            totalElements,
-            totalPages: data.totalPages ?? data.total_pages ?? Math.ceil(totalElements / pageSize),
-            last: data.last ?? page + 1 >= (data.totalPages ?? data.total_pages ?? Math.ceil(totalElements / pageSize)),
-        }
-
-        if (kind === "ALBUM") state.value.albums = mapped
-        if (kind === "VIGNETTE") state.value.vignettes = mapped
-        if (kind === "PICTURE") state.value.pictures = mapped
-
-        state.value.paging[kind] = {
-            ...state.value.paging[kind],
-            pageNumber: mapped.pageNumber,
-            pageSize: mapped.pageSize,
-            totalElements: mapped.totalElements,
-            totalPages: mapped.totalPages,
-            last: mapped.last,
-        }
-    }
-
-// ─── CRUD — barchasi faqat kind bilan chaqiradi ───────────────────────────────
+    // Order CRUD
     const addOrder = async (item: OrderCreateDto) => {
-
         await axiosInstance.post("/api/v1/orders", item)
-
         await loadOrders(item.kind)
     }
 

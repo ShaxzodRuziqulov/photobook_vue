@@ -740,7 +740,14 @@ watch(
     }
 )
 
-const filteredAlbums = computed(() => dataStore.state.albums.items)
+const filteredAlbums = computed(() => {
+  const categoryIds = new Set(allCategory.value.map((category: any) => category.id))
+  const items = dataStore.state.albums.items
+
+  if (!categoryIds.size) return items
+
+  return items.filter(item => categoryIds.has(item.categoryId))
+})
 
 const categoryStatus = computed(() => {
   return allCategory.value.map((cat: any) => {

@@ -91,7 +91,7 @@ Paging endpointlar `POST /resource/paging` ko'rinishida.
 - `GET /api/v1/user-tasks/me/{id}`
 - `POST /api/v1/user-tasks/me/paging`
 - `PUT /api/v1/user-tasks/me/{id}`
-- `GET /api/v1/notifications/me`
+- `POST /api/v1/notifications/me/paging`
 - `PUT /api/v1/notifications/{id}/read`
 - `PUT /api/v1/notifications/read-all`
 - `/api/v1/uploads/**`
@@ -140,7 +140,7 @@ Bu backendning asosiy workflow moduli.
 ### Workflow business logic
 
 - order `IN_PROGRESS` bo'lsa birinchi incompleted employee `STARTED`
-- order `PENDING` yoki `PAUSED` bo'lsa incompleted employee lar `PENDING`
+- order `PENDING`, `PAUSED` yoki `CANCELLED` bo'lsa incompleted employee lar `PENDING`
 - order `COMPLETED` bo'lsa barcha employee `COMPLETED`
 - `processedCount` final step progressidan olinadi
 - `currentStepProcessedCount` active worker progressidan olinadi
@@ -152,10 +152,18 @@ Ruxsat etilgan transitionlar:
 
 - `PENDING -> IN_PROGRESS`
 - `PENDING -> PAUSED`
+- `PENDING -> CANCELLED`
 - `IN_PROGRESS -> PAUSED`
 - `IN_PROGRESS -> COMPLETED`
+- `IN_PROGRESS -> CANCELLED`
 - `PAUSED -> IN_PROGRESS`
 - `PAUSED -> COMPLETED`
+- `PAUSED -> CANCELLED`
+- `COMPLETED -> PENDING`
+- `COMPLETED -> IN_PROGRESS`
+- `COMPLETED -> PAUSED`
+- `CANCELLED -> PENDING`
+- `CANCELLED -> IN_PROGRESS`
 
 Cheklov:
 
@@ -167,6 +175,52 @@ Status o'zgarsa:
 - `order_status_history` yozuvi yaratiladi
 - employee larga `ORDER_STATUS_CHANGED` notification yuboriladi
 - active assignment bo'lsa `TASK_ACTIVATED` ham yuboriladi
+
+### Order paging
+
+Endpoint:
+
+- `POST /api/v1/orders/paging?page=0&size=10&sort=updatedAt,desc`
+
+Request body:
+
+```json
+{
+  "search": "album",
+  "status": "IN_PROGRESS",
+  "acceptedDate": "2026-03-01",
+  "deadline": "2026-03-31"
+}
+```
+
+Bo'sh filter uchun:
+
+```json
+{}
+```
+
+Filter qoidalari:
+
+- `search` bo'sh yoki `null` bo'lsa qidiruv o'chadi.
+- `search` quyidagi fieldlardan qidiradi: `orderName`, `receiverName`, `customer.fullName`, employee full name, employee username, category name.
+- `status` `OrderStatus` enum bo'yicha aniq filterlaydi.
+- `acceptedDate` `orders.acceptedDate` bilan teng sana bo'yicha filterlaydi.
+- `deadline` `orders.deadline` bilan teng sana bo'yicha filterlaydi.
+- `kind`, `customerId`, `employeeId`, `categoryId`, `from`, `to`, `deadlineFrom`, `deadlineTo` order paging requestida ishlatilmaydi.
+
+Query ishlashi:
+
+- Repository `category`, `customer`, `employees`, `employees.user` ni `EntityGraph` orqali yuklaydi.
+- Query `DISTINCT` ishlatadi, chunki employee join bir orderni bir necha qatorda qaytarishi mumkin.
+- Nullable `status`, `acceptedDate`, `deadline` filterlari PostgreSQL null-param type xatosini bermasligi uchun `COALESCE(:param, field)` orqali qo'llangan.
+- Default controller sort belgilanmagan; frontend query param bilan sort yuborishi kerak. Tavsiya: `sort=updatedAt,desc`.
+
+Frontend uchun muhim qoidalar:
+
+- Holat selectida `Hammasi` tanlansa `status` fieldini yubormang yoki `null` yuboring.
+- Bo'sh date inputni `""` qilib yubormang; fieldni olib tashlang yoki `null` yuboring.
+- Sana filterlari range emas. Range kerak bo'lsa backend contract alohida kengaytiriladi.
+- Response `PageResponse<OrderDto>` formatida qaytadi: `content`, `pageNumber`, `pageSize`, `totalElements`, `totalPages`, `last`.
 
 ## 6. User Tasks
 
@@ -195,14 +249,18 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 
 ### Endpointlar
 
-- `GET /api/v1/notifications/me`
+- `POST /api/v1/notifications/me/paging`
+- `GET /api/v1/notifications/me/unread-count`
 - `PUT /api/v1/notifications/{id}/read`
 - `PUT /api/v1/notifications/read-all`
 
 ### Ishlash mantig'i
 
 - notification yaratilganda DB ga saqlanadi
-- `GET /notifications/me` current user notificationlarini `createdAt desc` bo'yicha qaytaradi
+- `POST /notifications/me/paging` current user notificationlarini page ko'rinishida qaytaradi
+- paging filterlari: `search`, `type`, `isRead`, `actionRequired`
+- notification payloadda route uchun `targetType`, `targetId`, `targetKind`, `route`, `orderKind` qaytadi
+- `GET /notifications/me/unread-count` current user uchun unread count qaytaradi
 - `PUT /notifications/{id}/read` faqat current userning notificationi uchun ishlaydi
 - `PUT /notifications/read-all` current userning barcha unread notificationlarini mark qiladi
 
@@ -232,12 +290,38 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 
 ### Endpointlar
 
-- `GET /api/v1/dashboard/summary`
-- `GET /api/v1/dashboard/orders-by-status`
 - `GET /api/v1/dashboard/orders-by-kind`
+- `GET /api/v1/dashboard/orders-by-status?type=ALBUM|VIGNETTE|PICTURE`
 - `GET /api/v1/dashboard/orders-by-category`
-- `GET /api/v1/dashboard/revenue-trend`
-- `GET /api/v1/dashboard/expenses-trend`
+
+### Hisoblash logikasi
+
+- Dashboard count qiymatlari order soni hisoblanadi, `orders.amount` yig'indisi emas.
+- Service paging data yoki `findAll()` ishlatmaydi.
+- `orders-by-kind` `orders` jadvalida `GROUP BY kind` bilan hisoblaydi.
+- `orders-by-status?type=...` tanlangan `OrderKind` bo'yicha `GROUP BY status` bilan hisoblaydi.
+- `orders-by-category?type=...` `product_categories` dan boshlanib, `orders` ga `LEFT JOIN` qiladi va `GROUP BY category` bilan hisoblaydi.
+- `orders-by-kind` barcha `OrderKind` enum qiymatlarini qaytaradi. Bazada yo'q qiymatlar `0`.
+- `orders-by-status` barcha `OrderStatus` enum qiymatlarini qaytaradi. Bazada yo'q qiymatlar `0`.
+- `orders-by-category` tanlangan type dagi categorylarni qaytaradi. Order yo'q categorylar `0`.
+
+### Rasmda ko'rsatilgan dashboardga moslik
+
+Rasmda `Albom` tabida quyidagi qiymatlar bor:
+
+- yuqoridagi `Jami`
+- `Jarayonda`
+- `Bajarilgan`
+- `Bajarilish foizi`
+- `Mahsulot turi bo'yicha hisobot`
+
+Amaldagi APIlar bu UI ni yopadi:
+
+- `Jami`: `GET /api/v1/dashboard/orders-by-kind` dan `kind = ALBUM` item `count` qiymatini olish mumkin.
+- `Jarayonda`: `GET /api/v1/dashboard/orders-by-status?type=ALBUM` natijasida `status = IN_PROGRESS` itemlar `count` yig'indisi olinadi.
+- `Bajarilgan`: `GET /api/v1/dashboard/orders-by-status?type=ALBUM` natijasida `status = COMPLETED` itemlar `count` yig'indisi olinadi.
+- `Bajarilish foizi`: frontend `COMPLETED / total * 100` qilib hisoblaydi. `total` uchun `orders-by-kind` yoki `orders-by-status` yig'indisi ishlatiladi.
+- `Mahsulot turi bo'yicha hisobot`: `GET /api/v1/dashboard/orders-by-category?type=ALBUM` mos keladi.
 
 ## 10. Socket Notification
 
@@ -246,11 +330,11 @@ Bu backend realtime notification uchun `socket.io` server ishlatadi.
 ### Socket endpoint
 
 - handshake path: `/socket.io/`
-- HTTP handshake `GET` va `POST` bilan ishlaydi
+- WebSocket transport ishlaydi, polling fallback uchun HTTP `GET` va `POST` ham qolgan
 - namespace: default `/`
 - auth: socket ulanganidan keyin `authenticate` event orqali token yuboriladi
 - client tavsiya: `socket.io-client`
-- transport: hozirgi implementatsiyada `polling`
+- transport: tavsiya etiladi `websocket`
 
 ### Frontend ulanish oqimi
 
@@ -261,6 +345,16 @@ Bu backend realtime notification uchun `socket.io` server ishlatadi.
 5. Token to'g'ri bo'lsa socket `user:{userId}` room ga qo'shiladi.
 6. Server `authenticated` event yuboradi.
 7. O'qilmagan notificationlar replay qilinadi.
+
+WebSocket-only frontend ulanish namunasi:
+
+```js
+const socket = io(API_BASE_URL, {
+  path: "/socket.io/",
+  transports: ["websocket"],
+  withCredentials: true,
+});
+```
 
 ### Auth eventlar
 
@@ -299,10 +393,15 @@ Payload misoli:
   "message": "Oldingi bosqich tugadi. Buyurtma endi sizning navbatingizda",
   "orderId": "uuid",
   "orderName": "Nikoh albomi",
+  "orderKind": "ALBUM",
   "employeeId": "uuid",
   "employeeName": "Ali Valiyev",
   "stepOrder": 2,
   "workStatus": "STARTED",
+  "targetType": "ORDER",
+  "targetId": "uuid",
+  "targetKind": "ALBUM",
+  "route": "/album",
   "actionRequired": true,
   "isRead": false,
   "createdAt": "2026-04-13T11:00:00",
@@ -346,7 +445,7 @@ Izoh:
 
 ### Notification flow
 
-1. User login bo'lgach `GET /api/v1/notifications/me` bilan tarixni oling.
+1. User login bo'lgach `POST /api/v1/notifications/me/paging` bilan tarixni oling.
 2. Parallel ravishda socket ulang.
 3. `authenticated` kelgach realtime va replay notificationlarni qabul qiling.
 4. UI da ko'rsatilgan notificationni `PUT /notifications/{id}/read` bilan mark qiling.
@@ -368,6 +467,10 @@ Izoh:
 - `employees[].role` olib tashlangan
 - `employees[].stepOrder` majburiy bo'lgan
 - `employees[].workStatus` response ichida qaytadi
-- `orders.status` `PAUSED` ni ham qabul qiladi
+- `orders.status` `PAUSED` va `CANCELLED` ni ham qabul qiladi
 - worker update endpointida `status` o'rniga `workStatus` ishlatiladi
-- notificationlar uchun REST endpoint va socket replay oqimi qo'shilgan
+- order paging soddalashtirilgan: `search`, `status`, `acceptedDate`, `deadline`
+- notificationlar uchun unbounded `GET /notifications/me` o'rniga `POST /notifications/me/paging` ishlatiladi
+- notification badge uchun `GET /notifications/me/unread-count` ishlatiladi
+- notification payload route maydonlari bilan boyitilgan: `orderKind`, `targetType`, `targetId`, `targetKind`, `route`
+- socket notification payloadi ham REST notification DTO bilan moslashtirilgan

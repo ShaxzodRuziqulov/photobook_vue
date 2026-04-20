@@ -147,18 +147,52 @@ Note:
 
 ### POST /orders/paging
 
+Query params:
+
+- `page=0`
+- `size=10`
+- `sort=updatedAt,desc` yoki boshqa `Order` field bo'yicha sort
+
+Request body:
+
 ```json
 {
   "search": "album",
-  "kind": "ALBUM",
   "status": "IN_PROGRESS",
-  "customerId": "uuid",
-  "employeeId": "uuid",
-  "categoryId": "uuid",
-  "from": "2026-03-01",
-  "to": "2026-03-31",
-  "deadlineFrom": "2026-03-01",
-  "deadlineTo": "2026-03-31"
+  "acceptedDate": "2026-03-01",
+  "deadline": "2026-03-31"
+}
+```
+
+Filterlar:
+
+- `search` optional. `orderName`, `receiverName`, `customer.fullName`, employee full name, employee username va category name ichidan qidiradi.
+- `status` optional. Qiymatlar: `PENDING`, `IN_PROGRESS`, `PAUSED`, `COMPLETED`, `CANCELLED`.
+- `acceptedDate` optional. Aniq qabul sanasi bo'yicha filterlaydi.
+- `deadline` optional. Aniq tugash sanasi bo'yicha filterlaydi.
+
+Bo'sh filter uchun `{}` yuboriladi:
+
+```json
+{}
+```
+
+Frontend eslatma:
+
+- `Hammasi` holati uchun `status` yuborilmaydi yoki `null` yuboriladi.
+- Sana inputi bo'sh bo'lsa `""` yuborilmaydi; field olib tashlanadi yoki `null` yuboriladi.
+- `acceptedDate` va `deadline` hozir range emas, aynan teng sana bo'yicha ishlaydi.
+
+Response:
+
+```json
+{
+  "content": [],
+  "pageNumber": 0,
+  "pageSize": 10,
+  "totalElements": 120,
+  "totalPages": 12,
+  "last": false
 }
 ```
 
@@ -314,29 +348,58 @@ Note:
 
 ## 11. Notifications
 
-### GET /notifications/me
+### POST /notifications/me/paging
+
+```json
+{
+  "search": "album",
+  "type": "TASK_ACTIVATED",
+  "isRead": false,
+  "actionRequired": true
+}
+```
+
+Note:
+
+- Barcha filterlar optional.
+- `search` title, message, orderName va employeeName bo'yicha qidiradi.
+- `isRead: true` o'qilgan, `isRead: false` o'qilmagan notificationlarni qaytaradi.
+- Default sort: `createdAt,desc`.
+
+Response item:
+
+```json
+{
+  "id": "uuid",
+  "type": "TASK_ACTIVATED",
+  "title": "Yangi ish navbati",
+  "message": "Oldingi bosqich tugadi. Buyurtma endi sizning navbatingizda",
+  "orderId": "uuid",
+  "orderName": "Nikoh Albomi",
+  "orderKind": "ALBUM",
+  "employeeId": "uuid",
+  "employeeName": "Ali Valiyev",
+  "stepOrder": 2,
+  "workStatus": "STARTED",
+  "targetType": "ORDER",
+  "targetId": "uuid",
+  "targetKind": "ALBUM",
+  "route": "/album",
+  "actionRequired": true,
+  "isRead": false,
+  "readAt": null,
+  "createdAt": "2026-04-13T11:00:00"
+}
+```
+
+### GET /notifications/me/unread-count
 
 Response:
 
 ```json
-[
-  {
-    "id": "uuid",
-    "type": "TASK_ACTIVATED",
-    "title": "Yangi ish navbati",
-    "message": "Oldingi bosqich tugadi. Buyurtma endi sizning navbatingizda",
-    "orderId": "uuid",
-    "orderName": "Nikoh Albomi",
-    "employeeId": "uuid",
-    "employeeName": "Ali Valiyev",
-    "stepOrder": 2,
-    "workStatus": "STARTED",
-    "actionRequired": true,
-    "isRead": false,
-    "readAt": null,
-    "createdAt": "2026-04-13T11:00:00"
-  }
-]
+{
+  "count": 12
+}
 ```
 
 ### PUT /notifications/{id}/read
@@ -349,21 +412,91 @@ Response:
 
 ## 12. Dashboard
 
-### GET /dashboard/summary
-Optional query:
-
-- `from=2026-03-01`
-- `to=2026-03-31`
-
-### GET /dashboard/orders-by-status?type=ALBUM|VIGNETTE|PICTURE
+Dashboard endpointlari SQL/JPQL aggregation bilan ishlaydi. Paging yoki `findAll()` ishlatilmaydi.
 
 ### GET /dashboard/orders-by-kind
 
+Response:
+
+```json
+[
+  {
+    "key": "ALBUM",
+    "count": 56
+  },
+  {
+    "key": "VIGNETTE",
+    "count": 10
+  },
+  {
+    "key": "PICTURE",
+    "count": 7
+  }
+]
+```
+
+Izoh:
+
+- Barcha `OrderKind` enum qiymatlari qaytadi.
+- Bazada order yo'q kindlar `count: 0` bilan qaytadi.
+- `count` orderlar soni, `orders.amount` yig'indisi emas.
+
+### GET /dashboard/orders-by-status?type=ALBUM|VIGNETTE|PICTURE
+
+Response:
+
+```json
+[
+  {
+    "key": "PENDING",
+    "count": 3
+  },
+  {
+    "key": "IN_PROGRESS",
+    "count": 40
+  },
+  {
+    "key": "PAUSED",
+    "count": 1
+  },
+  {
+    "key": "COMPLETED",
+    "count": 12
+  },
+  {
+    "key": "CANCELLED",
+    "count": 0
+  }
+]
+```
+
+Izoh:
+
+- `type` required query param.
+- Barcha `OrderStatus` enum qiymatlari qaytadi.
+- Tanlangan type uchun order yo'q statuslar `count: 0` bilan qaytadi.
+- `count` orderlar soni.
+
 ### GET /dashboard/orders-by-category?type=ALBUM|VIGNETTE|PICTURE
 
-### GET /dashboard/revenue-trend
+Response:
 
-### GET /dashboard/expenses-trend
+```json
+[
+  {
+    "categoryId": "uuid",
+    "categoryName": "A3 albom",
+    "count": 2
+  }
+]
+```
+
+Izoh:
+
+- `type` required query param.
+- Rasmda ko'ringan `Mahsulot turi bo'yicha hisobot` bloki uchun mos.
+- Backend tanlangan `type` dagi barcha product categorylarni qaytaradi.
+- Order yo'q categorylar ham `count: 0` bilan keladi.
 
 ## 13. Upload
 
@@ -431,10 +564,15 @@ Payload:
   "message": "Oldingi bosqich tugadi. Buyurtma endi sizning navbatingizda",
   "orderId": "uuid",
   "orderName": "Nikoh Albomi",
+  "orderKind": "ALBUM",
   "employeeId": "uuid",
   "employeeName": "Ali Valiyev",
   "stepOrder": 2,
   "workStatus": "STARTED",
+  "targetType": "ORDER",
+  "targetId": "uuid",
+  "targetKind": "ALBUM",
+  "route": "/album",
   "actionRequired": true,
   "isRead": false,
   "createdAt": "2026-04-13T11:00:00",
@@ -447,7 +585,6 @@ Payload:
 - order create/update requestida `employees[].stepOrder` yuborish
 - `employees[].role` yubormaslik
 - worker update requestida `status` o'rniga `workStatus` yuborish
-- notification page uchun `GET /api/v1/notifications/me` ishlatish
-- socket notification payloadida `id`, `isRead`, `orderStatus`, `createdAt` maydonlari borligini hisobga olish
-
-test qilish uchun qo'shildi
+- notification preview uchun `POST /api/v1/notifications/me/paging` ishlatish
+- notification badge uchun `GET /api/v1/notifications/me/unread-count` ishlatish
+- socket notification payloadida `id`, `isRead`, `orderStatus`, `createdAt`, `targetType`, `targetId`, `targetKind`, `route`, `orderKind` maydonlari borligini hisobga olish

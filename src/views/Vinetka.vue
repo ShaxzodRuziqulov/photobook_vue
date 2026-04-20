@@ -683,6 +683,11 @@ watch(
 const filteredOrders = computed(() => {
 
   let data = [...dataStore.state.vignettes.items]
+  const categoryIds = new Set(vignetteCategory.value.map((category: any) => category.id))
+
+  if (categoryIds.size) {
+    data = data.filter(item => categoryIds.has(item.categoryId))
+  }
 
   if (formFilter.value) {
     const search = formFilter.value.toLowerCase()
