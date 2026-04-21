@@ -242,41 +242,41 @@
         </div>
       </div>
     </div>
-    <div class="w-full text-white bg-gray-900 p-4">
-      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 container m-auto gap-10 items-center justify-center w-full p-4">
-        <div class="flex flex-col p-6 text-md gap-4">
-          <h2 class="text-xl font-bold">Buyurtmalar</h2>
-          <div class="flex flex-col items-start gap-2 text-gray-400 font-semibold">
-            <a href="/album" class="hover:text-purple-600">Albomlar nazorati</a>
-            <a href="/vignette" class="hover:text-purple-600">Vinetkalar nazorati</a>
-            <a href="/photo" class="hover:text-purple-600">Rasmli albomlar nazorati</a>
+    <footer class="bg-gray-900 text-white mt-auto py-12 px-6">
+      <div class="max-w-[1400px] mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/10 pb-12 mb-8">
+          <div class="space-y-4">
+            <h2 class="text-xl font-black flex items-center gap-1">
+              <img class="w-9 h-9" src="../assets/logo.png" alt="Logo">
+              PHOTOBOOK
+            </h2>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Professional suratlar va albomlar tayyorlash tizimining boshqaruv paneli.
+            </p>
+          </div>
+
+          <div v-for="(section, sKey) in footerLinks" :key="sKey" class="space-y-4">
+            <h3 class="text-sm font-black uppercase tracking-widest text-blue-500">{{ section.title }}</h3>
+            <ul class="space-y-2">
+              <li v-for="link in section.links" :key="link.name">
+                <a :href="link.path" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm group">
+                  <i class="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-1 duration-300 transition-transform"></i>
+                  {{ link.name }}
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
-        <div class="flex flex-col p-6 text-md gap-4">
-          <h2 class="text-xl font-bold">Sozlamalar</h2>
-          <div class="flex flex-col text-start gap-2 text-gray-400 font-semibold">
-            <a href="/users" class="hover:text-purple-600">Xodimlar nazorati</a>
-            <a href="/material" class="hover:text-purple-600">Omborxona nazorati</a>
-            <a href="/category" class="hover:text-purple-600">Kategoriyalar nazorati</a>
+
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+          <p>© 2026 Photobook ERP. Barcha huquqlar himoyalangan.</p>
+          <div class="flex gap-6">
+            <a href="#" class="hover:text-white">Foydalanish shartlari</a>
+            <a href="#" class="hover:text-white">Maxfiylik siyosati</a>
           </div>
-        </div>
-        <div class="flex flex-col p-6 text-md gap-4">
-          <h2 class="text-xl font-bold">Vazifalar</h2>
-          <div class="flex flex-col text-start gap-2 text-gray-400 font-semibold">
-            <a href="/tasks" class="hover:text-purple-600">Mening vazifalarim</a>
-          </div>
-        </div>
-        <div class="flex flex-col text-gray-400 font-semibold text-center p-4 text-md gap-2">
-        <span class="font-bold">
-          Barcha sahifalar bo'yicha statistik tahlillar
-        </span>
-          <p>
-            © 2026 <span class="text-sm ">PHOTOBOOK. Barcha huquqlar himoyalangan.</span>
-          </p>
         </div>
       </div>
-
-    </div>
+    </footer>
   </div>
 
 </template>
@@ -329,7 +329,30 @@ const clickOpenPage = (path: string, query?: any) => {
     query
   });
 }
-
+const footerLinks = {
+  orders: {
+    title: 'Buyurtmalar',
+    links: [
+      { name: 'Albomlar', path: '/album' },
+      { name: 'Vinetkalar', path: '/vignette' },
+      { name: 'Rasmli albomlar', path: '/photo' }
+    ]
+  },
+  settings: {
+    title: 'Boshqaruv',
+    links: [
+      { name: 'Xodimlar', path: '/users' },
+      { name: 'Omborxona', path: '/material' },
+      { name: 'Kategoriyalar', path: '/category' }
+    ]
+  },
+  tasks: {
+    title: 'Shaxsiy',
+    links: [
+      { name: 'Mening vazifalarim', path: '/tasks' }
+    ]
+  }
+};
 const allAlbumCount = ref<number>(0);
 const allVignetteCount = ref<number>(0);
 const photoCount = ref<number>(0);
