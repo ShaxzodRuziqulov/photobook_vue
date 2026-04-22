@@ -8,8 +8,6 @@ import Toast from "vue-toastification";
 import 'vue-toastification/dist/index.css';
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
-import axios from "axios";
-axios.defaults.baseURL = "";
 
 const pinia = createPinia()
 createApp(App)

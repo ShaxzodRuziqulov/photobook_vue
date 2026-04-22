@@ -1,47 +1,49 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-8">
-    <div class="max-w-7xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-lg p-2">
-        <div class="flex gap-2 p-2 w-full items-center flex-col sm:flex-col md:flex-row lg:flex-row">
-          <CButton
-              type="button"
-              text="Ortga"
-              is-has-fa-icon
-              variant="ghost-accent"
-              faClass="fa-solid fa-arrow-left"
-              class="absolute right-0"
-              @click="router.back()"
-          />
-          <div
-              v-for="(tab, index) in tabs"
-              :key="index"
-              @click="changeCard(tab.id)"
-              :class="[
-              'flex cursor-pointer',
-              ]"
-          >
-            <div
-                class="flex items-center gap-2 py-1 px-4 transition-all border-b-2"
-                :class="activeTabs === tab.id
-                ? 'text-blue-600 border-blue-500'
-                : 'text-gray-600 border-transparent hover:bg-gray-100'"
-            >
-              <i class="text-md" :class="tab.icon"></i>
-              <div class="font-bold text-md text-left">
-                {{ tab.label }}
-              </div>
-            </div>
-          </div>
+  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-6 lg:mx-auto lg:max-w-7xl">
+    <div
+        class="flex w-full flex-col gap-3 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div class="flex flex-wrap items-center gap-3 sm:gap-5">
+        <CButton
+            type="button"
+            text="Orqaga"
+            is-has-fa-icon
+            variant="ghost-accent"
+            fa-class="fa-solid fa-arrow-left"
+            @click="router.back()"
+        />
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-pb-accent">Ma'lumotlar</p>
+          <h1 class="text-xl font-bold text-pb-text">Kategoriyalar</h1>
         </div>
       </div>
+    </div>
 
-      <div class="animate-fade-in mt-4" :key="activeTabs">
-        <Albums v-if="activeTabs === 1 " />
+    <nav
+        aria-label="Kategoriya turlari"
+        class="flex w-full flex-wrap items-stretch gap-1 overflow-x-auto rounded-xl border border-pb-border bg-pb-surface p-2 shadow-sm sm:flex-nowrap"
+    >
+      <button
+          v-for="(tab, index) in tabs"
+          :key="index"
+          type="button"
+          class="flex min-w-0 shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
+          :class="
+            activeTabs === tab.id
+              ? 'bg-pb-accent/10 text-pb-accent ring-1 ring-pb-accent/25'
+              : 'text-pb-muted hover:bg-pb-app hover:text-pb-text'
+          "
+          @click="changeCard(tab.id)"
+      >
+        <i class="shrink-0 text-base" :class="tab.icon" aria-hidden="true" />
+        <span>{{ tab.label }}</span>
+      </button>
+    </nav>
 
-        <Vignette v-else-if="activeTabs === 2 " />
-
-        <PhotoAlbums v-else-if="activeTabs === 3 " />
-      </div>
+    <div class="animate-fade-in min-h-0 min-w-0 flex-1" :key="activeTabs">
+      <Albums v-if="activeTabs === 1" />
+      <Vignette v-else-if="activeTabs === 2" />
+      <PhotoAlbums v-else-if="activeTabs === 3" />
     </div>
   </div>
 </template>
@@ -59,6 +61,24 @@ const route = useRoute();
 
 const activeTabs = ref<number>(1);
 
+const TAB_IDS = [1, 2, 3] as const;
+
+function queryScalar(val: unknown): string {
+  if (Array.isArray(val)) return val[0] != null ? String(val[0]) : "";
+  if (val === undefined || val === null) return "";
+  return String(val);
+}
+
+function normalizeTabGroup(val: unknown): number {
+  const s = queryScalar(val);
+  if (!s) return 1;
+  const n = Number(s);
+  if (!Number.isFinite(n) || !TAB_IDS.includes(n as (typeof TAB_IDS)[number])) {
+    return 1;
+  }
+  return n;
+}
+
 const tabs = computed(() => [
   {
     id: 1,
@@ -72,35 +92,46 @@ const tabs = computed(() => [
   },
   {
     id: 3,
-    label: 'Rasmli Albom',
+    label: 'Rasmli albom',
     icon: 'fa-solid fa-images',
   }
 ]);
 
 const changeCard = (id: number) => {
   activeTabs.value = id;
+  router.push({
+    path: "/category",
+    query: { ...route.query, group: String(id) },
+  });
+};
 
-  const queryGroup = { group: id};
-
-  router.push({ query: queryGroup });
-}
-
-watch( () =>
-    route.query.group,
+watch(
+    () => route.query.group,
     (val) => {
-  activeTabs.value = val ? Number(val) : 1;
-  if (!val) {
-    router.replace({
-      query: {
-        ...route.query,
-        group: 1
+      const next = normalizeTabGroup(val);
+      activeTabs.value = next;
+      const rawStr = queryScalar(route.query.group);
+      if (rawStr !== String(next)) {
+        router.replace({
+          path: "/category",
+          query: {
+            ...route.query,
+            group: String(next),
+          },
+        });
       }
-    });
-  }
-}, {immediate: true})
+    },
+    { immediate: true },
+);
 </script>
 
 <style scoped>
+.app-page {
+  background:
+      linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, var(--color-pb-app) 36%, var(--color-pb-app) 100%),
+      radial-gradient(ellipse 65% 40% at 50% -8%, rgb(37 99 235 / 0.07), transparent 52%);
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease-in-out;
 }

@@ -63,7 +63,7 @@ class SocketService {
             const title = payload.title?.trim();
             const message = payload.message?.trim();
 
-            toast.info(title ? `${title}${message ? `: ${message}` : ""}` : (message || "Yangi xabarnoma bor."));
+            toast.info(title ? `${title}${message ? `: ${message}` : ""}` : (message || "Yangi xabar bor."));
 
             await Promise.allSettled(
                 Array.from(this.listeners).map(listener => listener(payload))

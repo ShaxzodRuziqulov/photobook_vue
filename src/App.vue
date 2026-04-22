@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col h-full w-full">
-    <RouterView/>
+  <div class="flex h-dvh min-h-0 w-full flex-col overflow-hidden">
+    <RouterView class="min-h-0 flex flex-1 flex-col" />
   </div>
 </template>
 

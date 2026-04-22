@@ -78,9 +78,14 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
     response => response,
     error => {
-        if (error.response && (error.response.status === 403 || error.response.status === 401)) {
-            // localStorage.removeItem("access_token");
-            // window.location.href = '/login';
+        const status = error.response?.status;
+
+        if (status === 401) {
+            localStorage.removeItem("access_token");
+            if (!window.location.pathname.startsWith("/login")) {
+                window.location.assign("/login");
+            }
+            return Promise.reject(error);
         }
 
         if (error.response) {

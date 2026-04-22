@@ -1,9 +1,9 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex bg-white p-3 rounded-2xl shadow-lg items-center justify-between">
-      <div class="flex items-center">
-        <h2 class="text-xl font-bold flex items-center text-gray-700 gap-3">
-          <i class="fa-solid fa-book text-blue-500"></i>
+  <div class="space-y-4">
+    <div class="flex w-full items-center justify-between rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm">
+      <div class="flex items-center gap-3">
+        <h2 class="flex items-center gap-3 text-xl font-semibold text-pb-text">
+          <i class="fa-solid fa-book text-pb-accent" aria-hidden="true"></i>
           Albomlar
         </h2>
       </div>
@@ -15,162 +15,177 @@
     </div>
     <CDialog
         :show="showConfirmItem"
+        custom-class="w-full max-w-sm"
         @close="showConfirmItem = false"
-        body-class="justify-center bg-blue-800 text-center px-4 pb-8"
+        body-class="rounded-xl border border-pb-border !bg-pb-surface p-5 text-center shadow-lg"
     >
       <DeleteConfirm
           v-model:show="showConfirmItem"
           @confirm="deleteConfirmItem"
-          title="Siz ushbu categoriyani uchirmoqchimisiz?"
+          title="Ushbu kategoriyani o'chirmoqchimisiz?"
       />
     </CDialog>
 
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div class="overflow-x-auto">
-        <div v-if="isLoading" class="p-4 space-y-3">
-          <div
-              v-for="i in 6"
-              :key="i"
-              class="grid grid-cols-5 gap-4 items-center animate-pulse"
-          >
-            <div class="h-4 bg-gray-300 rounded w-6"></div>
-            <div class="h-4 bg-gray-300 rounded w-3/4"></div>
-            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div class="h-4 bg-gray-300 rounded w-10"></div>
-          </div>
-        </div>
-        <table
-            v-else-if="alCategories.length > 0"
-            class="w-full text-sm">
-          <colgroup>
-            <col style="width: 5%">
-            <col style="width: 18%">
-            <col style="width: 18%">
-            <col style="width: 18%">
-            <col style="width: 18%">
-          </colgroup>
-          <thead class="bg-gray-300">
-          <tr>
-            <th class="text-left py-4 px-6 font-semibold">№</th>
-            <th class="text-left py-4 px-6 font-semibold">Nomi</th>
-            <th class="text-left py-4 px-6 font-semibold">Betlar</th>
-            <th class="text-left py-4 px-6 font-semibold">Ulchami</th>
-            <th class="text-left py-4 px-6 font-semibold">Amallar</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr
-              v-for="(vin, index) in alCategories"
-              :key="index"
-              class="border-t border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            <td class="py-2 px-6 text-gray-600">{{ index + 1 }}</td>
-            <td class="py-2 px-6">
-              <div class="font-semibold text-gray-800">{{ vin.name }}</div>
-            </td>
-            <td class="py-2 px-6"> {{ vin.defaultPages }} </td>
-            <td class="py-2 px-6"> {{vin.size}} </td>
-            <td class="py-4 px-6 text-right items-center flex gap-2">
-              <button
-                  @click="editItem(vin)"
-                  class="text-blue-600 bg-blue-100 hover:bg-blue-200 rounded py-1 px-3 cursor-pointer hover:text-blue-800 mr-3 transition-colors"
-                  title="Tahrirlash"
-              >
-                <i class="fa-solid fa-pencil"></i>
-              </button>
-              <button
-                  @click="deleteItem(vin)"
-                  class="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 rounded px-3 py-1 cursor-pointer transition-colors"
-                  title="O'chirish"
-              >
-                <i class="fas fa-trash-can"></i>
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-
-        <div v-else class="text-center py-16">
-          <p class="text-gray-500 text-lg font-semibold">Albom topilmadi !</p>
-        </div>
-      </div>
-    </div>
-
     <div
-        v-if="showModal"
-        @click.self="closeModal"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        class="animate-fade-in flex w-full min-w-0 flex-col gap-4 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm"
     >
-      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h3 class="text-xl font-bold text-gray-800">
-            {{ isEditing ? "Kategoriyani tahrirlash" : "Kategoriya qo'shish" }}
-          </h3>
-          <button @click="closeModal" class="cursor-pointer text-gray-500 hover:text-gray-700 w-8 h-8 flex items-center justify-center border border-gray-600 rounded-full">
-            <i class="fa-solid fa-close text-xl"></i>
-          </button>
+      <div
+          v-if="isLoading"
+          class="grid grid-cols-1 gap-4 py-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
+        <div
+            v-for="i in 8"
+            :key="i"
+            class="animate-pulse rounded-xl border border-pb-border bg-pb-elevated p-4 shadow-sm"
+        >
+          <div class="mb-2 h-5 w-3/4 rounded bg-pb-app"></div>
+          <div class="mb-4 h-4 w-1/2 rounded bg-pb-app"></div>
+          <div class="mb-4 h-6 w-1/3 rounded bg-pb-app"></div>
         </div>
-
-        <form @submit.prevent="saveForm" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Nomi <span class="text-red-500">*</span>
-            </label>
-            <input
-                v-model="form.name"
-                type="text"
-                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors"
-                placeholder="Masalan: A3 albom"
-            >
+      </div>
+      <div
+          v-else-if="alCategories.length > 0"
+          class="grid grid-cols-1 gap-4 py-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
+        <div
+            v-for="(vin, index) in alCategories"
+            :key="vin.id ?? `cat-${index}`"
+            class="flex h-full w-full flex-col gap-2 rounded-xl border border-pb-border bg-pb-surface px-3 py-4 shadow-sm"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="break-words text-xl font-semibold text-pb-text">{{ vin.name }}</p>
+              <p class="break-words text-sm text-pb-muted">
+                {{ vin.size || "—" }}
+              </p>
+            </div>
+            <div class="flex shrink-0 items-center justify-end gap-2.5">
+              <CButton
+                  type="button"
+                  size="sm"
+                  variant="outline-edit"
+                  is-has-fa-icon
+                  faClass="fa-solid fa-pencil"
+                  title="Tahrirlash"
+                  class="!min-w-9 !px-2"
+                  @click="editItem(vin)"
+              />
+              <CButton
+                  type="button"
+                  size="sm"
+                  variant="danger"
+                  is-has-fa-icon
+                  faClass="fa-solid fa-trash-can"
+                  title="O'chirish"
+                  class="!min-w-9 !px-2"
+                  @click="deleteItem(vin)"
+              />
+            </div>
           </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Betlar turi <span class="text-red-500">*</span>
-            </label>
-            <input
-                v-model="form.defaultPages"
-                type="text"
-                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition-colors"
-                placeholder="2,4,6,8, ..."
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div
+                class="flex min-w-0 flex-wrap items-center gap-2 text-xl font-semibold text-pb-accent"
             >
+              <span class="break-all">{{ vin.defaultPages ?? "—" }}</span>
+              <span class="break-all text-lg text-pb-text">betlar</span>
+            </div>
           </div>
-          <AppInput label="Ulchami"
-                    type="text"
-                    placeholder="20x30"
-                    v-model="form.size"
-          />
-
-          <div class="flex gap-3 pt-4">
-            <button
-                type="button"
-                @click="closeModal"
-                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold transition-all"
-            >
-              Bekor qilish
-            </button>
-            <button
-                type="submit"
-                class="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all"
-            >
-              {{ isEditing ? 'Yangilash' : 'Saqlash' }}
-            </button>
-          </div>
-        </form>
+        </div>
+      </div>
+      <div
+          v-else
+          class="flex w-full items-center justify-center rounded-lg border border-dashed border-pb-border bg-pb-elevated/50 py-12 text-pb-muted"
+      >
+        Kategoriya topilmadi
       </div>
     </div>
+
+    <CDialog
+        :show="showModal"
+        has-close-icon
+        no-header
+        custom-class="w-full max-w-md"
+        @close="closeModal"
+        body-class="flex max-h-[min(88vh,640px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
+    >
+      <form
+          class="flex min-h-0 flex-1 flex-col"
+          @submit.prevent="saveForm"
+      >
+        <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-11 sm:pt-4">
+          <h2 class="text-base font-semibold leading-snug text-pb-text">
+            {{ isEditing ? "Kategoriyani tahrirlash" : "Yangi kategoriya" }}
+          </h2>
+        </div>
+        <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
+          <div>
+            <AppInput
+                label="Nomi *"
+                type="text"
+                placeholder="Kiriting"
+                v-model="form.name"
+                :maxlength="PRODUCT_CATEGORY_LIMITS.nameMax"
+            />
+            <p v-if="categoryErrors.name" class="mt-1 text-xs text-pb-error">{{ categoryErrors.name }}</p>
+          </div>
+          <div>
+            <AppInput
+                label="Betlar turi *"
+                type="text"
+                placeholder="2, 4, 6 …"
+                v-model="defaultPagesModel"
+                :maxlength="PRODUCT_CATEGORY_LIMITS.defaultPagesMax"
+            />
+            <p v-if="categoryErrors.defaultPages" class="mt-1 text-xs text-pb-error">{{ categoryErrors.defaultPages }}</p>
+          </div>
+          <div>
+            <AppInput
+                label="Ulchami"
+                type="text"
+                placeholder="20x30"
+                v-model="sizeModel"
+                :maxlength="PRODUCT_CATEGORY_LIMITS.sizeMax"
+            />
+            <p v-if="categoryErrors.size" class="mt-1 text-xs text-pb-error">{{ categoryErrors.size }}</p>
+          </div>
+        </div>
+        <div
+            class="flex shrink-0 flex-col gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5 sm:flex-row sm:justify-end"
+        >
+          <CButton
+              type="button"
+              text="Bekor qilish"
+              variant="ghost-accent"
+              :disabled="isSaving"
+              @click="closeModal"
+          />
+          <CButton
+              type="submit"
+              :text="isEditing ? 'Yangilash' : 'Saqlash'"
+              variant="primary"
+              :loading="isSaving"
+              :disabled="categorySaveDisabled"
+          />
+        </div>
+      </form>
+    </CDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue';
+import {ref, computed, onMounted, watch, nextTick} from 'vue';
 import CButton from "@/components/CButton.vue";
 import { useStore } from "@/stores/store";
 import AppInput from "@/components/ui/AppInput.vue";
 import { AllCategory } from "@/typeModules/useModules";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
 import CDialog from "@/components/CDialog.vue";
+import { PRODUCT_CATEGORY_LIMITS } from "@/constants/backendEntityLimits";
+import {
+  validateProductCategoryForm,
+  type ProductCategoryFieldErrors,
+} from "@/validation/materialAndCategoryForms";
+import { snapshotProductCategory } from "@/utils/updateFormDirty";
 
 
 const dataStore = useStore();
@@ -178,9 +193,11 @@ const alCategories = computed(() => dataStore.state.alCategory);
 
 const showModal = ref(false);
 const isEditing = ref(false);
+const categoryEditBaseline = ref("");
 const showConfirmItem = ref(false);
 const isLoading = ref(false);
-
+const isSaving = ref(false);
+const categoryErrors = ref<ProductCategoryFieldErrors>({});
 
 const form = ref<AllCategory>({
   id: null,
@@ -190,11 +207,73 @@ const form = ref<AllCategory>({
   size: null,
 });
 
+watch(
+    () => form.value.name,
+    () => {
+      if (categoryErrors.value.name) delete categoryErrors.value.name;
+    },
+);
+watch(
+    () => form.value.defaultPages,
+    () => {
+      if (categoryErrors.value.defaultPages) delete categoryErrors.value.defaultPages;
+    },
+);
+watch(
+    () => form.value.size,
+    () => {
+      if (categoryErrors.value.size) delete categoryErrors.value.size;
+    },
+);
+
+const defaultPagesModel = computed({
+  get: () => form.value.defaultPages ?? "",
+  set: (v: string) => {
+    form.value.defaultPages = v.trim() === "" ? null : v;
+  },
+});
+
+const sizeModel = computed({
+  get: () => form.value.size ?? "",
+  set: (v: string) => {
+    form.value.size = v.trim() === "" ? null : v;
+  },
+});
+
+const categorySnapshotNow = computed(() =>
+  snapshotProductCategory({
+    name: form.value.name,
+    defaultPages: form.value.defaultPages,
+    size: form.value.size,
+    kind: form.value.kind,
+  }),
+);
+
+const categorySaveDisabled = computed(
+  () =>
+    isSaving.value ||
+    (isEditing.value &&
+      categoryEditBaseline.value !== "" &&
+      categorySnapshotNow.value === categoryEditBaseline.value),
+);
+
 const openModal = () => {
+  categoryErrors.value = {};
+  categoryEditBaseline.value = "";
+  isEditing.value = false;
+  form.value = {
+    id: null,
+    kind: "ALBUM",
+    name: "",
+    defaultPages: null,
+    size: null,
+  };
   showModal.value = true;
 };
 
 const closeModal = () => {
+  categoryErrors.value = {};
+  categoryEditBaseline.value = "";
   form.value = {
     id: null,
     kind: 'ALBUM',
@@ -207,7 +286,17 @@ const closeModal = () => {
 };
 
 const saveForm = async () => {
-  isLoading.value = true;
+  const fieldErrors = validateProductCategoryForm({
+    name: form.value.name,
+    defaultPages: form.value.defaultPages,
+    size: form.value.size,
+  });
+  if (Object.keys(fieldErrors).length) {
+    categoryErrors.value = fieldErrors;
+    return;
+  }
+  categoryErrors.value = {};
+  isSaving.value = true;
   try {
     if (form.value.id) {
       await dataStore.updateCategory(form.value.id, form.value);
@@ -215,19 +304,21 @@ const saveForm = async () => {
       await dataStore.addCategory(form.value);
     }
     await dataStore.loadCategory(form.value.kind);
-    isLoading.value = false;
+    closeModal();
+  } catch {
+  } finally {
+    isSaving.value = false;
   }
-  catch (error) {
-    console.log(error)
-  }
-
-  closeModal();
 };
 
 const editItem = (item: AllCategory) => {
+  categoryErrors.value = {};
   isEditing.value = true;
   showModal.value = true;
   form.value = { ...item };
+  void nextTick(() => {
+    categoryEditBaseline.value = categorySnapshotNow.value;
+  });
 }
 
 const deleteConfirmItem = async () => {
@@ -236,8 +327,7 @@ const deleteConfirmItem = async () => {
     showConfirmItem.value = false;
     await dataStore.loadCategory(form.value.kind);
   }
-  catch (error) {
-    console.log(error)
+  catch {
   }
 }
 
@@ -250,9 +340,26 @@ onMounted(async () => {
   isLoading.value = true;
   try {
     await dataStore.loadCategory('ALBUM');
-  isLoading.value = false;
-  } catch (error) {
-    console.log(error)
+  } catch {
+  } finally {
+    isLoading.value = false;
   }
-})
+});
 </script>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

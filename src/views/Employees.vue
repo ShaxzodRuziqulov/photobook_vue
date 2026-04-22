@@ -1,16 +1,19 @@
 <template>
-  <div class="flex p-6 flex-col gap-4 container m-auto w-full h-full">
-    <div class="flex bg-white p-4 rounded-xl w-full items-center justify-between">
-      <div class="flex items-center gap-5">
+  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 sm:px-6 lg:mx-auto lg:max-w-7xl">
+    <div class="flex w-full flex-col gap-3 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-wrap items-center gap-3 sm:gap-5">
         <CButton
             type="button"
-            text="Ortga"
+            text="Orqaga"
             is-has-fa-icon
             variant="ghost-accent"
-            faClass="fa-solid fa-arrow-left"
+            fa-class="fa-solid fa-arrow-left"
             @click="router.back()"
         />
-        <span class="text-xl font-semibold">Xodimlar</span>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-pb-accent">Jamoa</p>
+          <h1 class="text-xl font-bold text-pb-text">Xodimlar</h1>
+        </div>
       </div>
       <CButton
           type="button"
@@ -20,84 +23,128 @@
     </div>
     <CDialog
         :show="visibleShow"
+        has-close-icon
+        no-header
+        custom-class="w-full max-w-2xl"
         @close="visibleShow = false"
-        bodyClass="!bg-bg-primary mt-20 overflow-hidden"
+        body-class="flex max-h-[min(88vh,640px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
     >
       <form
-          class="flex flex-col gap-2 overflow-y-auto px-6 py-4 max-h-[75vh]"
+          class="flex min-h-0 flex-1 flex-col"
           @submit.prevent="submitForm"
       >
-        <h2 class=" text-2xl font-semibold">
-          {{isEditing ? "Xodim ma'lumotlarini o'zgartirish" : "Xodim qo'shish"}}
-        </h2>
-        <AppInput label="Ism"
-                  type="text"
-                  placeholder="Ism kiriting"
-                  v-model="form.firstName"
-        />
-        <AppInput label="Familiya"
-                  type="text"
-                  placeholder="Familiya kiriting"
-                  v-model="form.lastName"
-        />
-        <AppInput label="Foydalanuvchi nomi"
-                  type="text"
-                  placeholder="Foydalanuvchi ismini kiriting"
-                  v-model="form.username"
-        />
-        <AppInput label="Kasbi"
-                  type="text"
-                  placeholder="Kasbni kiriting"
-                  v-model="form.profession"
-        />
-        <AppInput label="Parol"
-                  type="text"
-                  placeholder="123..."
-                  v-model="form.password"
-        />
-        <AppInput label="Telefon nomer"
-                  type="text"
-                  placeholder="+998 -"
-                  v-model="form.phone"
-        />
-
-        <div v-if="avatarPreview || form.avatarUrl" class="flex items-center gap-3">
-          <img
-              :src="avatarPreview || getAvatarUrl(form.avatarUrl)"
-              class="w-16 h-16 rounded-full object-cover border"
-              alt="Avatar preview"
-          />
-          <CButton
-              type="button"
-              text="Rasmni o'chirish"
-              variant="danger"
-              size="sm"
-              @click="removeAvatar"
-          />
+        <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-11 sm:pt-4">
+          <h2 class="text-base font-semibold text-pb-text leading-snug">
+            {{ isEditing ? "Xodimni tahrirlash" : "Xodim qo'shish" }}
+          </h2>
         </div>
-        <AppInput
-            label="Rasm yuklash"
-            type="file"
-            accept="image/*"
-            @change="changeFile($event)"
-        />
-        <AppInput label="Izoh uchun"
+        <div class="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+          <div
+              class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4"
+          >
+            <div class="w-full shrink-0 sm:max-w-[220px]">
+              <OrderImagePicker
+                  label="Profil rasmi"
+                  :image-src="employeeAvatarDisplaySrc"
+                  :busy="isSavingEmployee"
+                  @pick="onEmployeeImagePicked"
+                  @clear="onEmployeeImageClear"
+              />
+            </div>
+            <div class="min-w-0 flex-1 space-y-3">
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="min-w-0 space-y-1">
+                  <AppInput
+                      label="Familiya *"
+                      type="text"
+                      maxlength="120"
+                      placeholder="Familiya"
+                      v-model="form.lastName"
+                      @update:model-value="clearFieldError('lastName')"
+                  />
+                  <p v-if="fieldErrors.lastName" class="text-pb-error text-xs">{{ fieldErrors.lastName }}</p>
+                </div>
+                <div class="min-w-0 space-y-1">
+                  <AppInput
+                      label="Ism *"
+                      type="text"
+                      maxlength="120"
+                      placeholder="Ism"
+                      v-model="form.firstName"
+                      @update:model-value="clearFieldError('firstName')"
+                  />
+                  <p v-if="fieldErrors.firstName" class="text-pb-error text-xs">{{ fieldErrors.firstName }}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="min-w-0 space-y-1">
+                  <AppInput
+                      label="Foydalanuvchi nomi *"
+                      type="text"
+                      maxlength="80"
+                      placeholder="Login"
+                      v-model="form.username"
+                      @update:model-value="clearFieldError('username')"
+                  />
+                  <p v-if="fieldErrors.username" class="text-pb-error text-xs">{{ fieldErrors.username }}</p>
+                </div>
+                <div class="min-w-0 space-y-1">
+                  <AppInput
+                      :label="isEditing ? 'Parol (ixtiyoriy)' : 'Parol *'"
+                      type="password"
+                      :placeholder="passwordPlaceholder"
+                      v-model="form.password"
+                      @update:model-value="clearFieldError('password')"
+                  />
+                  <p v-if="fieldErrors.password" class="text-pb-error text-xs">{{ fieldErrors.password }}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="min-w-0">
+                  <AppInput
+                      label="Kasbi"
+                      type="text"
+                      maxlength="120"
+                      placeholder="Kasb"
+                      v-model="form.profession"
+                  />
+                </div>
+                <div class="min-w-0">
+                  <AppInput
+                      label="Telefon"
+                      type="text"
+                      maxlength="40"
+                      placeholder="+998901234567"
+                      v-model="form.phone"
+                  />
+                </div>
+              </div>
+              <AppInput
+                  label="Izoh"
                   type="textarea"
-                  placeholder="Izoh kiriting"
+                  placeholder="Qisqa izoh"
                   v-model="form.bio"
-        />
-        <div class="flex justify-end gap-4 items-center">
+                  :is-textarea="true"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+            class="flex shrink-0 flex-col gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5 sm:flex-row sm:justify-end"
+        >
           <CButton
               type="button"
-              text="Cancel"
+              text="Bekor qilish"
               variant="ghost-accent"
+              :disabled="isSavingEmployee"
               @click="resetForm"
           />
           <CButton
               type="submit"
-              text="Submit"
+              text="Saqlash"
               variant="primary"
-              :disabled="isLoading"
+              :disabled="isSavingEmployee || employeeSaveDisabled"
+              :loading="isSavingEmployee"
           />
         </div>
       </form>
@@ -105,45 +152,74 @@
 
     <CDialog
         :show="selectedRole"
+        has-close-icon
+        no-header
+        custom-class="w-full max-w-md"
         @close="selectedRole = false"
-        body-class="justify-center bg-blue-800 text-center px-4 pb-8"
+        body-class="flex max-h-[min(88vh,520px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
     >
-      <div class="shadow-xl rounded-2xl p-6 text-gray-800 max-w-2xl mx-auto transition-colors">
-        <form @submit.prevent="saveRole" class="w-full">
-          <p class="transition-all duration-200 font-semibold">
-            {{ selectedUsers?.lastName }} {{ selectedUsers?.firstName }}
-          </p>
-          <AppSelect
-              v-model="selectedRoles"
-              :options="rolesOptions"
-              disabledValue="Role tanlang"
-              text-field="name"
-              value-field="id"
-              isMultiple
-          />
-          <div class="flex mt-4 gap-2 items-center justify-end">
+        <form
+            class="flex min-h-0 flex-1 flex-col"
+            @submit.prevent="saveRole"
+        >
+          <div class="shrink-0 border-b border-pb-border px-4 pb-3 pt-11 sm:pt-4">
+            <h2 class="text-base font-semibold text-pb-text leading-snug">
+              Rollarni boshqarish
+            </h2>
+            <div class="mt-2 min-w-0 space-y-0.5">
+              <p class="text-sm font-semibold leading-snug text-pb-text line-clamp-2">
+                {{ roleDialogTitle }}
+              </p>
+              <p
+                  v-if="roleDialogSubtitle"
+                  class="truncate text-xs font-medium text-pb-muted"
+                  :title="roleDialogSubtitle"
+              >
+                {{ roleDialogSubtitle }}
+              </p>
+            </div>
+          </div>
+          <div class="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
+            <p class="text-[11px] leading-snug text-pb-muted">
+              Bir nechta rol tanlash mumkin.
+            </p>
+            <AppSelect
+                v-model="selectedRoles"
+                :options="rolesOptions"
+                disabledValue="Rol tanlang"
+                text-field="name"
+                value-field="id"
+                isMultiple
+            />
+          </div>
+          <div
+              class="flex shrink-0 flex-nowrap items-center justify-end gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5"
+          >
             <CButton
                 type="button"
-                text="Cancel"
+                text="Bekor qilish"
                 variant="ghost-accent"
+                :disabled="isSavingRole"
                 @click="selectedRole = false"
             />
             <CButton
                 type="submit"
                 text="Saqlash"
                 variant="primary"
+                :loading="isSavingRole"
+                :disabled="isSavingRole || !roleDialogDirty"
             />
           </div>
         </form>
-      </div>
     </CDialog>
     <CDialog
         :show="showModal"
+        custom-class="w-full max-w-sm"
         @close="showModal = false"
-        body-class="justify-center bg-blue-800 text-center px-4 pb-8"
+        body-class="!bg-pb-surface rounded-xl border border-pb-border p-5 text-center shadow-lg"
     >
       <DeleteConfirm
-          title="Ushbu xodimni uchirmoqchimisiz?"
+          title="Ushbu xodimni o'chirmoqchimisiz?"
           v-model:show="showModal"
           @confirm="confirmDelete"
       />
@@ -171,15 +247,15 @@
       </div>
     </div>
 
-    <div class="animate-fade-in overflow-auto gap-5 flex-col w-full bg-white p-6 rounded-xl h-full">
+    <div class="animate-fade-in flex w-full flex-col gap-4 overflow-x-auto rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm sm:p-6">
       <div v-if="isLoading" class="space-y-3">
         <div
             v-for="i in 6"
             :key="i"
-            class="animate-pulse bg-gray-200 h-12 rounded-lg"
+            class="h-12 animate-pulse rounded-lg bg-pb-border"
         ></div>
       </div>
-      <table v-else class="overflow-auto table-auto w-full">
+      <table v-else class="w-full table-auto text-sm">
         <colgroup>
           <col style="width: 5%">
           <col style="width: 15%">
@@ -190,7 +266,7 @@
           <col style="width: 14%">
           <col style="width: 14%">
         </colgroup>
-        <thead class="bg-gray-200 rounded-2xl text-sm tracking-wider">
+        <thead class="bg-pb-elevated text-sm font-semibold tracking-wide text-pb-label">
         <tr>
           <th class="px-2 py-3 text-start">№</th>
           <th class="p-2 text-start">Ism</th>
@@ -204,7 +280,7 @@
         </thead>
         <tbody v-if="allUsers.length">
         <tr
-            class="border-t border-gray-600 text-sm hover:bg-gray-100"
+            class="border-t border-pb-border transition hover:bg-pb-elevated"
             v-for="(user, index) in allUsers"
             :key="user.id"
         >
@@ -222,7 +298,7 @@
               <span
                   v-for="role in user.roles"
                   :key="role.id"
-                  class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-semibold"
+                  class="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-pb-accent"
               >
                 {{ roleStatus[role.name] }}
               </span>
@@ -231,18 +307,19 @@
           <td class="p-2">{{user.bio}}</td>
           <td class="p-2">{{user.phone}}</td>
           <td class="p-2">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-nowrap items-center justify-end gap-2">
               <CButton
                   type="button"
-                  text="Role"
-                  variant="ghost-accent"
+                  text="Rol"
+                  size="sm"
+                  variant="outline-accent"
                   @click="changeRole(user)"
               />
               <CButton
                   text="Tahrirlash"
                   type="button"
                   size="sm"
-                  variant="warning"
+                  variant="outline-edit"
                   @click="editItem(user)"
               />
               <CButton
@@ -258,8 +335,8 @@
         </tbody>
         <tbody v-else>
         <tr>
-          <td colspan="10">
-            <div class="flex p-4 items-center justify-center w-full text-gray-600 m-auto">
+          <td colspan="8">
+            <div class="m-auto flex w-full items-center justify-center p-6 text-pb-muted">
               Xodim topilmadi!
             </div>
           </td>
@@ -271,8 +348,9 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, onMounted, ComputedRef, Ref} from "vue";
+import {computed, nextTick, ref, onMounted, ComputedRef, Ref} from "vue";
 import AppInput from "@/components/ui/AppInput.vue";
+import OrderImagePicker from "@/components/OrderImagePicker.vue";
 import CButton from "@/components/CButton.vue";
 import CDialog from "@/components/CDialog.vue";
 import { useStore } from "@/stores/store";
@@ -283,6 +361,10 @@ import { useRouter } from "vue-router";
 import axiosInstance from "@/axios";
 import {authService} from "@/service/authService";
 import {useToast} from "vue-toastification";
+import {
+  snapshotSortedRoleIds,
+  snapshotUserEmployeeEdit,
+} from "@/utils/updateFormDirty";
 
 const Toast = useToast();
 const router = useRouter();
@@ -291,6 +373,8 @@ const loadStore = authService();
 
 const visibleShow = ref(false);
 const isLoading = ref(false);
+const isSavingEmployee = ref(false);
+const isSavingRole = ref(false);
 const showModal = ref(false);
 const selectedUser = ref<string | null>(null);
 const selectedUsers = ref<UserForm | null>(null);
@@ -300,6 +384,8 @@ const selectedRole = ref(false);
 const roles = ref<Role[]>([]);
 const selectedFile = ref<File | null>(null);
 const isEditing = ref(false);
+const employeeEditBaseline = ref("");
+const roleDialogBaseline = ref("");
 const avatarPreview = ref<string>("");
 
 const oldUploadKey = ref<string | null>(null);
@@ -326,6 +412,30 @@ const rolesOptions = computed(() => {
   })
 })
 
+/** Jadval bilan bir xil: familiya, keyin ism; bo‘lmasa login. */
+const roleDialogTitle = computed(() => {
+  const u = selectedUsers.value;
+  if (!u) return "";
+  const ln = String(u.lastName ?? "").trim();
+  const fn = String(u.firstName ?? "").trim();
+  const full = [ln, fn].filter(Boolean).join(" ");
+  if (full) return full;
+  const un = String(u.username ?? "").trim();
+  return un || "Xodim";
+});
+
+/** Ism-familiya bor bo‘lsa, alohida qatorda login (@…). */
+const roleDialogSubtitle = computed(() => {
+  const u = selectedUsers.value;
+  if (!u) return "";
+  const ln = String(u.lastName ?? "").trim();
+  const fn = String(u.firstName ?? "").trim();
+  if (!ln && !fn) return "";
+  const un = String(u.username ?? "").trim();
+  if (!un) return "";
+  return un.startsWith("@") ? un : `@${un}`;
+});
+
 const roleStatus:Record<string, string> = {
   ROLE_MANAGER: "MENEJER",
   ROLE_ADMIN: "ADMIN",
@@ -350,13 +460,99 @@ const emptyForm = (): UserForm => ({
 
 const form = ref<UserForm>(emptyForm());
 
+const employeeSnapshotNow = computed(() =>
+  snapshotUserEmployeeEdit(
+    form.value,
+    String(form.value.password ?? "").trim().length > 0,
+    !!selectedFile.value,
+  ),
+);
+
+const employeeSaveDisabled = computed(
+  () =>
+    isEditing.value &&
+    employeeEditBaseline.value !== "" &&
+    employeeSnapshotNow.value === employeeEditBaseline.value,
+);
+
+const roleDialogDirty = computed(
+  () => snapshotSortedRoleIds(selectedRoles.value) !== roleDialogBaseline.value,
+);
+
+type EmployeeFieldKey = "lastName" | "firstName" | "username" | "password";
+
+const fieldErrors = ref<Record<EmployeeFieldKey, string>>({
+  lastName: "",
+  firstName: "",
+  username: "",
+  password: "",
+});
+
+const passwordPlaceholder = computed(() =>
+  isEditing.value
+    ? "Yangi parol (bo'sh qoldiring agar o'zgarmasin)"
+    : "Kamida 6 belgi",
+);
+
+const revokePreviewUrl = () => {
+  const u = avatarPreview.value;
+  if (u.startsWith("blob:")) URL.revokeObjectURL(u);
+};
+
+const clearFieldError = (key: EmployeeFieldKey) => {
+  fieldErrors.value[key] = "";
+};
+
+const validateEmployeeForm = (): boolean => {
+  fieldErrors.value = {
+    lastName: "",
+    firstName: "",
+    username: "",
+    password: "",
+  };
+  let ok = true;
+  const f = form.value;
+  if (!String(f.lastName ?? "").trim()) {
+    fieldErrors.value.lastName = "Familiya kiritilishi shart.";
+    ok = false;
+  }
+  if (!String(f.firstName ?? "").trim()) {
+    fieldErrors.value.firstName = "Ism kiritilishi shart.";
+    ok = false;
+  }
+  if (!String(f.username ?? "").trim()) {
+    fieldErrors.value.username = "Foydalanuvchi nomi kiritilishi shart.";
+    ok = false;
+  }
+  const pwd = String(f.password ?? "").trim();
+  if (!isEditing.value) {
+    if (pwd.length < 6) {
+      fieldErrors.value.password = "Parol kamida 6 belgi bo'lishi kerak.";
+      ok = false;
+    }
+  } else if (pwd.length > 0 && pwd.length < 6) {
+    fieldErrors.value.password =
+      "Yangi parol kamida 6 belgi bo'lishi kerak yoki bo'sh qoldiring.";
+    ok = false;
+  }
+  return ok;
+};
+
 const clickVisibleForm = () => {
+  revokePreviewUrl();
   form.value = emptyForm();
-  avatarPreview.value = '';
+  avatarPreview.value = "";
   selectedFile.value = null;
   oldUploadKey.value = null;
   newUploadId.value = null;
+  employeeEditBaseline.value = "";
   isEditing.value = false;
+  fieldErrors.value = {
+    lastName: "",
+    firstName: "",
+    username: "",
+    password: "",
+  };
   visibleShow.value = true;
 };
 
@@ -370,23 +566,22 @@ const closePreview = () => {
   previewImage.value = null;
 }
 
-const changeFile = (event: Event) => {
-  const fileInput = event.target as HTMLInputElement;
-  if (!fileInput.files?.length) return;
-
-  selectedFile.value = fileInput.files[0];
-  avatarPreview.value = URL.createObjectURL(selectedFile.value);
+const onEmployeeImagePicked = (file: File) => {
+  revokePreviewUrl();
+  selectedFile.value = file;
+  avatarPreview.value = URL.createObjectURL(file);
 };
 
-const removeAvatar = async () => {
+const onEmployeeImageClear = async () => {
   if (newUploadId.value) {
     await deleteUpload(newUploadId.value);
     newUploadId.value = null;
   }
-
-  avatarPreview.value = '';
-  form.value.avatarUrl = '';
-  form.value.uploadId = '';
+  revokePreviewUrl();
+  avatarPreview.value = "";
+  selectedFile.value = null;
+  form.value.avatarUrl = "";
+  form.value.uploadId = "";
 };
 
 const deleteUpload = async (id: string) => {
@@ -428,8 +623,15 @@ const getAvatarUrl = (url: string | undefined): string => {
 
 };
 
+const employeeAvatarDisplaySrc = computed(() => {
+  if (avatarPreview.value) return avatarPreview.value;
+  return getAvatarUrl(form.value.avatarUrl);
+});
+
 const submitForm = async () => {
-  isLoading.value = true;
+  if (!validateEmployeeForm()) return;
+
+  isSavingEmployee.value = true;
   try {
     if (selectedFile.value) {
       const uploaded = await uploadAvatar();
@@ -439,42 +641,51 @@ const submitForm = async () => {
         newUploadId.value = uploaded.id;
       }
     }
+
+    const payload: Record<string, unknown> = { ...form.value };
+    if (isEditing.value && !String(form.value.password ?? "").trim()) {
+      delete payload.password;
+    }
+
     if (isEditing.value) {
-      await store.updateUser(form.value.id, form.value);
+      await store.updateUser(form.value.id, payload as UserForm);
       Toast.success("Xodim ma'lumotlari yangilandi");
     } else {
-      await store.addUser(form.value);
+      await store.addUser(payload as UserForm);
       Toast.success("Xodim qo'shildi");
     }
 
+    revokePreviewUrl();
     visibleShow.value = false;
     isEditing.value = false;
     selectedFile.value = null;
-    avatarPreview.value = '';
+    avatarPreview.value = "";
     newUploadId.value = null;
     oldUploadKey.value = null;
     form.value = emptyForm();
-    isLoading.value = false;
   } catch (error) {
     Toast.error("Xatolik yuz berdi");
     console.error(error);
+  } finally {
+    isSavingEmployee.value = false;
   }
 };
 
 const saveRole = async () => {
-  isLoading.value = true;
-
   if (!selectedRoles.value.length || !selectedUserRoleId.value) return;
 
+  isSavingRole.value = true;
   try {
     await loadStore.loadChangeRole(selectedUserRoleId.value, selectedRoles.value);
     Toast.success("Role yangilandi");
     selectedRole.value = false;
     selectedRoles.value = [];
     await store.loadUsers();
-    isLoading.value = false;
   } catch (error) {
+    Toast.error("Rolni saqlashda xatolik");
     console.error(error);
+  } finally {
+    isSavingRole.value = false;
   }
 };
 
@@ -482,6 +693,7 @@ const changeRole = async (user: UserForm) => {
   selectedUserRoleId.value = user.id;
   selectedUsers.value = user;
   selectedRoles.value = user.roles?.map(role => String(role.id)) || [];
+  roleDialogBaseline.value = snapshotSortedRoleIds(selectedRoles.value);
 
   if (!roles.value.length) {
     await loadStore.loadRole();
@@ -491,15 +703,25 @@ const changeRole = async (user: UserForm) => {
 };
 
 const editItem = (user: UserForm) => {
-  form.value = { ...user };
-  avatarPreview.value = '';
+  revokePreviewUrl();
+  form.value = { ...user, password: "" };
+  avatarPreview.value = "";
   selectedFile.value = null;
   newUploadId.value = null;
 
   oldUploadKey.value = user.uploadId || null;
 
+  fieldErrors.value = {
+    lastName: "",
+    firstName: "",
+    username: "",
+    password: "",
+  };
   isEditing.value = true;
   visibleShow.value = true;
+  void nextTick(() => {
+    employeeEditBaseline.value = employeeSnapshotNow.value;
+  });
 };
 
 const confirmDelete = async () => {
@@ -533,10 +755,19 @@ const resetForm = () => {
     deleteUpload(newUploadId.value);
     newUploadId.value = null;
   }
+  revokePreviewUrl();
   visibleShow.value = false;
   selectedFile.value = null;
-  avatarPreview.value = '';
+  avatarPreview.value = "";
   form.value = emptyForm();
+  fieldErrors.value = {
+    lastName: "",
+    firstName: "",
+    username: "",
+    password: "",
+  };
+  isEditing.value = false;
+  employeeEditBaseline.value = "";
 };
 
 const loadRole = async () => {
@@ -563,6 +794,12 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.app-page {
+  background:
+      linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, var(--color-pb-app) 36%, var(--color-pb-app) 100%),
+      radial-gradient(ellipse 65% 40% at 50% -8%, rgb(37 99 235 / 0.07), transparent 52%);
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease-in-out;
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full flex flex-col relative gap-1" :class="customClass">
-    <label :for="id" class="text-gray-700 font-medium mt-1">
+    <label :for="id" class="text-pb-label text-sm font-medium mt-1">
       {{ label }}
     </label>
     <select
@@ -8,40 +8,40 @@
         :id="id"
         v-model="model"
         :disabled="disabled"
-        class="p-2 pr-8 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-lg w-full transition-all duration-200 bg-white disabled:opacity-60 disabled:bg-gray-100"
-        :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-red-500 focus:ring-red-200' : '']"
+        class="p-2 pr-8 border rounded-lg w-full transition-all duration-200 bg-pb-surface text-pb-text shadow-sm shadow-slate-900/[0.04] focus:outline-none focus:ring-2 focus:ring-pb-accent/25 focus:border-pb-accent disabled:opacity-60 disabled:bg-pb-elevated disabled:cursor-not-allowed border-pb-border"
+        :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-pb-error focus:ring-red-200/70' : '']"
     >
-      <option v-if="disabledValue" value="" disabled class="text-gray-400">{{ disabledValue }}</option>
-      <option v-if="hasReset" :value="null" class="text-gray-900">{{ resetText }}</option>
-      <option disabled v-if="normalizedOptions.length === 0">Malumot yoq</option>
+      <option v-if="disabledValue" value="" disabled class="text-pb-muted">{{ disabledValue }}</option>
+      <option v-if="hasReset" :value="null" class="text-pb-text">{{ resetText }}</option>
+      <option disabled v-if="normalizedOptions.length === 0">Ma'lumot yo'q</option>
       <option
           v-for="(option, index) in normalizedOptions"
           :key="index"
           :value="optionValue(option)"
           :disabled="option.disabled"
-          class="text-gray-900 disabled:bg-[#eee] hover:bg-gray-100"
+          class="text-pb-text disabled:bg-pb-elevated hover:bg-pb-app"
       >
         {{ optionText(option) }}
       </option>
     </select>
-    <span v-if="required && !isMultiple" class="text-red-600 text-sm absolute -bottom-6 left-0">
+    <span v-if="required && !isMultiple" class="text-pb-error text-sm absolute -bottom-6 left-0">
       {{ errorMessage }}
     </span>
 
-    <div v-if="isMultiple" class="relative select__container" v-click-outside="closeDropdown">
+    <div v-if="isMultiple" class="relative select__container">
       <button
           v-if="model.length > 0"
-          class="w-6 h-6 border cursor-pointer border-field-stroke-secondary flex items-center justify-center absolute top-2 right-2 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-50"
+          class="group w-6 h-6 border cursor-pointer border-pb-border bg-pb-surface flex items-center justify-center absolute top-2 right-2 rounded-full shrink-0 flex-center transition-colors hover:bg-pb-app hover:border-slate-300 active:scale-95 z-50"
           @click="clearAllItems"
       >
         <Icon
-            class="text-black group-hover:text-icon-brand-secondary"
+            class="text-slate-600 group-hover:text-pb-accent"
             icon-name="close"
         />
       </button>
       <div
-          class="p-2 pr-8 border border-gray-300 rounded-lg bg-white cursor-pointer min-h-[42px] flex flex-wrap gap-1"
-          :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-red-500 focus:ring-red-200' : '']"
+          class="p-2 pr-8 border border-pb-border rounded-lg bg-pb-surface cursor-pointer min-h-[42px] flex flex-wrap gap-1 shadow-sm shadow-slate-900/[0.04]"
+          :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-pb-error' : '']"
           @click="toggleDropdown"
           ref="target"
       >
@@ -49,39 +49,40 @@
           <span
               v-for="(option, index) in selectedOptions"
               :key="index"
-              class="bg-blue-100 text-blue-800 px-2 py-1  cursor-default rounded flex items-center gap-1 text-sm"
+              class="bg-pb-accent/10 text-pb-accent px-2 py-1 cursor-default rounded-md flex items-center gap-1 text-sm border border-pb-accent/15"
           >
            <span class="flex flex-col">
             <span class="text-lg">  {{ optionText(option) }}</span>
             <small class="text-xs text-gray-700 dark:text-gray-300">{{ option.inventoryNumber }}</small>
            </span>
             <button type="button" @click.stop="removeOption(option)"
-                    class="text-lg px-1   font-bold hover:text-red-800 cursor-pointer text-blue-800">×</button>
+                    class="text-lg px-1 font-bold hover:text-pb-error cursor-pointer text-pb-accent">×</button>
           </span>
         </template>
-        <span v-else class="text-gray-400">{{ disabledValue }}</span>
+        <span v-else class="text-pb-muted">{{ disabledValue }}</span>
       </div>
 
-      <teleport defer to=".select__container">
+      <teleport to="body">
         <div
             v-if="isOpen"
             ref="dropdown"
-            class="z-50 bg-white absolute left-0 top-full w-full border border-gray-200 rounded-lg shadow max-h-130 overflow-auto"
+            class="app-select-dropdown fixed z-[10050] min-w-[200px] overflow-auto rounded-lg border border-pb-border bg-pb-surface shadow-lg shadow-slate-900/10"
+            :style="dropdownPanelStyle"
         >
-          <span class="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
-                v-if="normalizedOptions.length === 0">Malumot yoq</span>
+          <span class="px-4 py-2 cursor-pointer hover:bg-pb-app flex justify-between items-center text-pb-muted"
+                v-if="normalizedOptions.length === 0">Ma'lumot yo'q</span>
           <div
               v-for="(option, index) in normalizedOptions"
               :key="index"
               @click="toggleOption(option)"
-              class="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center"
+              class="px-4 py-2 cursor-pointer hover:bg-pb-app flex justify-between items-center text-pb-text"
           >
             <span>{{ optionText(option) }}</span>
-            <span v-if="isSelected(option)" class="text-blue-600">✔</span>
+            <span v-if="isSelected(option)" class="text-pb-accent font-semibold">✔</span>
           </div>
         </div>
       </teleport>
-      <span v-if="required && isMultiple" class="text-red-600 text-sm absolute -bottom-6 left-0">
+      <span v-if="required && isMultiple" class="text-pb-error text-sm absolute -bottom-6 left-0">
         {{ errorMessage }}
       </span>
     </div>
@@ -89,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, watch, nextTick, onMounted, onBeforeUnmount} from 'vue'
+import {ref, computed, watch, nextTick, onBeforeUnmount} from 'vue'
 // import {useI18n} from "vue-i18n";
 import Icon from "@/components/Icon.vue";
 
@@ -142,7 +143,7 @@ const validate = () => {
   )
 
   if (isEmpty) {
-    errorMessage.value = props.errorText || t('components.selectErrorText')
+    errorMessage.value = props.errorText || "Tanlash majburiy"
     showError.value = true
     return false
   }
@@ -177,17 +178,95 @@ const isOpen = ref(false)
 const dropdown = ref<HTMLElement | null>(null)
 const target = ref<HTMLElement | null>(null)
 
+const dropdownPanelStyle = ref<Record<string, string>>({})
+
+const DROPDOWN_MAX_H = 280
+const DROPDOWN_GUTTER = 8
+
+const updateDropdownPosition = () => {
+  const trigger = target.value
+  if (!trigger) return
+  const rect = trigger.getBoundingClientRect()
+  const vh = window.innerHeight
+  const spaceBelow = vh - rect.bottom - DROPDOWN_GUTTER
+  const spaceAbove = rect.top - DROPDOWN_GUTTER
+  const gap = 4
+
+  const openBelow = spaceBelow >= 100 || spaceBelow >= spaceAbove
+  let topPx: number
+  let maxH: number
+
+  if (openBelow) {
+    maxH = Math.min(DROPDOWN_MAX_H, Math.max(80, spaceBelow - gap))
+    topPx = rect.bottom + gap
+  } else {
+    maxH = Math.min(DROPDOWN_MAX_H, Math.max(80, spaceAbove - gap))
+    topPx = rect.top - maxH - gap
+  }
+
+  topPx = Math.min(Math.max(DROPDOWN_GUTTER, topPx), vh - DROPDOWN_GUTTER - 40)
+
+  dropdownPanelStyle.value = {
+    top: `${topPx}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    maxHeight: `${maxH}px`,
+  }
+}
+
+const onDocumentPointerDown = (event: MouseEvent) => {
+  const node = event.target as Node | null
+  if (!node) return
+  if (target.value?.contains(node) || dropdown.value?.contains(node)) return
+  closeDropdown()
+}
+
+const onScrollOrResize = () => {
+  if (isOpen.value) updateDropdownPosition()
+}
+
+let outsideClickTimeout: ReturnType<typeof setTimeout> | null = null
+
+const detachDropdownListeners = () => {
+  if (outsideClickTimeout != null) {
+    clearTimeout(outsideClickTimeout)
+    outsideClickTimeout = null
+  }
+  document.removeEventListener('click', onDocumentPointerDown, true)
+  document.removeEventListener('scroll', onScrollOrResize, true)
+  window.removeEventListener('resize', onScrollOrResize)
+}
+
 const toggleDropdown = async () => {
   if (props.disabled) return
   isOpen.value = !isOpen.value
   if (isOpen.value) {
     await nextTick()
+    updateDropdownPosition()
+    window.addEventListener('resize', onScrollOrResize)
+    document.addEventListener('scroll', onScrollOrResize, true)
+    outsideClickTimeout = setTimeout(() => {
+      outsideClickTimeout = null
+      if (!isOpen.value) return
+      document.addEventListener('click', onDocumentPointerDown, true)
+    }, 0)
   }
 }
 
 const closeDropdown = () => {
   isOpen.value = false
 }
+
+watch(isOpen, (open) => {
+  if (!open) {
+    detachDropdownListeners()
+    dropdownPanelStyle.value = {}
+  }
+})
+
+onBeforeUnmount(() => {
+  detachDropdownListeners()
+})
 
 const isSelected = (option: any) => {
   return Array.isArray(model.value) && model.value.includes(optionValue(option))
@@ -249,9 +328,9 @@ select {
   color: #f3f4f6;
 }
 
-select:hover {
-  background: rgba(221, 221, 221, 0.66);
-  transition: 0.4s ease-in-out;
+select:hover:not(:disabled) {
+  background: #f1f5f9;
+  transition: 0.2s ease-in-out;
 }
 
 select::picker-icon {
@@ -321,8 +400,8 @@ option:hover {
 }
 
 option:checked {
-  color: #1E40AF;
-  background-color: #EFF6FF;
+  color: #2563eb;
+  background-color: #eff6ff;
   font-weight: 500;
 }
 

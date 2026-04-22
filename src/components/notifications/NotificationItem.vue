@@ -56,17 +56,17 @@ const formattedTime = computed(() => {
   width: 100%;
   padding: 14px 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(241, 245, 249, 1);
-  background: #fff;
+  border-bottom: 1px solid var(--color-pb-border);
+  background: var(--color-pb-surface);
   transition: background-color 0.16s ease;
 }
 
 .notify-item:hover {
-  background: #f8fafc;
+  background: var(--color-pb-app);
 }
 
 .notify-item.unread {
-  background: #eff6ff;
+  background: color-mix(in srgb, var(--color-pb-accent) 7%, var(--color-pb-surface));
 }
 
 .notify-content {
@@ -83,18 +83,18 @@ const formattedTime = computed(() => {
 .notify-item-top strong {
   font-size: 14px;
   line-height: 1.35;
-  color: #0f172a;
+  color: var(--color-pb-header);
 }
 
 .notify-item-top span {
   flex-shrink: 0;
   font-size: 11px;
-  color: #64748b;
+  color: var(--color-pb-muted);
 }
 
 .notify-message {
   margin-top: 6px;
-  color: #334155;
+  color: var(--color-pb-sidebar);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -105,7 +105,7 @@ const formattedTime = computed(() => {
   gap: 8px;
   margin-top: 10px;
   font-size: 12px;
-  color: #1e40af;
+  color: var(--color-pb-accent-hover);
   font-weight: 700;
 }
 
@@ -118,6 +118,6 @@ const formattedTime = computed(() => {
   height: 8px;
   margin-top: 6px;
   border-radius: 999px;
-  background: #2563eb;
+  background: var(--color-pb-accent);
 }
 </style>

@@ -1,19 +1,21 @@
 <template>
   <div class="flex flex-col gap-1 relative" :class="type === 'date' ? 'cursor-pointer' : ''">
-    <label :for="id" class="text-gray-700 font-medium">{{ label }}</label>
-    <div :class="[
-        'w-full flex items-center gap-1 border flex-1 outline-none rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-400',
-        isInputFocused ? 'border-blue-500' : 'border-gray-300',
-        showError ? 'border-red-500 focus-within:ring-red-200' : ''
-      ]">
+    <label :for="id" class="text-pb-label text-sm font-medium">{{ label }}</label>
+    <div
+        :class="[
+          'w-full flex items-center gap-1 flex-1 outline-none rounded-lg px-3 py-2 bg-pb-surface transition-shadow transition-colors shadow-sm shadow-slate-900/[0.04]',
+          showError
+            ? 'border border-pb-error bg-pb-error-soft focus-within:ring-2 focus-within:ring-red-200/70 focus-within:border-pb-error'
+            : 'border border-pb-border focus-within:border-pb-accent focus-within:ring-2 focus-within:ring-pb-accent/20',
+        ]"
+    >
       <textarea
           v-if="isTextarea"
           :id="id"
           v-model="model"
-          class="w-full outline-none"
+          class="w-full outline-none bg-transparent text-pb-text placeholder:text-slate-400"
           :placeholder="placeholder"
-          @focus="isInputFocused = true"
-          @blur="isInputFocused = false"
+          :maxlength="maxlength"
       ></textarea>
       <input
           v-else
@@ -23,10 +25,9 @@
           :min="min"
           :step="step"
           :max="max"
-          class="w-full outline-none"
+          class="w-full outline-none bg-transparent text-pb-text placeholder:text-slate-400"
           :placeholder="placeholder"
-          @focus="isInputFocused = true"
-          @blur="isInputFocused = false"
+          :maxlength="maxlength"
       />
       <i v-if="hasIcon">
         <img
@@ -39,7 +40,7 @@
         />
       </i>
     </div>
-    <span v-if="showError" class="text-red-600 text-xs absolute -bottom-5 left-0">
+    <span v-if="showError" class="text-pb-error text-xs absolute -bottom-5 left-0">
   {{ errorMessage }}
     </span>
   </div>
@@ -64,6 +65,7 @@ interface IProps {
   min?: string;
   step?: string;
   max?: string;
+  maxlength?: number | string;
   errorText?: string;
 }
 
@@ -73,7 +75,6 @@ const props = withDefaults(defineProps<IProps>(), {
 });
 
 const emit = defineEmits(['iconClick']);
-const isInputFocused = ref(false);
 const showError = ref(false);
 const errorMessage = ref('');
 
@@ -82,7 +83,7 @@ const validate = () => {
   model.value = trimmedValue;
 
   if (props.required && !trimmedValue) {
-    // errorMessage.value = props.errorText || t('components.inputErrorText');
+    errorMessage.value = props.errorText || "Maydonni to'ldiring";
     showError.value = true;
     return false;
   }

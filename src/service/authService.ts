@@ -1,7 +1,7 @@
 ﻿import { defineStore } from "pinia";
 import { ref } from "vue";
 import { IUser } from "@/typeModules/IUser";
-import {Role, UserLogin} from "@/typeModules/useModules";
+import {Register, Role, UserLogin} from "@/typeModules/useModules";
 import axiosInstance from "@/axios";
 import router from "@/router";
 import { socketService } from "@/service/socketService";
@@ -80,6 +80,14 @@ export const authService = defineStore("authService", () => {
         return await axiosInstance.put(`/api/v1/users/${id}/roles`, { roleIds: roleIds });
     }
 
+    const register = async (payload: Register) => {
+        await axiosInstance.post("/api/v1/auth/register", {
+            username: payload.name.trim(),
+            email: payload.email.trim(),
+            password: payload.password,
+        });
+    };
+
     const login = async (user: UserLogin) => {
         const appStore = useStore();
         const { data } = await axiosInstance.post("/api/v1/auth/login", user);
@@ -132,6 +140,7 @@ export const authService = defineStore("authService", () => {
         setToken,
         clearUser,
         login,
+        register,
         loadRole,
         loadChangeRole,
         getCurrentUser,

@@ -1,5 +1,5 @@
 <template>
-<div class="flex flex-col font-sans w-full overflow-hidden min-h-screen">
+<div class="flex h-full min-h-0 w-full flex-col overflow-hidden font-sans">
   <Header
       :routes="menuItems"
       :isMenuOpen="isMenuVisible"
@@ -12,32 +12,40 @@
       :faClass="'fa-solid fa-arrow-up'"
       :is-has-fa-icon="true"
       :text="''"
-      class="scrollBtn bg-red-800 hover:bg-red-700"
+      class="scrollBtn bg-pb-accent hover:bg-pb-accent-hover shadow-lg shadow-pb-accent/25"
       @click="scrollToTop"
   />
-  <div class="flex flex-col mt-16 w-full flex-1 relative bg-gray-50">
+  <div class="relative mt-16 flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-pb-app">
     <Sidebar
         :isMenuVisible="isMenuVisible"
         @toggleMenu="toggleMenu"
         :menuItems="menuItems"
     />
-    <RouterView class="flex-1 overflow-y-auto"/>
+    <div
+        ref="mainScrollEl"
+        class="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-y-contain"
+        @scroll="onMainScroll"
+    >
+      <RouterView class="min-w-0 w-full flex flex-col" />
+    </div>
   </div>
 </div>
 </template>
 
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Header from "@/components/Header.vue";
 import Sidebar from "@/components/Sidebar.vue";
-import {computed, onBeforeUnmount, onMounted, ref} from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import CButton from "@/components/CButton.vue";
 import { authService } from "@/service/authService";
 import { useStore } from "@/stores/store";
 import { socketService } from "@/service/socketService";
 
 const router = useRouter();
+const route = useRoute();
+const mainScrollEl = ref<HTMLElement | null>(null);
 const authStore = authService();
 const dataStore = useStore();
 
@@ -48,28 +56,33 @@ let unsubscribeNotification: (() => void) | null = null;
 const mainRoute = router.getRoutes().find(route => route.name === 'Main');
 
 const menuItems = computed(() => {
-
-  return mainRoute?.children.map(route => ({
-    name: route.name as string,
-    path: route.path,
-    meta: route.meta,
-  })) || [];
-})
+  return (
+      mainRoute?.children.map((route) => ({
+        name: route.name as string,
+        path: route.path,
+        meta: route.meta,
+      })) || []
+  );
+});
 
 const toggleMenu = () => {
   isMenuVisible.value = !isMenuVisible.value;
 }
 
-const handleScroll = () => {
-  isOnActive.value = window.scrollY > 400
-}
+const onMainScroll = () => {
+  isOnActive.value = (mainScrollEl.value?.scrollTop ?? 0) > 400;
+};
 
 const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  })
-}
+  mainScrollEl.value?.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+watch(
+    () => route.fullPath,
+    () => {
+      mainScrollEl.value?.scrollTo({ top: 0, behavior: "auto" });
+    },
+);
 
 onMounted(async () => {
   if (authStore.state.token && !authStore.state.user) {
@@ -80,11 +93,9 @@ onMounted(async () => {
     await dataStore.refreshFromNotification(notification);
   });
 
-  window.addEventListener("scroll", handleScroll);
 })
 onBeforeUnmount(() => {
   unsubscribeNotification?.();
-  window.removeEventListener("scroll", handleScroll);
 })
 </script>
 

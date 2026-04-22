@@ -1,11 +1,14 @@
 <template>
-  <div class="flex flex-col container m-auto gap-2 p-4 min-h-screen w-full">
-    <div class="flex flex-col sm:flex-row gap-4 items-center bg-white shadow rounded-xl py-3 px-4 justify-between w-full">
+  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-6 lg:mx-auto lg:max-w-7xl">
+    <div class="flex flex-col items-center justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm sm:flex-row">
       <div class="flex items-center gap-4">
-        <i class="fa-solid fa-images text-5xl text-blue-800"></i>
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pb-elevated text-pb-accent">
+          <i class="fa-solid fa-images text-2xl" aria-hidden="true"></i>
+        </div>
         <div>
-          <h2 class="text-md font-semibold uppercase">Buyurtmalar</h2>
-          <p class="text-gray-600 text-sm font-semibold">{{pageProcessed}} dona</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-pb-accent">Buyurtmalar</p>
+          <h2 class="text-lg font-bold text-pb-text">Rasmli albom buyurtmalari</h2>
+          <p class="text-sm font-medium text-pb-muted">{{ pageProcessed }} dona</p>
         </div>
       </div>
       <CButton
@@ -17,53 +20,40 @@
     </div>
     <div
         v-if="categoryStatus.length > 0"
-        class="grid grid-cols-1 animate-fade-in sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-gray-200 rounded-xl p-2 justify-between"
+        class="grid grid-cols-1 animate-fade-in justify-between gap-3 rounded-xl border border-pb-border bg-pb-elevated/70 p-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
     >
       <div
-          class="flex flex-col gap-4 bg-white rounded-xl py-2 px-4 justify-between"
           v-for="(cat, index) in categoryStatus"
           :key="index"
+          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm"
       >
-        <div
-            class="flex w-full flex-col border-b gap-1 border-gray-200"
-        >
-          <h2 class="text-sm uppercase font-semibold">{{cat.name}}</h2>
-          <span class="text-gray-400 text-sm">Betlar: <span class="text-sm font-semibold text-gray-400">{{cat.defaultPages}}</span></span>
+        <div class="flex w-full flex-col gap-1 border-b border-pb-border">
+          <h2 class="text-sm font-semibold uppercase text-pb-text">{{ cat.name }}</h2>
+          <span class="text-sm text-pb-muted">
+            Betlar:
+            <span v-if="cat.defaultPages != null && cat.defaultPages !== ''" class="font-semibold text-pb-text">{{ cat.defaultPages }}</span>
+          </span>
         </div>
-        <div
-            class="flex gap-4 items-center justify-between"
-        >
-          <div class="flex flex-col w-full border-r-2 border-gray-200">
-            <div class="gap-1 flex flex-col items-start font-semibold">
-              <span class="text-gray-600 text-sm">Jami</span>
-              <div class="flex text-md items-center gap-2">
-                <span class="text-blue-600">
-                {{cat.total}}
-                </span>
-                <span class="text-gray-400">dona</span>
-              </div>
+        <div class="grid grid-cols-3 divide-x divide-pb-border pt-2">
+          <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
+            <span class="text-xs font-medium text-pb-muted sm:text-sm">Jami</span>
+            <div class="flex flex-wrap items-baseline justify-center gap-1">
+              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.total }}</span>
+              <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
-          <div class="flex w-full flex-col border-r-2 border-gray-200">
-            <div class="gap-1 flex flex-col items-start font-semibold">
-              <span class="text-gray-600 text-sm">Bajarilgan</span>
-              <div class="flex text-md items-center gap-2">
-                <span class="text-blue-600">
-                {{cat.processed}}
-                </span>
-                <span class="text-gray-400">dona</span>
-              </div>
+          <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
+            <span class="text-xs font-medium text-pb-muted sm:text-sm">Bajarilgan</span>
+            <div class="flex flex-wrap items-baseline justify-center gap-1">
+              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.processed }}</span>
+              <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
-          <div class="flex flex-col w-full">
-            <div class="gap-2 flex flex-col items-start font-semibold">
-              <span class="text-gray-600 text-sm">Qoldi</span>
-              <div class="flex text-md items-center gap-2">
-                <span class="text-blue-600">
-                {{cat.remaining}}
-                </span>
-                <span class="text-gray-400">dona</span>
-              </div>
+          <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
+            <span class="text-xs font-medium text-pb-muted sm:text-sm">Qoldi</span>
+            <div class="flex flex-wrap items-baseline justify-center gap-1">
+              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.remaining }}</span>
+              <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
         </div>
@@ -71,65 +61,37 @@
     </div>
     <CDialog
         :show="showConfirmItem"
+        custom-class="w-full max-w-sm"
         @close="showConfirmItem = false"
-        body-class="justify-center bg-blue-800 text-center px-4 pb-8"
+        body-class="!bg-pb-surface rounded-xl border border-pb-border p-5 text-center shadow-lg"
     >
       <DeleteConfirm
           v-model:show="showConfirmItem"
           @confirm="deleteConfirmItem"
-          title="Siz ushbu zakazni uchirmoqchimisiz?"
+          title="Ushbu buyurtmani o'chirmoqchimisiz?"
       />
     </CDialog>
     <CDialog
         has-close-icon
         no-header
         :show="isVisible"
+        custom-class="w-full max-w-md"
         @close="closeForm"
-        bodyClass="rounded-lg mt-20 !bg-bg-primary"
+        body-class="flex max-h-[min(88vh,640px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
     >
-      <div
-          class="flex flex-col overflow-hidden"
-      >
-        <form
-            @submit.prevent="submitForm"
-            class="flex flex-col gap-2 overflow-y-auto p-4 max-h-[80vh]"
-        >
-          <h2 class=" text-2xl font-semibold">
-            {{isEditing ? "Formani uzgartirish" : "Forma qo'shish"}}
+      <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="submitForm">
+        <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-11 sm:pt-4">
+          <h2 class="text-base font-semibold text-pb-text leading-snug">
+            {{ isEditing ? "Tahrirlash" : "Yangi buyurtma" }}
           </h2>
-          <FileUpload
-              ref="fileUploadRef"
-              mode="advanced"
-              :customUpload="true"
-              :auto="false"
-              :multiple="false"
-              accept="image/*"
-
-              chooseLabel="Rasm yuklash"
-              :showUploadButton="false"
-              :showCancelButton="false"
-              :showClearButton="true"
-
-              @select="onFileSelect"
+        </div>
+        <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
+          <OrderImagePicker
+              :image-src="orderImageDisplaySrc"
+              :busy="imageUploading"
+              @pick="onImagePicked"
               @clear="onFileRemove"
           />
-          <div
-              v-if="isEditing && itemForm.imageUrl && !removedOldImage"
-              class="relative w-32 h-25"
-          >
-            <img
-                alt=""
-                :src="itemForm.imageUrl"
-                class="object-cover rounded-xl border"
-            />
-            <button
-                type="button"
-                @click="onFileRemove"
-                class="absolute cursor-pointer -top-2 -right-2 hover:bg-red-400 bg-red-300 text-red-800 w-7 h-7 rounded-full"
-            >
-              ✕
-            </button>
-          </div>
           <div class="flex flex-col">
             <AppSelect
                 v-model="itemForm.categoryId"
@@ -161,7 +123,7 @@
               <AppInput
                   type="number"
                   class="w-full"
-                  placeholder="Masalan: 10"
+                  placeholder=""
                   label="Buyurtma soni"
                   v-model="itemForm.amount"
                   @input="clearError('amount')"
@@ -173,7 +135,7 @@
             <div class="flex flex-col w-full">
               <AppInput
                   type="text"
-                  placeholder="Masalan: Maktab"
+                  placeholder="Nomini kiriting"
                   label="Nomi"
                   class="w-full"
                   v-model="itemForm.orderName"
@@ -184,7 +146,7 @@
             <div class="flex flex-col w-full">
               <AppInput
                   type="text"
-                  placeholder="Masalan: Qizil koja"
+                  placeholder="Turini kiriting"
                   label="Turi"
                   class="w-full"
                   v-model="itemForm.itemType"
@@ -264,21 +226,26 @@
               text-field="text"
               value-field="value"
           />
-          <div class="flex my-4 flex-col sm:flex-row items-stretch lg:flex-row gap-2 sm:items-center justify-end w-full">
-            <CButton
-                type="button"
-                text="Bekor qilish"
-                variant="ghost-accent"
-                @click="closeForm"
-            />
-            <CButton
-                type="submit"
-                :text="isEditing ? 'Yangilash' : 'Saqlash'"
-                variant="success"
-            />
-          </div>
-        </form>
-      </div>
+        </div>
+        <div
+            class="flex shrink-0 flex-col gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5 sm:flex-row sm:justify-end"
+        >
+          <CButton
+              type="button"
+              text="Bekor qilish"
+              variant="ghost-accent"
+              :disabled="isSubmitting || imageUploading"
+              @click="closeForm"
+          />
+          <CButton
+              type="submit"
+              :text="isEditing ? 'Yangilash' : 'Saqlash'"
+              variant="primary"
+              :loading="isSubmitting"
+              :disabled="imageUploading || orderSaveDisabled"
+          />
+        </div>
+      </form>
     </CDialog>
     <div
         v-if="previewImage"
@@ -302,18 +269,19 @@
         />
       </div>
     </div>
-    <div class="bg-white animate-fade-in w-full flex overflow-x-auto flex-col px-4 py-2 gap-2 min-h-0 rounded-xl shadow">
-      <div class="flex flex-col w-full border-b-2 border-gray-200">
-        <div class="flex items-center gap-4 py-2">
+    <div class="animate-fade-in flex w-full min-w-0 flex-col gap-3 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm">
+      <div class="flex w-full min-w-0 shrink-0 flex-col border-b border-pb-border pb-3">
+        <div class="flex items-center gap-2 py-1">
           <CButton
               text="Orqaga"
               type="button"
+              size="sm"
               is-has-fa-icon
               variant="ghost-accent"
-              faClass="fa-solid fa-arrow-left"
+              fa-class="fa-solid fa-arrow-left"
               @click="router.back()"
           />
-          <h2 class="text-lg font-semibold">Buyurtmalar jadvali</h2>
+          <h2 class="text-base font-bold text-pb-text sm:text-lg">Buyurtmalar jadvali</h2>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 xl:grid-cols-2 items-end gap-2 py-2">
           <AppInput
@@ -344,6 +312,7 @@
             <CButton
                 type="button"
                 text="Tozalash"
+                size="sm"
                 variant="ghost-accent"
                 @click="closeFilter"
                 class="mb-1"
@@ -351,6 +320,7 @@
           </div>
         </div>
       </div>
+      <div class="max-h-[min(70vh,calc(100dvh-17rem))] overflow-x-auto overflow-y-auto rounded-md border border-pb-border/60">
       <table
           class="w-full rounded text-sm">
         <colgroup>
@@ -366,7 +336,7 @@
           <col style="width: 8%">
           <col style="width: 6%">
         </colgroup>
-        <thead class="bg-gray-200 rounded-2xl">
+        <thead class="bg-pb-elevated text-sm font-semibold tracking-wide text-pb-label">
         <tr>
           <th class="px-2 py-3 text-start">№</th>
           <th class="p-2 text-start">Buyurtma nomi</th>
@@ -378,51 +348,51 @@
           <th class="p-2 px-3 text-start">Sana</th>
           <th class="p-2 text-start">Muddat</th>
           <th class="p-2 text-start">Holat</th>
-          <th class="p-2 text-start">Amallar</th>
+          <th class="p-2 text-end">Amallar</th>
         </tr>
         </thead>
         <tbody v-if="isLoading">
-        <tr v-for="i in 8" :key="i" class="border-t">
-          <td class="p-2"><div class="h-4 w-6 bg-gray-200 rounded animate-pulse"></div></td>
+        <tr v-for="i in 8" :key="i" class="border-t border-pb-border">
+          <td class="p-2"><div class="h-4 w-6 animate-pulse rounded bg-pb-border"></div></td>
 
-          <td class="p-2 space-y-2">
-            <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-            <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+          <td class="space-y-2 p-2">
+            <div class="h-4 w-32 animate-pulse rounded bg-pb-border"></div>
+            <div class="h-3 w-24 animate-pulse rounded bg-pb-border"></div>
           </td>
 
           <td class="p-2">
-            <div class="w-14 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div class="h-10 w-14 animate-pulse rounded-lg bg-pb-border"></div>
           </td>
 
-          <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
-          <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
-          <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
+          <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
+          <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
+          <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
 
           <td class="p-2">
-            <div class="w-full bg-gray-200 h-2 rounded-full animate-pulse"></div>
-            <div class="h-3 w-16 mt-2 bg-gray-200 rounded animate-pulse"></div>
+            <div class="h-2 w-full animate-pulse rounded-full bg-pb-border"></div>
+            <div class="mt-2 h-3 w-16 animate-pulse rounded bg-pb-border"></div>
           </td>
-          <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
-          <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+          <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
+          <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
 
           <td class="p-2">
-            <div class="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+            <div class="h-6 w-20 animate-pulse rounded-full bg-pb-border"></div>
           </td>
           <td class="p-2">
-            <div class="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div class="h-8 w-24 animate-pulse rounded-lg bg-pb-border"></div>
           </td>
         </tr>
         </tbody>
         <tbody v-else-if="filteredPictures.length > 0">
         <tr
-            class="border-t border-gray-600 hover:bg-gray-100"
+            class="border-t border-pb-border transition hover:bg-pb-elevated"
             v-for="(album, index) in filteredPictures" :key="index"
         >
           <td class="p-2 ">{{ rowNumber(index) }}</td>
           <td class="py-1 px-2 break-all">
             <p class="font-semibold">{{ album.orderName }}</p>
-            <p class="text-gray-500 text-sm font-semibold">{{album.categoryName}}</p>
-            <p class="text-blue-600 text-sm font-semibold">{{album.itemType}}</p>
+            <p class="text-sm font-semibold text-pb-muted">{{album.categoryName}}</p>
+            <p class="text-sm font-semibold text-pb-accent">{{album.itemType}}</p>
           </td>
           <td class="p-3 items-center justify-center flex">
             <img
@@ -438,7 +408,7 @@
             <div
                 v-for="emp in album.employees"
                 :key="emp.employeeId"
-                class="border-b border-gray-300 py-1"
+                class="border-b border-pb-border py-1"
             >
               <div class="flex text-sm gap-1 items-center">
                 <i
@@ -447,24 +417,24 @@
                 />
                 <i
                     v-else-if="(emp.processedCount ?? 0) > 0"
-                    class="fa-solid fa-play text-blue-600"
+                    class="fa-solid fa-play text-pb-accent"
                 />
                 <i
                     v-else
-                    class="fa-regular fa-circle text-gray-400"
+                    class="fa-regular fa-circle text-pb-muted"
                 />
                 <span class="flex p-1">{{ getFullName(emp.employeeName) }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <span>{{emp.processedCount}} ta</span>
               </div>
-              <div v-if="emp.notes" class="pl-5 text-xs text-gray-500 break-words">
+              <div v-if="emp.notes" class="break-words pl-5 text-xs text-pb-muted">
                 Izoh: {{ emp.notes }}
               </div>
             </div>
           </td>
           <td class="py-2 px-3">
-            <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+            <div class="h-2 w-full overflow-hidden rounded-full bg-pb-border">
                 <span
                     v-if="getProcessedCount(album) && album.amount"
                     class="block h-full transition-all duration-500 ease-out"
@@ -474,7 +444,7 @@
                   }"
                 ></span>
             </div>
-            <div class="text-sm mt-1 flex px-1 items-center justify-between text-gray-600">
+            <div class="mt-1 flex items-center justify-between px-1 text-sm text-pb-muted">
               <span>{{ getProcessedCount(album) || 0 }} / {{ album.amount }}</span>
               <span>{{album.pageCount || 0}}-Bet</span>
             </div>
@@ -490,19 +460,19 @@
               {{ statusLabel[album.status] }}
             </span>
           </td>
-          <td class="p-2 ">
-            <div
-                class="flex items-center gap-2"
-            >
+          <td class="p-2 text-end">
+            <div class="flex flex-nowrap items-center justify-end gap-2.5">
               <CButton
                   type="button"
-                  text="Edit"
-                  variant="ghost-accent"
+                  text="Tahrirlash"
+                  size="sm"
+                  variant="outline-edit"
                   @click="editForm(album)"
               />
               <CButton
                   type="button"
-                  text="Delete"
+                  text="O'chirish"
+                  size="sm"
                   variant="danger"
                   @click="deleteItem(album.id)"
               />
@@ -513,37 +483,38 @@
         <tbody v-else>
         <tr>
           <td
-              colspan="10"
-              class="text-center py-6 text-gray-600 font-semibold"
+              colspan="11"
+              class="py-6 text-center font-semibold text-pb-muted"
           >
             Buyurtma topilmadi!
           </td>
         </tr>
         </tbody>
       </table>
+      </div>
       <div
           v-if="totalPages > 1"
-          class="flex h-20 items-center sticky bottom-0 z-10 justify-center mt-4 pb-2 gap-2 bg-white border-t"
+          class="mt-4 flex h-20 shrink-0 items-center justify-center gap-2 border-t border-pb-border bg-pb-surface pb-2"
       >
-        <div class="text-sm text-gray-800 rounded p-2 border border-gray-100 mr-4">
+        <div class="mr-4 rounded-lg border border-pb-border bg-pb-elevated px-3 py-2 text-sm text-pb-text">
           {{paginationInfo.from}} - {{paginationInfo.to}} dan {{paginationInfo.total}}
         </div>
         <button
             type="button"
             @click="changePage(page - 1)"
             :disabled="page === 1"
-            class="flex w-10 h-10 justify-center items-center rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed bg-gray-700 text-white hover:bg-gray-800"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-pb-header text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <i class="fa-solid fa-chevron-left text-sm"></i>
         </button>
         <div
             v-for="(pageItem, idx) in allPagesNumbers"
             :key="idx"
-            class="flex justify-center items-center px-3 py-1 h-11 w-11 rounded-3xl select-none"
+            class="flex h-11 w-11 select-none items-center justify-center rounded-3xl px-3 py-1"
             :class="{
-              'bg-blue-500 text-white font-bold': pageItem === page,
-              'cursor-pointer hover:bg-gray-300': pageItem !== '...' && pageItem !== page,
-              'text-gray-400 cursor-default text-lg': pageItem === '...',
+              'bg-pb-accent font-bold text-white': pageItem === page,
+              'cursor-pointer hover:bg-pb-elevated': pageItem !== '...' && pageItem !== page,
+              'cursor-default text-lg text-pb-muted': pageItem === '...',
             }"
             @click="pageItem !== '...' && changePage(pageItem)"
         >
@@ -553,10 +524,10 @@
             type="button"
             @click="changePage(page + 1)"
             :disabled="page >= totalPages"
-            class="flex w-10 h-10 justify-center items-center rounded-full transition"
+            class="flex h-10 w-10 items-center justify-center rounded-full transition"
             :class="page >= totalPages
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-700 text-white cursor-pointer hover:bg-gray-800'"
+              ? 'cursor-not-allowed bg-pb-border text-pb-muted'
+              : 'cursor-pointer bg-pb-header text-white hover:bg-slate-800'"
         >
           <i class="fa-solid fa-chevron-right text-sm"></i>
         </button>
@@ -569,7 +540,7 @@
 
 <script setup lang="ts">
 import CButton from "@/components/CButton.vue";
-import {computed, ComputedRef, onMounted, ref, watch} from "vue";
+import {computed, ComputedRef, nextTick, onMounted, ref, watch} from "vue";
 import CDialog from "@/components/CDialog.vue";
 import AppInput from "@/components/ui/AppInput.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
@@ -577,8 +548,12 @@ import {useStore} from "@/stores/store";
 import {Order, OrderCreateDto} from "@/typeModules/useModules";
 import { useToast } from "vue-toastification";
 import DeleteConfirm from "@/components/DeleteConfirm.vue";
-import FileUpload from "primevue/fileupload";
+import OrderImagePicker from "@/components/OrderImagePicker.vue";
 import { useRoute, useRouter } from "vue-router";
+import {
+  snapshotOrderForm,
+  type OrderFormSnapshotFields,
+} from "@/utils/updateFormDirty";
 
 const router = useRouter();
 const route = useRoute();
@@ -618,6 +593,7 @@ const handleEmployeeChange = (newValues: string[]) => {
 }
 
 const isEditing = ref(false);
+const orderEditBaseline = ref("");
 const isVisible = ref(false);
 const selectedItem = ref<string | null>(null);
 const showConfirmItem = ref(false);
@@ -648,35 +624,53 @@ const getAvatarUrl = (url: string | undefined): string => {
 };
 const selectedFiles = ref<File[]>([])
 const previewUrl = ref<string | null>(null)
-const fileUploadRef = ref()
 const removedOldImage = ref(false)
+const imageUploading = ref(false)
+const isSubmitting = ref(false)
 
-const onFileSelect = async (event: any) => {
-  const file = event.files[0]
-  if (event.files.length > 1) {
-    fileUploadRef.value.clear()
-    return
+const orderImageDisplaySrc = computed(() => {
+  const u = itemForm.value.imageUrl
+  if (!u) return ""
+  if (u.startsWith("blob:") || u.startsWith("http")) return u
+  return getAvatarUrl(u)
+})
+
+const onImagePicked = async (file: File) => {
+  if (imageUploading.value) return
+  if (previewUrl.value?.startsWith("blob:")) {
+    URL.revokeObjectURL(previewUrl.value)
   }
-  selectedFiles.value = [file];
-
+  selectedFiles.value = [file]
   previewUrl.value = URL.createObjectURL(file)
   itemForm.value.imageUrl = previewUrl.value
 
+  imageUploading.value = true
   try {
     const uploaded = await dataStore.loadUploadImage(file)
     itemForm.value.uploadId = uploaded.id || ""
     itemForm.value.imageUrl = uploaded.url
       ? (uploaded.url.startsWith("http") ? uploaded.url : `${import.meta.env.VITE_BASE_API}${uploaded.url}`)
       : previewUrl.value
-  } catch (error) {
+  } catch {
     itemForm.value.uploadId = ""
     Toast.error("Rasmni yuklab bo'lmadi.")
+    if (previewUrl.value?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl.value)
+    }
+    previewUrl.value = null
+    selectedFiles.value = []
+    itemForm.value.imageUrl = ""
+  } finally {
+    imageUploading.value = false
   }
 }
 
 const onFileRemove = () => {
-  selectedFiles.value = [];
-  previewUrl.value = null;
+  if (previewUrl.value?.startsWith("blob:")) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  selectedFiles.value = []
+  previewUrl.value = null
   itemForm.value.imageUrl = ""
   itemForm.value.uploadId = ""
   removedOldImage.value = true
@@ -809,6 +803,36 @@ const itemForm = ref<OrderForm>({
   notes: "",
   uploadId: ""
 })
+
+const orderSnapshotFields = computed<OrderFormSnapshotFields>(() => ({
+  categoryId: itemForm.value.categoryId,
+  orderName: itemForm.value.orderName,
+  itemType: itemForm.value.itemType,
+  customerId: itemForm.value.customerId,
+  customerName: itemForm.value.customerName,
+  receiverName: itemForm.value.receiverName,
+  employees: itemForm.value.employees,
+  pageCount: itemForm.value.pageCount,
+  amount: itemForm.value.amount,
+  acceptedDate: itemForm.value.acceptedDate,
+  deadline: itemForm.value.deadline,
+  status: itemForm.value.status,
+  imageUrl: itemForm.value.imageUrl,
+  notes: itemForm.value.notes,
+  uploadId: itemForm.value.uploadId,
+}));
+
+const orderSaveDisabled = computed(
+  () =>
+    isSubmitting.value ||
+    (isEditing.value &&
+      orderEditBaseline.value !== "" &&
+      snapshotOrderForm(
+        orderSnapshotFields.value,
+        selectedFiles.value.length > 0,
+        removedOldImage.value,
+      ) === orderEditBaseline.value),
+);
 // const changeFilter = (type: 'search' | 'status', value: string ) => {
 //   if (type === 'search') {
 //     formFilter.value = value
@@ -970,10 +994,10 @@ const validateForm = () => {
 }
 
 const submitForm = async () => {
-  isLoading.value = true;
+  isSubmitting.value = true
 
   if (!validateForm()) {
-    isLoading.value = false
+    isSubmitting.value = false
     return
   }
 
@@ -999,10 +1023,11 @@ const submitForm = async () => {
     await dataStore.loadOrders("PICTURE")
     resetForm()
     isVisible.value = false
-    isLoading.value = false
 
   } catch (err) {
     console.error(err)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -1018,6 +1043,13 @@ const editForm = (item: Order) => {
     employees: item.employees?.map(e => e.employeeId) || []
   }
   itemId.value = item.id;
+  void nextTick(() => {
+    orderEditBaseline.value = snapshotOrderForm(
+      orderSnapshotFields.value,
+      selectedFiles.value.length > 0,
+      removedOldImage.value,
+    );
+  });
 };
 
 const deleteConfirmItem = async () => {
@@ -1028,10 +1060,9 @@ const deleteConfirmItem = async () => {
     showConfirmItem.value = false;
     selectedItem.value = null;
   }
-  catch (error) {
-    console.log("Error", error);
+  catch {
   }
-}
+};
 
 const deleteItem = async (id: string | null) => {
   selectedItem.value = id;
@@ -1039,6 +1070,12 @@ const deleteItem = async (id: string | null) => {
 }
 
 const resetForm = () => {
+  if (previewUrl.value?.startsWith("blob:")) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  previewUrl.value = null
+  selectedFiles.value = []
+  removedOldImage.value = false
   itemForm.value = {
     kind: "PICTURE",
     categoryId: "",
@@ -1059,6 +1096,7 @@ const resetForm = () => {
     uploadId: ""
   }
   isEditing.value = false
+  orderEditBaseline.value = ""
 }
 
 const formatDate = (dateString?: string | null): string => {
@@ -1073,31 +1111,34 @@ const formatDate = (dateString?: string | null): string => {
   return `${day}-${month}-${year}`;
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.status) {
     formStatus.value = route.query.status as string;
   }
-})
-
-onMounted(async () => {
   isLoading.value = true;
   try {
     await Promise.all([
-      await dataStore.loadOrders('PICTURE', {
+      dataStore.loadOrders('PICTURE', {
         ...orderFilters.value,
         page: 0,
       }),
-      await dataStore.loadCategory('PICTURE'),
-      await dataStore.loadUsers()
-    ])
-    isLoading.value = false
-  } catch (error) {
-    console.log(error);
+      dataStore.loadCategory('PICTURE'),
+      dataStore.loadUsers()
+    ]);
+  } catch {
+  } finally {
+    isLoading.value = false;
   }
-})
+});
 
 </script>
 <style scoped>
+.app-page {
+  background:
+      linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, var(--color-pb-app) 36%, var(--color-pb-app) 100%),
+      radial-gradient(ellipse 65% 40% at 50% -8%, rgb(37 99 235 / 0.07), transparent 52%);
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease-in-out;
 }

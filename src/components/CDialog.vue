@@ -3,7 +3,7 @@
     <div
         :class="[wrapperClass, { '!opacity-100 !visible': show }]"
         data-modal="wrapper"
-        class="items-center p-3 fixed w-full h-full bg-[#060a2d99] flex justify-center z-40 top-0 left-0 invisible opacity-0 transition-all duration-300"
+        class="items-center p-3 fixed w-full h-full bg-slate-900/55 backdrop-blur-[2px] flex justify-center z-40 top-0 left-0 invisible opacity-0 transition-all duration-300"
         @mousedown="handleOuterClick($event)"
     >
       <Transition name="modal" mode="out-in">
@@ -13,7 +13,7 @@
             :class="customClass ? customClass : 'lg:max-w-xl'"
         >
           <div
-              class="bg-white w-full shadow-xl relative max-h-[90vh] my-4 rounded-xl"
+              class="bg-pb-surface w-full shadow-xl shadow-slate-900/15 border border-pb-border relative max-h-[90vh] my-4 rounded-xl"
               :class="[
               bodyClass,
               { animated: animationIn },
@@ -22,23 +22,24 @@
           >
             <div
                 v-if="!noHeader"
-                class="flex items-center px-6 pb-3.5 pt-4 bg-white rounded-t-xl"
+                class="flex items-center px-6 pb-3.5 pt-4 bg-pb-surface rounded-t-xl border-b border-pb-border"
                 :class="[headerStyle]"
             >
               <slot name="header">
                 <h3
-                    class="w-full text-xl text-dark font-semibold"
+                    class="w-full text-xl text-pb-text font-semibold"
                     :class="titleStyle"
                 >
                   {{ title }}
                 </h3>
                 <button
-                    class="w-8 h-8 border cursor-pointer border-field-stroke-secondary flex items-center justify-center absolute top-4 right-5 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-40"
+                    type="button"
+                    class="group w-8 h-8 border cursor-pointer border-pb-border bg-pb-elevated flex items-center justify-center absolute top-4 right-5 rounded-full shrink-0 flex-center transition-colors hover:bg-pb-app hover:border-slate-300 active:scale-95 z-40"
                     :class="closeIconClass"
                     @click="$emit('close')"
                 >
                   <Icon
-                      class="text-black group-hover:text-icon-brand-secondary"
+                      class="text-slate-600 group-hover:text-pb-accent"
                       icon-name="close"
                   />
                 </button>
@@ -46,12 +47,13 @@
             </div>
             <button
                 v-if="noHeader && hasCloseIcon"
-                class="w-8 h-8 border border-field-stroke-secondary cursor-pointer flex items-center justify-center absolute top-3 right-4 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-40"
+                type="button"
+                class="group w-8 h-8 border border-pb-border bg-pb-elevated cursor-pointer flex items-center justify-center absolute top-3 right-4 rounded-full shrink-0 flex-center transition-colors hover:bg-pb-app hover:border-slate-300 active:scale-95 z-40"
                 :class="closeIconClass"
                 @click="$emit('close')"
             >
               <Icon
-                  class="text-black group-hover:text-icon-brand-secondary"
+                  class="text-slate-600 group-hover:text-pb-accent"
                   icon-name="close"
               />
             </button>

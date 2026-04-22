@@ -120,10 +120,14 @@ export const useNotifications = () => {
 
     const handleNotificationClick = async (item: NotificationItem | any) => {
         if (!item.read) {
-            try {
-                await appStore.markNotificationRead(item.id);
-            } catch (error) {
-                console.error("Notification mark as read failed:", error);
+            if (String(item.id || "").startsWith("local:")) {
+                appStore.markNotificationReadLocal(item.id);
+            } else {
+                try {
+                    await appStore.markNotificationRead(item.id);
+                } catch (error) {
+                    console.error("Notification mark as read failed:", error);
+                }
             }
         }
 

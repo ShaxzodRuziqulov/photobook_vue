@@ -5,9 +5,10 @@ import {
     ExpensesForm,
     IFormData,
     IItems, IPaging,
-    NotificationItem, NotificationPagingRequest,
-    Order, OrderCreateDto, OrderKind, PagingRequest, PagingResponse, SocketNotification,
+    NotificationItem, NotificationPagingRequest, NotificationType,
+    Order, OrderCreateDto, OrderKind, OrderStatus, PagingRequest, PagingResponse, SocketNotification,
     UserForm, UserTask,
+    WorkStatus,
 } from '@/typeModules/useModules';
 import {computed, ref, UnwrapRef} from "vue";
 import router from "@/router";
@@ -21,6 +22,14 @@ const orderStateKeyByKind: Record<OrderKind, "albums" | "vignettes" | "pictures"
     VIGNETTE: "vignettes",
     PICTURE: "pictures",
 };
+
+/** In-memory only; `markNotificationRead` API ga yuborilmaydi */
+const LOCAL_NOTIFICATION_PREFIX = "local:";
+
+const ORDER_STATUSES: OrderStatus[] = ["PENDING", "IN_PROGRESS", "PAUSED", "COMPLETED"];
+
+const parseOrderStatus = (value?: string): OrderStatus =>
+    (value && ORDER_STATUSES.includes(value as OrderStatus) ? value : "IN_PROGRESS") as OrderStatus;
 
 export const useStore = defineStore('item', () => {
     const state = ref({
@@ -245,6 +254,16 @@ export const useStore = defineStore('item', () => {
         }
     };
 
+    const markNotificationReadLocal = (id: string) => {
+        if (!id.startsWith(LOCAL_NOTIFICATION_PREFIX)) return;
+        const target = state.value.notifications.find(item => item.id === id);
+        if (target && !target.read) {
+            target.read = true;
+            target.readAt = new Date().toISOString();
+            state.value.notificationsUnreadCount = Math.max(0, state.value.notificationsUnreadCount - 1);
+        }
+    };
+
     const markAllNotificationsRead = async () => {
         await axiosInstance.put("/api/v1/notifications/read-all");
         state.value.notifications = state.value.notifications.map(item => ({
@@ -357,21 +376,95 @@ export const useStore = defineStore('item', () => {
         setOrderPaging(kind, createOrderPage(kindOrders, page, size));
     };
 
+    const pushLocalOrderActivitySignal = (input: {
+        action: "created" | "updated" | "deleted";
+        orderId: string;
+        orderName: string;
+        kind: OrderKind;
+        status?: string;
+    }) => {
+        const title =
+            input.action === "created"
+                ? "Buyurtma qo'shildi"
+                : input.action === "updated"
+                    ? "Buyurtma saqlandi"
+                    : "Buyurtma o'chirildi";
+        const message =
+            input.action === "deleted"
+                ? `«${input.orderName}» o'chirildi`
+                : `«${input.orderName}»`;
+
+        const id = `${LOCAL_NOTIFICATION_PREFIX}order:${input.action}:${input.orderId}:${Date.now()}`;
+        const payload: SocketNotification = {
+            id,
+            type: "ORDER_UPDATED" as NotificationType,
+            title,
+            message,
+            orderId: input.orderId,
+            orderName: input.orderName,
+            orderKind: input.kind,
+            kind: input.kind,
+            targetKind: input.kind,
+            orderStatus: parseOrderStatus(input.status),
+            employeeId: "",
+            employeeName: "",
+            stepOrder: 0,
+            workStatus: "PENDING" as WorkStatus,
+            actionRequired: false,
+            createdAt: new Date().toISOString(),
+            read: false,
+        };
+
+        const normalized = upsertNotification(payload);
+        state.value.lastRealtimeNotification = {
+            key: `${normalized.id}:${Date.now()}`,
+            item: normalized,
+        };
+    };
+
     // Order CRUD
     const addOrder = async (item: OrderCreateDto) => {
-        await axiosInstance.post("/api/v1/orders", item)
-        await loadOrders(item.kind)
-    }
+        const { data } = await axiosInstance.post("/api/v1/orders", item);
+        await loadOrders(item.kind);
+        const createdId =
+            data && typeof data === "object"
+                ? String((data as { id?: string }).id ?? (data as { orderId?: string }).orderId ?? "").trim()
+                : "";
+        pushLocalOrderActivitySignal({
+            action: "created",
+            orderId: createdId || "new",
+            orderName: item.orderName,
+            kind: item.kind,
+            status: item.status,
+        });
+    };
 
     const updateOrder = async (id: string, item: OrderCreateDto) => {
-        await axiosInstance.put(`/api/v1/orders/${id}`, item)
-        await loadOrders(item.kind)
-    }
+        await axiosInstance.put(`/api/v1/orders/${id}`, item);
+        await loadOrders(item.kind);
+        pushLocalOrderActivitySignal({
+            action: "updated",
+            orderId: id,
+            orderName: item.orderName,
+            kind: item.kind,
+            status: item.status,
+        });
+    };
 
     const deleteOrder = async (id: string, kind: OrderKind) => {
-        await axiosInstance.delete(`/api/v1/orders/${id}`)
-        await loadOrders(kind)
-    }
+        const bucket = state.value[orderStateKeyByKind[kind]];
+        const existing = bucket.items.find((order: Order) => order.id === id);
+        const orderName = existing?.orderName || "Buyurtma";
+        await axiosInstance.delete(`/api/v1/orders/${id}`);
+        await loadOrders(kind);
+        pushLocalOrderActivitySignal({
+            action: "deleted",
+            orderId: id,
+            orderName,
+            kind,
+            status: existing?.status,
+        });
+    };
 
     const changePage = async (
         kind: OrderKind,
@@ -471,17 +564,12 @@ export const useStore = defineStore('item', () => {
         const currentOrderKind = kindByPath[currentPath];
         const shouldRefreshOrders =
             Boolean(currentOrderKind) &&
-            ["ORDER_UPDATED", "ORDER_STATUS_CHANGED"].includes(notification.type);
+            ["ORDER_UPDATED", "ORDER_STATUS_CHANGED", "ORDER_ASSIGNED"].includes(notification.type);
 
         if (!shouldRefreshOrders) return;
 
         await loadOrders(currentOrderKind);
     }
-
-    // const loadRole = async () => {
-    //     const res = await axiosInstance.get('/api/v1/roles');
-    //     state.value.roles = res.data
-    // }
 
     const loadUploadImage = async (file: File) => {
         const fd = new FormData()
@@ -558,11 +646,11 @@ export const useStore = defineStore('item', () => {
         unreadNotificationsCount,
         loadCategory,
         changePage,
-        // loadRole,
         loadUploadImage,
         clearNotifications,
         loadNotifications,
         markNotificationRead,
+        markNotificationReadLocal,
         markAllNotificationsRead,
         upsertNotification,
         refreshFromNotification,

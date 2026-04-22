@@ -7,7 +7,7 @@
       { '!pointer-events-none': loading },
       { '!cursor-not-allowed !shadow-none opacity-60': disabled },
     ]"
-    class="relative w-auto outline-none flex focus:ring-2 items-center text-white justify-center gap-2 cursor-pointer rounded transition-200 active:scale-95 leading-6 whitespace-nowrap disabled:cursor-not-allowed"
+    class="relative w-auto outline-none flex focus:ring-2 items-center justify-center gap-2 cursor-pointer rounded-md transition-200 active:scale-95 leading-6 whitespace-nowrap disabled:cursor-not-allowed"
     :disabled="disabled"
   >
     <i v-if="isHasFaIcon" :class="faClass"></i>
@@ -92,17 +92,26 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const variants: Record<TButtonVariants, string> = {
-  primary: "bg-[#1929B9] hover:bg-[#4B5BE7] disabled:bg-[#1929B9] focus:ring-blue-500",
-  secondary: "bg-button-secondary-bg hover:bg-button-secondary-bg-hover text-text-primary-inverted",
-  "outline-primary": "bg-bg-white border-none shadow-inset-1 disabled:border-0 hover:shadow-inset-2 text-text-primary",
-  "outline-accent": "bg-bg-white border-none shadow-filter-inset-1 disabled:border-0 hover:shadow-filter-inset-2 text-text-primary-brand",
-  "ghost-primary": "bg-bg-white disabled:!bg-transparent border-0",
-  "ghost-accent": "bg-gray-500 disabled:bg-gray-400 hover:bg-gray-400 focus:ring-gray-500 border-0 text-text-primary-brand",
-  "text-primary": "bg-transparent hover:opacity-80 border-none text-text-primary font-bold",
-  "text-accent": "bg-transparent hover:opacity-80 border-none text-text-primary-inverted font-bold",
-  warning: "bg-yellow-500 hover:bg-yellow-600 text-text-primary-inverted",
-  danger: "bg-red-500 hover:bg-red-600 text-text-primary-inverted",
-  success: "bg-green-500 disabled:bg-green-400 hover:bg-green-400 text-text-primary-inverted",
+  primary:
+    "bg-pb-accent text-white hover:bg-pb-accent-hover disabled:bg-pb-accent focus:ring-2 focus:ring-pb-accent-muted/60 focus:ring-offset-0",
+  secondary:
+    "bg-slate-200 text-slate-900 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400/40 focus:ring-offset-0",
+  "outline-primary":
+    "bg-pb-surface text-slate-800 border border-pb-border shadow-sm hover:bg-pb-app focus:ring-2 focus:ring-slate-400/30 focus:ring-offset-0",
+  "outline-accent":
+    "bg-white text-pb-accent font-semibold border border-blue-200 shadow-none hover:bg-slate-50 hover:border-blue-300 hover:text-pb-accent-hover focus:ring-2 focus:ring-pb-accent/25 focus:ring-offset-0",
+  "outline-edit":
+    "!rounded-[5px] bg-white text-[#2050b3] font-bold border border-solid border-[#dcdcdc] shadow-none hover:bg-slate-50 hover:border-[#c8c8c8] focus:ring-2 focus:ring-[#2050b3]/25 focus:ring-offset-0",
+  "ghost-primary":
+    "bg-transparent text-slate-800 border-0 hover:bg-pb-app focus:ring-2 focus:ring-slate-400/25 focus:ring-offset-0 disabled:!bg-transparent",
+  "ghost-accent":
+    "border border-pb-border bg-transparent text-pb-accent hover:bg-pb-app focus:ring-2 focus:ring-pb-accent/25 focus:ring-offset-0 disabled:opacity-50",
+  "text-primary": "bg-transparent text-slate-800 hover:opacity-80 border-none font-bold",
+  "text-accent": "bg-transparent text-pb-accent hover:opacity-80 border-none font-bold",
+  warning: "bg-pb-warning hover:opacity-90 text-white",
+  danger:
+    "bg-pb-danger text-white font-semibold border border-pb-danger shadow-none hover:bg-red-800 hover:border-red-800 focus:ring-2 focus:ring-red-500/35 focus:ring-offset-0",
+  success: "bg-pb-success hover:opacity-90 disabled:opacity-60 text-white",
 };
 
 const sizes: Record<TButtonSizes, string> = {
@@ -125,7 +134,7 @@ const sizes: Record<TButtonSizes, string> = {
 };
 
 const loaderFill = computed(() => {
-  if (["outline", "outline-dark", "outline-primary"].includes(props.variant)) {
+  if (["outline", "outline-dark", "outline-primary", "outline-accent", "outline-edit", "ghost-primary", "ghost-accent", "text-primary", "text-accent", "secondary"].includes(props.variant)) {
     return "#191F2E";
   }
   return "#8595AD";

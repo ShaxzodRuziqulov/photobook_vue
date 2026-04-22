@@ -1,16 +1,19 @@
 <template>
   <div
-      class="flex flex-col overflow-visible bg-gray-800 w-full"
+      class="flex flex-col overflow-visible bg-pb-header w-full border-b border-pb-header-border"
   >
     <div
-        class="w-full h-16 px-2 2xl:px-4 gap-2  text-white grid grid-cols-[1fr_auto_1fr] grid-flow-col-dense items-center shadow-md transition-colors"
+        class="w-full h-16 px-2 2xl:px-4 gap-2 text-white grid grid-cols-[1fr_auto_1fr] grid-flow-col-dense items-center shadow-sm transition-colors"
     >
       <div class="flex items-center h-full">
         <div class="flex text-md items-center">
           <img class="w-16" src="../assets/logo.png" alt="">
           <div class="flex gap-1 flex-col items-center">
             <h2>PHOTOBOOK</h2>
-            <span class="text-xs bg-yellow-600 font-semibold rounded-xl py-0.5 px-2">{{searchName}}</span>
+            <span
+                v-if="searchName"
+                class="text-xs bg-pb-role text-pb-role-text font-semibold rounded-lg py-0.5 px-2 uppercase tracking-wide"
+            >{{ searchName }}</span>
           </div>
         </div>
       </div>
@@ -22,12 +25,12 @@
             v-for="(route, index) in mainRoutes"
             :key="index"
             :to="route?.path"
-            active-class="bg-gray-600"
-            class="p-2 gap-1 text-md flex max-lg:p-1 items-center text-center rounded-sm hover:bg-gray-700 transition duration-200"
+          active-class="bg-white/15 text-white font-medium"
+          class="p-2 gap-1 text-md flex max-lg:p-1 items-center text-center rounded-md text-white/90 hover:bg-white/10 hover:text-white transition duration-200"
             :class="index === mainRoutes.length - 1 ? 'hidden' : 'of-hidden'"
         >
           <i class="w-4 text-sm h-3 flex" v-if="route.meta.icon" :class="route.meta.icon"></i>
-          <span class="">{{ route.name }}</span>
+          <span class="">{{ route.meta?.title ?? route.name }}</span>
         </router-link>
 
       </div>
@@ -83,14 +86,14 @@
             <img
                 v-if="userAvatar"
                 :src="userAvatar"
-                alt="User avatar"
+                alt="Profil rasmi"
                 class="w-full h-full object-cover"
             >
             <i v-else class="fa-solid fa-user"></i>
           </div>
           <div class="user-copy">
             <span class="user-name">{{ userName }}</span>
-            <span class="user-role">{{ searchName || "FOYDALANUVCHI" }}</span>
+            <span class="user-role">{{ searchName || "Foydalanuvchi" }}</span>
           </div>
         </button>
         <CButton
@@ -104,27 +107,26 @@
         />
         <CDialog
             :show="isExit"
+            custom-class="w-full max-w-sm"
             @close="isExit = false"
-            body-class="justify-center bg-blue-800 text-center px-4 pb-8"
+            body-class="!bg-pb-surface rounded-xl border border-pb-border p-4 text-center shadow-lg"
         >
-          <div
-              class="flex flex-col gap-4 w-full items-center justify-center bg-white rounded-2xl"
-          >
-            <h2 class="text-lg font-semibold">Rostdan ham chiqmoqchimisiz ?</h2>
-            <div class="flex items-center justify-center gap-2 w-full">
-              <CButton
-                  type="button"
-                  text="Ha, Chiqish"
-                  class="px-6 py-5"
-                  variant="danger"
-                  @click="confirmBack"
-              />
+          <div class="flex flex-col gap-3">
+            <h2 class="text-base font-semibold text-pb-text">Chiqishni tasdiqlaysizmi?</h2>
+            <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
               <CButton
                   type="button"
                   text="Bekor qilish"
-                  class="px-6 py-5"
                   variant="ghost-accent"
+                  size="sm"
                   @click="isExit = false"
+              />
+              <CButton
+                  type="button"
+                  text="Ha, chiqish"
+                  variant="danger"
+                  size="sm"
+                  @click="confirmBack"
               />
             </div>
           </div>
@@ -146,33 +148,40 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
+import type { RouteMeta } from "vue-router";
 import CButton from "@/components/CButton.vue";
-import {computed, ComputedRef, ref} from "vue";
+import { computed, ref } from "vue";
 import CDialog from "@/components/CDialog.vue";
 import { authService } from "@/service/authService";
 import NotificationPanel from "@/components/notifications/NotificationPanel.vue";
 import { useNotifications } from "@/composables/useNotifications";
 
+/** Router child menyusi (`Layouts.vue` dagi `menuItems` bilan mos) */
+type HeaderMenuRoute = {
+  path: string;
+  name?: string | symbol | null;
+  meta: RouteMeta;
+};
+
 const authStore = authService();
 const router = useRouter();
 
 const emits = defineEmits(["toggleMenu"]);
-const props = defineProps({
-  routes: {
-    type: Array,
-    required: true,
+const props = withDefaults(
+  defineProps<{
+    routes: HeaderMenuRoute[];
+    isMenuOpen?: boolean;
+  }>(),
+  {
+    isMenuOpen: false,
   },
-  isMenuOpen: {
-    type: Boolean,
-    default: false,
-  }
-})
+);
 
 const isExit = ref(false);
 
-const isAdmin: ComputedRef = computed(() => {
+const isAdmin = computed(() => {
   return authStore.state.roles.includes("ROLE_ADMIN");
-})
+});
 
 const isOperator = computed(() => {
   return authStore.state.roles.includes("ROLE_OPERATOR");
@@ -185,38 +194,30 @@ const isManager = computed(() => {
 const searchName = computed(() => {
   const roles = authStore.state.roles || [];
   if (roles.includes("ROLE_ADMIN")) {
-    return "ADMIN";
+    return "Administrator";
   }
   if (roles.includes("ROLE_OPERATOR")) {
-    return "OPERATOR";
+    return "Operator";
   }
   if (roles.includes("ROLE_MANAGER")) {
-    return "MANAGER";
+    return "Menejer";
   }
   return "";
 })
 
-const mainRoutes: ComputedRef = computed(() => {
+const mainRoutes = computed((): HeaderMenuRoute[] => {
+  const routes = props.routes;
 
-  const routes = props.routes
-
-  if (isAdmin.value) {
-    return routes?.filter((r: any) =>
-    ["/home"].includes(r.path) || []
-    )
+  if (isAdmin.value || isManager.value) {
+    return routes;
   }
 
-  if (isManager.value) {
-    return routes
-  }
   if (isOperator.value) {
-    return routes?.filter( (r: any) =>
-    ["/tasks", "/profile"].includes(r.path)
-    )
+    return routes.filter((r) => ["/tasks", "/profile"].includes(r.path));
   }
 
   return routes;
-})
+});
 
 const toggleBurgerMenu = () => {
   emits("toggleMenu");
@@ -233,9 +234,10 @@ const confirmBack = () => {
 const userName = computed(() => {
   const user = authStore.state.user;
 
-  if (!user) return 'Foydalanuvchi';
+  if (!user) return "Foydalanuvchi";
 
-  return `${user.lastName} ${user.firstName}`.trim();
+  const full = `${user.lastName} ${user.firstName}`.trim();
+  return full || user.username || "Foydalanuvchi";
 });
 
 const userAvatar = computed(() => {
@@ -302,9 +304,9 @@ const {
   height: 20px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #ef4444;
-  border: 2px solid #1f2937;
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+  background: var(--color-pb-danger);
+  border: 2px solid var(--color-pb-header);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-pb-danger) 35%, transparent);
   color: #fff;
   font-size: 11px;
   font-weight: 700;

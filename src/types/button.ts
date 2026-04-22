@@ -3,6 +3,7 @@ export type TButtonVariants =
     | 'secondary'
     | 'outline-primary'
     | 'outline-accent'
+    | 'outline-edit'
     | 'ghost-primary'
     | 'ghost-accent'
     | 'text-primary'

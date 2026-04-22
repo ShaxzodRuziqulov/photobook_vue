@@ -4,7 +4,7 @@ export const notificationTypeOptions: { value: NotificationType; text: string }[
     { value: "ORDER_ASSIGNED", text: "Biriktirilgan" },
     { value: "TASK_ACTIVATED", text: "Ish navbati" },
     { value: "ORDER_UPDATED", text: "Buyurtma yangilangan" },
-    { value: "ORDER_STATUS_CHANGED", text: "Status o'zgargan" },
+    { value: "ORDER_STATUS_CHANGED", text: "Holat o'zgardi" },
 ];
 
 export const notificationTypeConfig: Record<NotificationType, { label: string }> = {
@@ -18,6 +18,6 @@ export const notificationTypeConfig: Record<NotificationType, { label: string }>
         label: "Yangilangan",
     },
     ORDER_STATUS_CHANGED: {
-        label: "Status o'zgargan",
+        label: "Holat o'zgardi",
     },
 };

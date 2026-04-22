@@ -1,27 +1,25 @@
 
 
 <template>
-  <p class="text-lg font-semibold my-4">{{title}}</p>
-  <div class="flex justify-center gap-4">
-    <button
+  <p class="text-lg font-semibold my-4 text-pb-text">{{ title }}</p>
+  <div class="flex flex-nowrap justify-center gap-3">
+    <CButton
+        type="button"
+        text="Ha, o'chirish"
+        variant="danger"
         @click="handleConfirm"
-        class="bg-red-600 hover:bg-red-700 cursor-pointer text-white px-4 py-2 rounded-md font-medium">
-      Ha, o'chirish
-      <!--      {{t('actions.confirmDelete')}}-->
-    </button>
-    <button
+    />
+    <CButton
+        type="button"
+        text="Bekor qilish"
+        variant="ghost-accent"
         @click="emit('update:show', false)"
-        class="bg-gray-300 hover:bg-gray-400 cursor-pointer text-gray-800 px-4 py-2 rounded-md font-medium"
-    >
-      Bekor qilish
-<!--      {{t('actions.cancel')}}-->
-    </button>
+    />
   </div>
 </template>
 <script setup lang="ts">
-// import  {useI18n} from "vue-i18n";
+import CButton from "@/components/CButton.vue";
 
-// const { t } = useI18n()
 defineProps<{
   title: string
   show: boolean

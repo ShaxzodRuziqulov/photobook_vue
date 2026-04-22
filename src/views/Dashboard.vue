@@ -1,133 +1,159 @@
 <template>
-  <div class="flex flex-col w-full h-screen">
-    <div class="flex p-6 flex-col animate-fade-in container m-auto gap-6 w-full">
-      <div
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5 items-center"
-      >
-        <div
-            class="flex flex-col cursor-pointer gap-2 bg-white shadow-md
-            rounded-lg p-6 relative h-full
-            border-2 border-gray-200 transition-all duration-300 ease-out
-            hover:-translate-y-1 hover:shadow-lg group
-            "
-          :class="[
-              'p-3 w-full h-12 rounded-xl text-xl',
-              borderColors[index % borderColors.length].base,
-              borderColors[index % borderColors.length].full
-            ]"
-          v-for="(item, index) in getAlbums"
-          :key="index"
-          @click="item.onclick"
-        >
-          <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition rounded-xl
-                bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10"
-          >
-          </div>
-        <div class="flex items-start justify-between">
+  <div class="dashboard-page flex min-h-full w-full flex-col">
+    <div
+        class="dashboard-content animate-fade-in mx-auto w-full max-w-7xl flex-1 space-y-10 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
+    >
+      <header class="flex flex-col gap-1 border-b border-pb-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wide text-pb-accent">Boshqaruv paneli</p>
+          <h1 class="mt-1 text-2xl font-bold text-pb-text sm:text-3xl">Umumiy ko‘rinish</h1>
+          <p class="mt-1 max-w-2xl text-sm text-pb-muted">
+            Buyurtmalar, jarayonlar va kategoriyalar bo‘yicha tezkor statistika.
+          </p>
+        </div>
+      </header>
+
+      <section aria-label="Asosiy ko‘rsatkichlar">
+        <h2 class="mb-4 text-sm font-bold text-pb-text">Tezkor statistika</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div
+              v-for="(item, index) in getAlbums"
+              :key="item.id"
+              role="button"
+              tabindex="0"
+              class="group relative flex min-h-[7.5rem] cursor-pointer flex-col justify-between overflow-hidden rounded-xl border border-pb-border bg-pb-surface p-5 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-pb-accent/25 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-pb-accent"
               :class="[
-                  'text-white bg-blue-600 flex items-center justify-center w-10 h-10 rounded-xl text-xl',
-                  index % 8 === 0 ? 'bg-gradient-to-br from-blue-500 to-cyan-600' :
-                  index % 8 === 1 ? 'bg-gradient-to-br from-emerald-600 to-teal-600' :
-                  index % 8 === 2 ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
-                  index % 8 === 3 ? 'bg-gradient-to-br from-orange-500 to-amber-600' :
-                  index % 8 === 4 ? 'bg-gradient-to-br from-rose-500 to-fuchsia-600' :
-                  index % 8 === 5 ? 'bg-gradient-to-br from-indigo-500 to-blue-600' :
-                  index % 8 === 6 ? 'bg-gradient-to-br from-teal-500 to-cyan-600' :
-                  'bg-gradient-to-br from-green-500 to-emerald-600'
-                  ,
+                'border-l-4',
+                borderColors[index % borderColors.length].base,
+                borderColors[index % borderColors.length].full,
               ]"
+              @click="item.onclick"
+              @keydown.enter.prevent="item.onclick"
+              @keydown.space.prevent="item.onclick"
           >
-            <i :class="item.icon"
-               class="">
-            </i>
-          </div>
-          <i
-              :class="[
-                  'text-white bg-blue-600 w-8 h-8 rounded-xl text-xl',
-                  index % 8 === 0 ? 'bg-gradient-to-br from-blue-500 to-cyan-600' :
-                  index % 8 === 1 ? 'bg-gradient-to-br from-emerald-600 to-teal-600' :
-                  index % 8 === 2 ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
-                  index % 8 === 3 ? 'bg-gradient-to-br from-orange-500 to-amber-600' :
-                  index % 8 === 4 ? 'bg-gradient-to-br from-rose-500 to-fuchsia-600' :
-                  index % 8 === 5 ? 'bg-gradient-to-br from-indigo-500 to-blue-600' :
-                  index % 8 === 6 ? 'bg-gradient-to-br from-teal-500 to-cyan-600' :
-                  'bg-gradient-to-br from-green-500 to-emerald-600'
-                  ,
-              ]"
-              class="fa-solid fa-arrow-right p-2 rounded-lg text-white text-lg
-                  transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-          >
-          </i>
-          </div>
-          <div class="flex gap-4 items-center justify-between">
-            <span class="text-gray-600 text-lg font-semibold break-all">{{item.name}}</span>
-            <span class="text-2xl text-gray-800 font-semibold break-all">{{item.itemCount}}</span>
+            <div
+                class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                aria-hidden="true"
+            >
+              <div
+                  class="absolute inset-0 bg-gradient-to-br from-pb-accent/[0.06] via-transparent to-violet-500/[0.05]"
+              />
+            </div>
+            <div class="relative z-[1] flex items-start justify-between gap-3">
+              <div
+                  :class="[
+                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg text-white shadow-sm',
+                    index % 8 === 0
+                      ? 'bg-gradient-to-br from-blue-500 to-cyan-600'
+                      : index % 8 === 1
+                        ? 'bg-gradient-to-br from-emerald-600 to-teal-600'
+                        : index % 8 === 2
+                          ? 'bg-gradient-to-br from-violet-500 to-fuchsia-600'
+                          : index % 8 === 3
+                            ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+                            : index % 8 === 4
+                              ? 'bg-gradient-to-br from-rose-500 to-fuchsia-600'
+                              : index % 8 === 5
+                                ? 'bg-gradient-to-br from-indigo-500 to-blue-600'
+                                : index % 8 === 6
+                                  ? 'bg-gradient-to-br from-teal-500 to-cyan-600'
+                                  : 'bg-gradient-to-br from-green-500 to-emerald-600',
+                  ]"
+              >
+                <i :class="item.icon" aria-hidden="true"></i>
+              </div>
+              <span
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-pb-elevated text-pb-muted transition group-hover:bg-pb-accent/10 group-hover:text-pb-accent"
+              >
+                <i
+                    class="fa-solid fa-arrow-right text-sm transition group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                ></i>
+              </span>
+            </div>
+            <div class="relative z-[1] mt-4 flex items-end justify-between gap-3 border-t border-pb-border pt-4">
+              <span class="text-sm font-semibold leading-snug text-pb-text">{{ item.name }}</span>
+              <span class="text-2xl font-bold tabular-nums text-pb-text">{{ item.itemCount }}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 items-center"
-      >
-        <div class="flex flex-col h-full border-2 border-gray-200 rounded-xl"
-             v-for="(item, index) in allStatuses"
-             :key="index"
-        >
-          <div
-              :class="[
-              'text-white p-4 bg-blue-600 rounded-tr-xl rounded-tl-xl ',
-              index % 3 === 0 ? 'bg-gradient-to-br from-indigo-400 to-teal-500' :
-              index % 3 === 1 ? 'bg-gradient-to-br from-teal-400 to-teal-500' :
-              'bg-gradient-to-br from-purple-400 to-teal-500'
-            ]"
-          >
-            <div class="flex text-lg items-center justify-between">
-              <div class="flex items-center gap-2">
-                <i :class="item.icon"></i>
-                {{item.label}}
-              </div>
-              <span class="items-center">Jami: {{item.total}}</span>
-            </div>
-            <div class="flex border-t border-gray-200 my-4"></div>
-            <div class="grid grid-cols-2 gap-4">
-            <div
-                @click="item.onClick('IN_PROGRESS')"
+      </section>
 
-                  class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
-                  :class="[
-                  index % 3 === 0 ? 'border-2 border-blue-400 hover:border-blue-600' :
-                  index % 3 === 1 ? 'border-2 border-teal-500 hover:border-teal-600' :
-                  'border-2 border-purple-400 hover:border-purple-600'
-              ]"
-              >
-                <div class="flex items-center justify-between">
-                  <p class="text-sm mb-1">Jarayonda</p>
-                  <i class="fa-regular fa-clock"></i>
+      <section aria-label="Buyurtma holati">
+        <h2 class="mb-4 text-sm font-bold text-pb-text">Buyurtmalar holati</h2>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <article
+              v-for="(item, index) in allStatuses"
+              :key="item.id"
+              class="flex flex-col overflow-hidden rounded-xl border border-pb-border bg-pb-surface shadow-sm"
+          >
+            <div
+                :class="[
+                  'relative px-5 pb-5 pt-5 text-white',
+                  index % 3 === 0
+                    ? 'bg-gradient-to-br from-indigo-600 via-indigo-500 to-teal-600'
+                    : index % 3 === 1
+                      ? 'bg-gradient-to-br from-teal-600 to-cyan-600'
+                      : 'bg-gradient-to-br from-violet-600 to-indigo-600',
+                ]"
+            >
+              <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_100%_0%,rgba(255,255,255,0.12),transparent)]" />
+              <div class="relative flex flex-wrap items-center justify-between gap-2 text-base font-semibold">
+                <div class="flex items-center gap-2">
+                  <i :class="item.icon" aria-hidden="true"></i>
+                  {{ item.label }}
                 </div>
-                <div class="flex items-center justify-between">
-                  <p class="text-2xl font-bold">{{ item.pending }}</p>
-                  <i class="fa-solid fa-arrow-right"></i>
-                </div>
+                <span class="rounded-md bg-white/15 px-2.5 py-1 text-sm font-medium backdrop-blur-sm">
+                  Jami: {{ item.total }}
+                </span>
               </div>
-              <div
-                  @click="item.onClick('COMPLETED')"
-                  class="bg-white/10 cursor-pointer rounded-lg p-3 backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
-                  :class="[
-                  index % 3 === 0 ? 'border-2 border-blue-400 hover:border-blue-600' :
-                  index % 3 === 1 ? 'border-2 border-teal-500 hover:border-teal-600' :
-                  'border-2 border-purple-400 hover:border-purple-600'
-              ]"
-              >
-                <div class="flex items-center justify-between">
-                  <p class="text-sm mb-1">Bajarilgan</p>
-                  <i class="fa-regular fa-circle-check"></i>
-                </div>
-                <div class="flex items-center justify-between">
-                  <p class="text-2xl font-bold">{{ item.completed }}</p>
-                  <i class="fa-solid fa-arrow-right"></i>
-                </div>
+              <div class="relative my-5 border-t border-white/20" />
+              <div class="relative grid grid-cols-2 gap-3">
+                <button
+                    type="button"
+                    class="rounded-xl border border-white/25 bg-white/10 p-3 text-left backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                    @click="item.onClick('IN_PROGRESS')"
+                >
+                  <div class="flex items-center justify-between text-white/90">
+                    <span class="text-xs font-medium">Jarayonda</span>
+                    <i class="fa-regular fa-clock text-sm opacity-90" aria-hidden="true"></i>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <span class="text-2xl font-bold tabular-nums">{{ item.pending }}</span>
+                    <i class="fa-solid fa-arrow-right text-sm opacity-80" aria-hidden="true"></i>
+                  </div>
+                </button>
+                <button
+                    type="button"
+                    class="rounded-xl border border-white/25 bg-white/10 p-3 text-left backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                    @click="item.onClick('COMPLETED')"
+                >
+                  <div class="flex items-center justify-between text-white/90">
+                    <span class="text-xs font-medium">Bajarilgan</span>
+                    <i class="fa-regular fa-circle-check text-sm opacity-90" aria-hidden="true"></i>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <span class="text-2xl font-bold tabular-nums">{{ item.completed }}</span>
+                    <i class="fa-solid fa-arrow-right text-sm opacity-80" aria-hidden="true"></i>
+                  </div>
+                </button>
               </div>
             </div>
+
+            <div class="border-t border-pb-border px-5 py-4">
+              <div class="mb-2 flex items-center justify-between text-sm">
+                <span class="font-semibold text-pb-text">Bajarilish foizi</span>
+                <span class="flex items-center gap-1 font-bold text-pb-accent">
+                  <i class="fa-solid fa-arrow-trend-up text-xs" aria-hidden="true"></i>
+                  {{ getPercent(item.completed, item.total) }}%
+                </span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-pb-border">
+                <div
+                    class="h-full rounded-full bg-gradient-to-r from-pb-accent to-teal-500 transition-all duration-500 ease-out"
+                    :style="{ width: getPercent(item.completed, item.total) + '%' }"
+                />
+              </div>
           </div>
           <div class="mt-4 px-4 py-2">
             <div class="flex items-center text-gray-600 justify-between text-sm mb-2">
@@ -149,61 +175,66 @@
               <h2>Mahsulot turi bo'yicha hisobot</h2>
               <span>jami: {{ item.allItems.reduce((sum, i) => sum + i.count, 0) }}</span>
             </div>
-            <div
-                v-for="(status, index) in item.allItems"
-                :key="status.id"
-                :class="index % 2 === 0 ? 'bg-gray-200' : ''"
-                class=""
-            >
+
+            <div class="flex flex-1 flex-col border-t border-pb-border bg-pb-elevated/50 p-4">
               <div
-                  class="flex justify-between p-3 text-sm hover:bg-gray-300"
+                  class="mb-3 flex items-center justify-between rounded-lg border border-pb-border bg-pb-surface px-3 py-2.5 text-xs font-semibold text-pb-text"
               >
-                <div class="flex items-center gap-2">
-                  <span>{{index + 1}}.</span>
-                  <span>{{ status.name }}</span>
+                <span>Mahsulot turi bo‘yicha</span>
+                <span class="tabular-nums text-pb-muted">Jami: {{ item.allItems.length }}</span>
+              </div>
+              <div class="overflow-hidden rounded-lg border border-pb-border bg-pb-surface">
+                <div
+                    v-for="(row, rowIndex) in item.allItems"
+                    :key="row.id"
+                    :class="rowIndex % 2 === 0 ? 'bg-pb-elevated/60' : 'bg-pb-surface'"
+                    class="flex items-center justify-between gap-2 px-3 py-2.5 text-sm transition hover:bg-pb-accent/[0.04]"
+                >
+                  <div class="flex min-w-0 items-center gap-2 text-pb-text">
+                    <span class="shrink-0 text-pb-muted">{{ rowIndex + 1 }}.</span>
+                    <span class="truncate">{{ row.name }}</span>
+                  </div>
+                  <span class="shrink-0 font-semibold tabular-nums text-pb-text">{{ row.count }}</span>
                 </div>
-                <span>{{ status.count }}</span>
+                <div
+                    v-if="!item.allItems.length"
+                    class="px-3 py-6 text-center text-sm text-pb-muted"
+                >
+                  Ma'lumot topilmadi
+                </div>
               </div>
             </div>
-            <div
-                v-if="!item.allItems.length"
-                class="rounded-lg bg-gray-100 p-3 text-sm text-gray-500"
-            >
-              Ma'lumot topilmadi
-            </div>
+          </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-label="Kategoriyalar" class="rounded-xl border border-pb-border bg-pb-surface p-5 shadow-sm sm:p-6">
+        <div class="flex flex-col gap-1 border-b border-pb-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 class="text-lg font-bold text-pb-text">Kategoriyalar bo‘yicha taqsimot</h2>
+          <div class="flex items-baseline gap-2">
+            <span class="text-sm text-pb-muted">Jami kategoriyalar</span>
+            <span class="text-2xl font-bold tabular-nums text-pb-accent">{{ totalCategories }}</span>
           </div>
         </div>
-      </div>
-      <div class="bg-white rounded-xl shadow-lg p-4">
-        <div class="flex items-center p-2 gap-2">
-          <h2 class="text-lg font-semibold text-gray-800">Kategoriyalar bo'yicha taqsimot jami:</h2>
-          <span class="text-lg">{{totalCategories}}</span>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 mt-6 gap-8">
+        <div class="mt-8 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
           <div
               v-for="item in categoryStats"
               :key="item.id"
               class="flex flex-col items-center"
           >
-            <div class="relative inline-block mb-6">
-              <div class="absolute -inset-1 blur-xl opacity-20
-                    bg-gradient-to-r from-blue-500 to-purple-500"
-              >
-              </div>
-              <svg width="180" height="180" class="transform -rotate-90">
-                <circle
-                    cx="90"
-                    cy="90"
-                    r="70"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    stroke-width="16"
-                />
+            <div class="relative mb-6 inline-block">
+              <div
+                  class="pointer-events-none absolute -inset-2 rounded-full bg-gradient-to-r from-pb-accent/15 to-violet-500/15 opacity-60 blur-xl"
+                  aria-hidden="true"
+              />
+              <svg width="180" height="180" class="-rotate-90 transform" aria-hidden="true">
+                <circle cx="90" cy="90" r="70" fill="none" stroke="rgb(226 232 240)" stroke-width="14" />
                 <defs>
                   <linearGradient :id="`gradient-${item.id}`" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" :style="`stop-color:${item.gradientFrom}`"/>
-                    <stop offset="100%" :style="`stop-color:${item.gradientTo}`"/>
+                    <stop offset="0%" :style="`stop-color:${item.gradientFrom}`" />
+                    <stop offset="100%" :style="`stop-color:${item.gradientTo}`" />
                   </linearGradient>
                 </defs>
                 <circle
@@ -212,73 +243,81 @@
                     r="70"
                     fill="none"
                     :stroke="`url(#gradient-${item.id})`"
-                    stroke-width="16"
+                    stroke-width="14"
                     stroke-linecap="round"
                     :stroke-dasharray="getCircleProgress(item.percentage).circumference"
                     :stroke-dashoffset="getCircleProgress(item.percentage).offset"
                     class="transition-all duration-1000 ease-out"
                 />
               </svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <p class="text-4xl font-bold">{{ item.percentage }}%</p>
-                <p class="text-sm text-gray-500 mt-1">{{ item.label }}</p>
+              <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <p class="text-3xl font-bold text-pb-text sm:text-4xl">{{ item.percentage }}%</p>
+                <p class="mt-0.5 text-xs font-medium text-pb-muted sm:text-sm">{{ item.label }}</p>
               </div>
             </div>
             <div
                 :class="item.bgColor"
-                class="text-center p-4 w-full rounded-2xl transition-all duration-500"
+                class="w-full rounded-xl border border-pb-border px-4 py-4 text-center shadow-sm transition"
             >
-              <div class="flex items-center justify-center gap-2 mb-2">
-                <i class="text-3xl text-blue-500" :class="item.icon"></i>
-                <p class="text-md font-semibold text-gray-700">{{ item.label }}</p>
+              <div class="mb-1 flex items-center justify-center gap-2">
+                <i class="text-2xl" :class="[item.icon, item.color]" aria-hidden="true"></i>
+                <p class="text-sm font-semibold text-pb-text">{{ item.label }}</p>
               </div>
-              <p class="text-4xl font-bold text-gray-900">{{ item.count }}</p>
-              <p class="text-sm text-gray-500 mt-1">
-                <i class="fa-solid fa-tags text-blue-400"></i>
+              <p class="text-3xl font-bold tabular-nums text-pb-text">{{ item.count }}</p>
+              <p class="mt-1 text-xs text-pb-muted">
+                <i class="fa-solid fa-tags mr-1 text-pb-accent/80" aria-hidden="true"></i>
                 Kategoriya
               </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
-    <footer class="bg-gray-900 text-white mt-auto py-12 px-6">
-      <div class="max-w-[1400px] mx-auto">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/10 pb-12 mb-8">
-          <div class="space-y-4">
-            <h2 class="text-xl font-black flex items-center gap-1">
-              <img class="w-9 h-9" src="../assets/logo.png" alt="Logo">
+
+    <footer class="dashboard-footer mt-auto border-t border-white/10 bg-pb-header py-10 text-white">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-10 border-b border-white/10 pb-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="space-y-3">
+            <h2 class="flex items-center gap-2 text-lg font-bold tracking-tight">
+              <img class="h-9 w-9 rounded-lg object-contain" src="../assets/logo.png" alt="" />
               PHOTOBOOK
             </h2>
-            <p class="text-gray-400 text-sm leading-relaxed">
+            <p class="max-w-xs text-sm leading-relaxed text-slate-400">
               Professional suratlar va albomlar tayyorlash tizimining boshqaruv paneli.
             </p>
           </div>
 
-          <div v-for="(section, sKey) in footerLinks" :key="sKey" class="space-y-4">
-            <h3 class="text-sm font-black uppercase tracking-widest text-blue-500">{{ section.title }}</h3>
+          <div v-for="(section, sKey) in footerLinks" :key="sKey" class="space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-pb-accent-muted">
+              {{ section.title }}
+            </h3>
             <ul class="space-y-2">
               <li v-for="link in section.links" :key="link.name">
-                <a :href="link.path" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm group">
-                  <i class="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-1 duration-300 transition-transform"></i>
+                <router-link
+                    :to="link.path"
+                    class="group flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
+                >
+                  <i
+                      class="fa-solid fa-chevron-right text-[10px] transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                  ></i>
                   {{ link.name }}
-                </a>
+                </router-link>
               </li>
             </ul>
           </div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+        <div class="mt-8 flex flex-col items-center justify-between gap-4 text-xs text-slate-500 md:flex-row">
           <p>© 2026 Photobook ERP. Barcha huquqlar himoyalangan.</p>
           <div class="flex gap-6">
-            <a href="#" class="hover:text-white">Foydalanish shartlari</a>
-            <a href="#" class="hover:text-white">Maxfiylik siyosati</a>
+            <a href="#" class="transition hover:text-slate-300">Foydalanish shartlari</a>
+            <a href="#" class="transition hover:text-slate-300">Maxfiylik siyosati</a>
           </div>
         </div>
       </div>
     </footer>
   </div>
-
 </template>
 
 
@@ -313,15 +352,15 @@ const getItemName = (item: DashboardCountItem) =>
     String(item.categoryName ?? item.key ?? "").trim();
 
 const borderColors = [
-  {base: 'border-l-blue-500', full: 'hover:border-blue-500'},
-  {base: 'border-l-emerald-600', full: 'hover:border-emerald-600'},
-  {base: 'border-l-purple-500', full: 'hover:border-purple-500'},
-  {base: 'border-l-orange-500', full: 'hover:border-orange-500'},
-  {base: 'border-l-rose-500', full: 'hover:border-rose-500'},
-  {base: 'border-l-indigo-500', full: 'hover:border-indigo-500'},
-  {base: 'border-l-teal-500', full: 'hover:border-teal-500'},
-  {base: 'border-l-green-500', full: 'hover:border-green-500'},
-]
+  { base: "border-l-blue-500", full: "hover:border-blue-400" },
+  { base: "border-l-emerald-500", full: "hover:border-emerald-400" },
+  { base: "border-l-violet-500", full: "hover:border-violet-400" },
+  { base: "border-l-amber-500", full: "hover:border-amber-400" },
+  { base: "border-l-rose-500", full: "hover:border-rose-400" },
+  { base: "border-l-indigo-500", full: "hover:border-indigo-400" },
+  { base: "border-l-teal-500", full: "hover:border-teal-400" },
+  { base: "border-l-green-500", full: "hover:border-green-400" },
+];
 
 const clickOpenPage = (path: string, query?: any) => {
   router.push({
@@ -497,28 +536,28 @@ const getAlbums = computed( () => [
     onclick: () => clickOpenPage('/users')
   },
   { id: 5,
-    name: 'Jami Xomashyo',
+    name: 'Jami xomashyo',
     itemCount: allMaterialCount.value,
     icon: "fa-solid fa-warehouse",
     onclick: () => clickOpenPage('/material')
   },
   { id: 6,
-    name: "Albom Kategoriy",
+    name: "Albom kategoriyalari",
     itemCount: albumCategories.value,
     icon: "fa-solid fa-book",
     onclick: () => clickOpenPage('/category', { group: 1 })
   },
   { id: 7,
-    name: "Vinetka kategoriya",
+    name: "Vinetka kategoriyalari",
     itemCount: vignetteCategories.value,
     icon: "fa-solid fa-book-open",
     onclick: () => clickOpenPage('/category', { group: 2 })
   },
   { id: 8,
-    name: "Rasmli Albom kategoriya",
+    name: "Rasmli albom kategoriyalari",
     itemCount: photosCategories.value,
     icon: "fa-solid fa-images",
-    onclick: () => clickOpenPage('/category', { group: 3})
+    onclick: () => clickOpenPage('/category', { group: 3 })
   }
 ])
 
@@ -605,7 +644,7 @@ const categoryStats = computed(() => [
     count: albumCategories.value,
     percentage: albumPercentage.value,
     color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    bgColor: "border-t-4 border-t-blue-500 bg-pb-elevated",
     strokeColor: '#3b82f6',
     gradientFrom: '#3b82f6',
     gradientTo: '#1e40af'
@@ -617,7 +656,7 @@ const categoryStats = computed(() => [
     count: vignetteCategories.value,
     percentage: vignettePercentage.value,
     color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    bgColor: "border-t-4 border-t-emerald-500 bg-pb-elevated",
     strokeColor: '#10b981',
     gradientFrom: '#10b981',
     gradientTo: '#059669'
@@ -629,7 +668,7 @@ const categoryStats = computed(() => [
     count: photosCategories.value,
     percentage: photosPercentage.value,
     color: 'text-purple-600',
-    bgColor: 'bg-purple-200',
+    bgColor: "border-t-4 border-t-violet-500 bg-pb-elevated",
     strokeColor: '#8b5cf6',
     gradientFrom: '#8b5cf6',
     gradientTo: '#7c3aed'
@@ -668,14 +707,20 @@ onMounted(async (): Promise<void> => {
 })
 </script>
 <style scoped>
+.dashboard-page {
+  background:
+      linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, var(--color-pb-app) 38%, var(--color-pb-app) 100%),
+      radial-gradient(ellipse 70% 45% at 50% -10%, rgb(37 99 235 / 0.08), transparent 55%);
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-in-out;
+  animation: fadeIn 0.45s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;

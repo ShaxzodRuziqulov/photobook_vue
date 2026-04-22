@@ -1,60 +1,64 @@
 <template>
-  <div class="flex flex-col container m-auto w-full min-h-screen p-6">
-    <div class="w-full animate-fade-in flex bg-white flex-col px-4 py-2 gap-3 min-h-0 rounded-xl shadow">
+  <div class="app-page flex w-full min-w-0 flex-col px-4 py-6 sm:px-6 lg:mx-auto lg:max-w-7xl">
+    <div class="animate-fade-in flex w-full flex-col gap-3 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm">
       <CDialog
           :show="activeTaskForm"
-          @close="activeTaskForm = false"
+          custom-class="w-full max-w-md"
           has-close-icon
           no-header
-          bodyClass="rounded-lg mt-20 !bg-bg-primary"
+          @close="activeTaskForm = false"
+          body-class="flex max-h-[min(88vh,640px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
       >
-        <div class="p-5 flex flex-col gap-4 w-full px-6">
-
-          <h2 class="text-xl font-semibold">Vazifa Bajarish</h2>
-
-          <div class="bg-gray-100 p-3 rounded-lg flex flex-col w-full gap-1">
-            <span class="font-semibold text-lg flex">
-              {{ selectedTask?.orderName }}
-            </span>
-            <span>{{selectedTask?.itemType}}</span>
-
-            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 md:grid-cols-4">
-              <span>Jami: {{ selectedTask?.amount }}</span>
-              <span>Bajarilgan: {{ selectedTask?.processedCount }}</span>
-              <span>Hozir mumkin: {{ selectedTask?.remainingAvailable ?? 0 }}</span>
-              <span>Umumiy qoldiq: {{ selectedTask?.remainingTotal ?? 0 }}</span>
+        <div class="flex min-h-0 flex-1 flex-col">
+          <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-11 sm:pt-4">
+            <h2 class="text-base font-semibold text-pb-text">Vazifa bajarish</h2>
+          </div>
+          <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
+            <div class="rounded-lg border border-pb-border bg-pb-elevated p-3 flex flex-col gap-1.5">
+              <span class="font-semibold text-pb-text leading-tight">
+                {{ selectedTask?.orderName }}
+              </span>
+              <span class="text-sm text-pb-muted">{{ selectedTask?.itemType }}</span>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-pb-muted md:grid-cols-4">
+                <span>Jami: {{ selectedTask?.amount }}</span>
+                <span>Bajarilgan: {{ selectedTask?.processedCount }}</span>
+                <span>Hozir: {{ selectedTask?.remainingAvailable ?? 0 }}</span>
+                <span>Qoldiq: {{ selectedTask?.remainingTotal ?? 0 }}</span>
+              </div>
+              <div
+                  v-if="selectedTask?.orderNotes"
+                  class="mt-1 rounded-md border border-pb-border bg-pb-surface px-2.5 py-1.5 text-xs text-pb-muted"
+              >
+                <span class="font-semibold text-pb-text">Izoh:</span>
+                {{ selectedTask.orderNotes }}
+              </div>
             </div>
-            <div
-                v-if="selectedTask?.orderNotes"
-                class="mt-2 rounded-lg bg-white px-3 py-2 text-sm text-gray-600"
-            >
-              <span class="font-semibold text-gray-800">Buyurtma izohi:</span>
-              {{ selectedTask.orderNotes }}
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-pb-text">Bajarish (dona)</label>
+              <input
+                  type="number"
+                  min="0"
+                  :max="selectedTask?.remainingAvailable ?? 0"
+                  v-model="form.processedCount"
+                  class="w-full rounded-lg border border-pb-border bg-pb-surface px-3 py-2 text-sm text-pb-text outline-none focus:border-pb-accent focus:ring-2 focus:ring-pb-accent/20"
+              />
+              <span class="text-[11px] text-pb-muted">
+                Bir martada ko‘pi bilan {{ selectedTask?.remainingAvailable ?? 0 }} ta.
+              </span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-semibold text-pb-text">Ishchi izohi</label>
+              <textarea
+                  v-model="form.notes"
+                  rows="3"
+                  class="w-full resize-y rounded-lg border border-pb-border bg-pb-surface px-3 py-2 text-sm text-pb-text outline-none focus:border-pb-accent focus:ring-2 focus:ring-pb-accent/20"
+                  placeholder="Bajarilgan ish haqida..."
+              />
             </div>
           </div>
-
-          <div class="flex flex-col gap-2">
-            <label>Bajarish</label>
-            <input
-                type="number"
-                min="0"
-                :max="selectedTask?.remainingAvailable ?? 0"
-                v-model="form.processedCount"
-                class="border rounded p-2"
-            />
-            <span class="text-xs text-gray-500">
-              Bir martada ko'pi bilan {{ selectedTask?.remainingAvailable ?? 0 }} ta kiritishingiz mumkin.
-            </span>
-          </div>
-          <div class="flex flex-col gap-2">
-            <label>Ishchi izohi</label>
-            <textarea
-                v-model="form.notes"
-                class="border rounded p-2"
-                placeholder="Bajarilgan ish haqida yozing..."
-            />
-          </div>
-          <div class="flex justify-end gap-2 mt-2">
+          <div
+              class="flex shrink-0 flex-col gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5 sm:flex-row sm:justify-end"
+          >
             <CButton
                 type="button"
                 text="Bekor qilish"
@@ -64,10 +68,10 @@
             <CButton
                 text="Saqlash"
                 variant="primary"
+                :disabled="isLoading || !taskSaveAllowed"
                 @click="completedTask"
             />
           </div>
-
         </div>
       </CDialog>
       <div
@@ -92,19 +96,20 @@
           />
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex shrink-0 items-center gap-2">
         <CButton
             type="button"
-            text="Ortga"
+            text="Orqaga"
+            size="sm"
             is-has-fa-icon
             variant="ghost-accent"
-            faClass="fa-solid fa-arrow-left"
+            fa-class="fa-solid fa-arrow-left"
             @click="router.back()"
         />
-        <h2 class="text-lg font-semibold">Barcha vazifalar</h2>
+        <h2 class="text-base font-bold text-pb-text sm:text-lg">Barcha vazifalar</h2>
       </div>
       <div
-          class="grid grid-cols-1 text-sm sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5 border-b-2 border-gray-200 items-end gap-4 py-2"
+          class="grid shrink-0 grid-cols-1 items-end gap-4 border-b border-pb-border py-3 text-sm sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5"
       >
         <AppSelect
             :options="itemStatus"
@@ -131,17 +136,14 @@
         <CButton
             type="button"
             text="Tozalash"
+            size="sm"
             variant="ghost-accent"
             @click="closeFilter"
             class="mb-1"
         />
       </div>
-      <div
-          class="overflow-auto"
-      >
-        <table
-            class="w-full text-sm table-auto overflow-auto"
-        >
+      <div class="max-h-[min(70vh,calc(100dvh-17rem))] overflow-x-auto overflow-y-auto rounded-md border border-pb-border/60">
+        <table class="w-full table-auto text-sm">
           <colgroup>
             <col style="width: 3%">
             <col style="width: 15%">
@@ -155,7 +157,7 @@
             <col style="width: 12%">
             <col style="width: 15%">
           </colgroup>
-          <thead class="bg-gray-200 text-gray-700 tracking-wider">
+          <thead class="bg-pb-elevated text-sm font-semibold tracking-wide text-pb-label">
           <tr>
             <th class="px-1 py-3 items-start">№</th>
             <th class="p-2 text-start">Buyurtma nomi</th>
@@ -167,50 +169,57 @@
             <th class="p-2 text-start">Muddat</th>
             <th class="p-3 text-start">Jarayon</th>
             <th class="p-2 text-start">Holat</th>
-            <th class="p-3 text-start">Amallar</th>
+            <th class="p-3 text-end">Amallar</th>
           </tr>
           </thead>
           <tbody v-if="isLoading">
-          <tr v-for="i in 8" :key="i" class="border-t">
-            <td class="p-2"><div class="h-4 w-6 bg-gray-200 rounded animate-pulse"></div></td>
+          <tr v-for="i in 8" :key="i" class="border-t border-pb-border">
+            <td class="p-2"><div class="h-4 w-6 animate-pulse rounded bg-pb-border"></div></td>
 
-            <td class="p-2 space-y-2">
-              <div class="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-              <div class="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
-            </td>
-
-            <td class="p-2">
-              <div class="w-14 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+            <td class="space-y-2 p-2">
+              <div class="h-4 w-32 animate-pulse rounded bg-pb-border"></div>
+              <div class="h-3 w-24 animate-pulse rounded bg-pb-border"></div>
             </td>
 
-            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
-            <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
-            <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
-            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
-            <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
             <td class="p-2">
-              <div class="w-full bg-gray-200 h-2 rounded-full animate-pulse"></div>
-              <div class="h-3 w-16 mt-2 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-10 w-14 animate-pulse rounded-lg bg-pb-border"></div>
             </td>
+
+            <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
+            <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
+            <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
+
+            <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
+            <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
+
+            <!-- progress -->
             <td class="p-2">
-              <div class="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+              <div class="h-2 w-full animate-pulse rounded-full bg-pb-border"></div>
+              <div class="mt-2 h-3 w-16 animate-pulse rounded bg-pb-border"></div>
             </td>
+
+            <!-- status -->
             <td class="p-2">
-              <div class="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div class="h-6 w-20 animate-pulse rounded-full bg-pb-border"></div>
+            </td>
+
+            <!-- button -->
+            <td class="p-2">
+              <div class="h-8 w-24 animate-pulse rounded-lg bg-pb-border"></div>
             </td>
           </tr>
           </tbody>
           <tbody v-else-if="filteredOrders.length > 0">
           <tr
-              class="py-4 border-t border-gray-600 hover:bg-gray-100"
+              class="border-t border-pb-border py-3 transition hover:bg-pb-elevated"
               v-for="(task, index) in filteredOrders"
               :key="index"
           >
             <td class="px-3 py-2">{{index + 1}}</td>
             <td class="p-2 break-all">
               <p class="font-semibold">{{ task.orderName }}</p>
-              <p class="text-gray-500 text-sm font-semibold">{{task.categoryName}}</p>
-              <p class="text-blue-600 text-sm font-semibold">{{task.itemType}}</p>
+              <p class="text-sm font-semibold text-pb-muted">{{task.categoryName}}</p>
+              <p class="text-sm font-semibold text-pb-accent">{{task.itemType}}</p>
             </td>
             <td class="p-2">
               <img
@@ -219,14 +228,14 @@
                   class="w-14 h-10 sm:h-10 lg:h-12 cursor-pointer rounded-xl"
                   :src="getAvatarUrl(task.imageUrl)" alt="">
             </td>
-            <td class="p-2 text-blue-600 font-semibold text-sm">{{statusOrder[task.kind]}}</td>
+            <td class="p-2 text-sm font-semibold text-pb-accent">{{statusOrder[task.kind]}}</td>
             <td class="p-2">{{task.customerName}}</td>
             <td class="p-2">{{task.receiverName}}</td>
             <td class="p-2">{{task.acceptedDate}}</td>
             <td class="p-2">{{task.deadline}}</td>
             <td class="p-2">
               <div class="flex flex-col gap-2">
-                <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+                <div class="h-2 w-full overflow-hidden rounded-full bg-pb-border">
                   <span
                       v-if="task.amount"
                       class="block h-full transition-all duration-500 ease-out"
@@ -236,7 +245,7 @@
                     }"
                   ></span>
                 </div>
-                <div class="text-sm mt-1 flex items-center justify-between text-gray-600">
+                <div class="mt-1 flex items-center justify-between text-sm text-pb-muted">
                   <span>{{ getTaskProcessedCount(task) }} / {{ task.amount }}</span>
                   <span>{{ task.pageCount || 0 }}-Bet</span>
                 </div>
@@ -252,13 +261,12 @@
                 {{statusLabel[task.status]}}
               </span>
             </td>
-            <td>
-              <div
-                  class="flex items-center gap-2"
-              >
+            <td class="p-3 text-end">
+              <div class="flex flex-nowrap items-center justify-end gap-2.5">
                 <CButton
                     type="button"
                     :text="task.canWork ? 'Bajarish' : 'Kuting'"
+                    size="sm"
                     variant="primary"
                     :disabled="!task.canWork"
                     @click="activeFormTask(task)"
@@ -270,8 +278,8 @@
           <tbody v-else>
           <tr>
             <td
-                colspan="10"
-                class="text-center py-6 text-gray-600 font-semibold"
+                colspan="11"
+                class="py-6 text-center font-semibold text-pb-muted"
             >
               Vazifalar topilmadi!
             </td>
@@ -294,6 +302,7 @@ import { useToast } from "vue-toastification";
 import AppInput from "@/components/ui/AppInput.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
 import { useRouter } from "vue-router";
+import { snapshotTaskProgressDialog } from "@/utils/updateFormDirty";
 
 const router = useRouter();
 const dataStore = useStore();
@@ -309,7 +318,18 @@ const formData = ref<string | null | undefined>(null);
 const endData = ref<string | null | undefined>(null);
 const isLoading = ref(false);
 
+const taskProgressBaseline = ref("");
 
+const taskSaveAllowed = computed(() => {
+  const cur = snapshotTaskProgressDialog(
+    form.value.notes,
+    form.value.processedCount,
+  );
+  if (cur === taskProgressBaseline.value) return false;
+  const inc = Number(form.value.processedCount) || 0;
+  const max = selectedTask.value?.remainingAvailable ?? 0;
+  return inc > 0 && inc <= max;
+});
 
 const closeFilter = () => {
   formStatus.value = null;
@@ -317,6 +337,7 @@ const closeFilter = () => {
   formData.value = null;
   endData.value = null;
 
+  dataStore.loadGetUserTasks();
 }
 
 const openPreview = (url: string) => {
@@ -416,11 +437,11 @@ const activeFormTask = (task: UserTask) => {
   form.value.canWork = true
   form.value.workStatus = task.remainingTotal === 0 ? "COMPLETED" : "STARTED"
   activeTaskForm.value = true;
-
+  taskProgressBaseline.value = snapshotTaskProgressDialog(task.notes || "", 0);
 }
 
 const completedTask = async () => {
-  isLoading.value = true
+  isLoading.value = true;
   try {
     const remainingAvailable = selectedTask.value?.remainingAvailable ?? 0;
     const remainingTotal = selectedTask.value?.remainingTotal ?? 0;
@@ -442,17 +463,15 @@ const completedTask = async () => {
       workStatus: increment >= remainingTotal ? "COMPLETED" : "STARTED"
     };
 
-    await axiosInstance.put(`/api/v1/user-tasks/me/${selectedTask.value?.orderId}`, payload)
+    await axiosInstance.put(`/api/v1/user-tasks/me/${selectedTask.value?.orderId}`, payload);
     activeTaskForm.value = false;
-    await dataStore.loadGetUserTasks()
-    Toast.success('Bajarildi!')
-    isLoading.value = false
+    await dataStore.loadGetUserTasks();
+    Toast.success("Bajarildi!");
+  } catch {
+  } finally {
+    isLoading.value = false;
   }
-  catch (error) {
-    console.log(error)
-  }
-
-}
+};
 
 watch(
     [formStatus, formFilter, formData, endData],
@@ -482,17 +501,23 @@ watch(
 )
 
 onMounted(async () => {
-  isLoading.value = true
+  isLoading.value = true;
   try {
-    await dataStore.loadGetUserTasks()
-    isLoading.value = false
-  } catch (error) {
-    console.log(error)
+    await dataStore.loadGetUserTasks();
+  } catch {
+  } finally {
+    isLoading.value = false;
   }
-})
+});
 </script>
 
 <style scoped>
+.app-page {
+  background:
+      linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, var(--color-pb-app) 36%, var(--color-pb-app) 100%),
+      radial-gradient(ellipse 65% 40% at 50% -8%, rgb(37 99 235 / 0.07), transparent 52%);
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease-in-out;
 }

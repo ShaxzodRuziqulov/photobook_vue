@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+/* Photobook ERP — yagona dizayn tokenlari (neutral + bitta aksent) */
+@theme {
+  /* Asosiy fon va sathlar */
+  --color-pb-app: #f1f5f9;
+  --color-pb-surface: #ffffff;
+  --color-pb-border: #e2e8f0;
+  --color-pb-muted: #64748b;
+  /* Matn ierarxiyasi */
+  --color-pb-text: #1e293b;
+  --color-pb-label: #475569;
+  /* Xatolik va diqqat */
+  --color-pb-error: #dc2626;
+  --color-pb-error-soft: #fef2f2;
+  /* Kichik sath / karta ichi */
+  --color-pb-elevated: #f8fafc;
+
+  /* Shell: header / sidebar (slate-900 → slate-700) */
+  --color-pb-header: #0f172a;
+  --color-pb-header-border: rgba(255, 255, 255, 0.06);
+  --color-pb-sidebar: #1e293b;
+  --color-pb-sidebar-active: #334155;
+  --color-pb-sidebar-hover: #475569;
+
+  /* Bitta aksent — asosiy amallar */
+  --color-pb-accent: #2563eb;
+  --color-pb-accent-hover: #1d4ed8;
+  --color-pb-accent-muted: #3b82f6;
+
+  /* Rol nishoni (sariq emas, amber — diqqatni chalkashtirmaydi) */
+  --color-pb-role: #d97706;
+  --color-pb-role-text: #fffbeb;
+
+  /* Statuslar — keyinchalik badge / alert uchun */
+  --color-pb-success: #15803d;
+  --color-pb-warning: #b45309;
+  --color-pb-danger: #b91c1c;
+
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Vertikal skroll paydo bo‘lganda kenglik “sakrab ketmasin” */
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply min-h-dvh bg-pb-app text-pb-text antialiased;
+    overflow-x: clip;
+  }
+
+  #app {
+    @apply min-h-0 h-dvh;
+  }
+
+  /* Tizim tugmalari o‘zida ring bor; oddiy havolalar uchun */
+  :where(a[href]):focus-visible {
+    @apply outline-none ring-2 ring-pb-accent/35 ring-offset-2 ring-offset-pb-app rounded-sm;
+  }
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-pb-accent) 26%, transparent);
+  color: var(--color-pb-text);
+}

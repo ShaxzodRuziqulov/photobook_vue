@@ -1,8 +1,5 @@
 import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 import {authService} from "@/service/authService";
-import { useStore } from "@/stores/store"
-import {Role} from "@/typeModules/useModules";
-
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -73,16 +70,16 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import('../views/Materials.vue'),
                 meta: {
                     requiresAuth: true,
-                    icon: 'fa-solid fa-boxes'
-                }
+                    icon: 'fa-solid fa-boxes',
+                },
             },
             {
                 path: '/category',
                 name: 'Kategoriyalar',
-                component: () =>import('../views/Categories.vue'),
+                component: () => import('../views/Categories.vue'),
                 meta: {
                     requiresAuth: true,
-                    icon: 'fa-solid fa-tags'
+                    icon: 'fa-solid fa-tags',
                 },
             },
             {
@@ -90,6 +87,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'UserProfile',
                 component: () =>import('../views/UserProfile.vue'),
                 meta: {
+                    title: 'Profil',
                     requiresAuth: true,
                     icon: 'fas fa-user'
                 },

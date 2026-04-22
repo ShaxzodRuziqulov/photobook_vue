@@ -19,7 +19,7 @@
             </button>
             <button
                 type="button"
-                class="notify-read-all cursor-pointer"
+                class="notify-read-all cursor-pointer transition-colors"
                 :disabled="unreadCount === 0"
                 @click="$emit('mark-all-read')"
             >
@@ -27,25 +27,27 @@
             </button>
           </div>
         </div>
-        <div class="flex items-center gap-2 w-full justify-around pt-4 text-sm font-bold text-gray-600">
+        <div class="flex items-center gap-2 w-full justify-around pt-4 text-sm font-bold text-pb-muted">
           <button
-              class="cursor-pointer flex w-full hover:text-gray-500"
+              type="button"
+              class="cursor-pointer flex w-full hover:text-slate-700"
               @click="$emit('update:active-tab', 'UNREAD')"
           >
             <span
-                class="border-b-2 p-1 flex w-full hover:bg-blue-100 justify-center"
-                :class="activeTab === 'UNREAD' ? 'text-blue-500 border-blue-500' : 'border-transparent'"
+                class="border-b-2 p-1 flex w-full hover:bg-pb-app justify-center rounded-t-md transition-colors"
+                :class="activeTab === 'UNREAD' ? 'text-pb-accent border-pb-accent' : 'border-transparent'"
             >
               Yangi xabar
             </span>
           </button>
           <button
-              class="cursor-pointer flex- w-full hover:text-gray-500"
+              type="button"
+              class="cursor-pointer flex w-full hover:text-slate-700"
               @click="$emit('update:active-tab', 'ALL')"
           >
             <span
-                class="p-1 flex w-full hover:bg-blue-100 border-b-2 justify-center"
-                :class="activeTab === 'ALL' ? 'text-blue-500 border-blue-500' : 'border-transparent'"
+                class="p-1 flex w-full hover:bg-pb-app border-b-2 justify-center rounded-t-md transition-colors"
+                :class="activeTab === 'ALL' ? 'text-pb-accent border-pb-accent' : 'border-transparent'"
             >
               Barchasi
             </span>
@@ -160,10 +162,10 @@ const onTypeChange = (event: Event) => {
   max-height: 70vh;
   overflow: hidden;
   border-radius: 18px;
-  background: #fff;
-  color: #0f172a;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--color-pb-surface);
+  color: var(--color-pb-header);
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--color-pb-header) 22%, transparent);
+  border: 1px solid var(--color-pb-border);
   z-index: 20;
 }
 
@@ -183,7 +185,7 @@ const onTypeChange = (event: Event) => {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 16px 0 16px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  border-bottom: 1px solid var(--color-pb-border);
 }
 
 .notify-head h3 {
@@ -194,13 +196,17 @@ const onTypeChange = (event: Event) => {
 .notify-head p {
   margin-top: 4px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-pb-muted);
 }
 
 .notify-read-all {
-  color: #2563eb;
+  color: var(--color-pb-accent);
   font-size: 12px;
   font-weight: 700;
+}
+
+.notify-read-all:hover:not(:disabled) {
+  color: var(--color-pb-accent-hover);
 }
 
 .notify-read-all:disabled {
@@ -221,13 +227,19 @@ const onTypeChange = (event: Event) => {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--color-pb-app);
+  color: var(--color-pb-muted);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.notify-sound-toggle:hover {
+  border-color: var(--color-pb-border);
 }
 
 .notify-sound-toggle.active {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: color-mix(in srgb, var(--color-pb-accent-muted) 18%, var(--color-pb-surface));
+  color: var(--color-pb-accent-hover);
 }
 
 .notify-filters {
@@ -242,12 +254,18 @@ const onTypeChange = (event: Event) => {
 .notify-filter-select {
   width: 100%;
   min-height: 36px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-pb-border);
   border-radius: 8px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--color-pb-surface);
+  color: var(--color-pb-header);
   font-size: 13px;
   outline: none;
+}
+
+.notify-filter-input:focus,
+.notify-filter-select:focus {
+  border-color: var(--color-pb-accent-muted);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pb-accent) 18%, transparent);
 }
 
 .notify-filter-input {
@@ -272,7 +290,7 @@ const onTypeChange = (event: Event) => {
 .notify-empty {
   padding: 24px 16px;
   text-align: center;
-  color: #64748b;
+  color: var(--color-pb-muted);
   font-size: 14px;
 }
 
@@ -280,24 +298,32 @@ const onTypeChange = (event: Event) => {
   margin-top: 10px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: color-mix(in srgb, var(--color-pb-accent) 10%, var(--color-pb-surface));
+  color: var(--color-pb-accent-hover);
   font-weight: 700;
+}
+
+.notify-retry:hover {
+  background: color-mix(in srgb, var(--color-pb-accent) 16%, var(--color-pb-surface));
 }
 
 .notify-actions {
   padding: 10px 16px 14px;
-  background: #fff;
+  background: var(--color-pb-surface);
 }
 
 .notify-load-more {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: color-mix(in srgb, var(--color-pb-accent) 10%, var(--color-pb-surface));
+  color: var(--color-pb-accent-hover);
   font-size: 13px;
   font-weight: 700;
+}
+
+.notify-load-more:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-pb-accent) 16%, var(--color-pb-surface));
 }
 
 .notify-load-more:disabled {

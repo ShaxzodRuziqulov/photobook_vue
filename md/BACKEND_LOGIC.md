@@ -1,16 +1,17 @@
 # BACKEND LOGIC
 
-Bu fayl backendning amaldagi logikasini tushuntiradi. Asosiy maqsad front bilan integratsiya uchun real contract va workflowni bir joyda ko'rsatish.
+Bu fayl backendning amaldagi logikasini tushuntiradi. Asosiy maqsad front bilan integratsiya uchun real contract va workflowni bir joyda ko‘rsatish. REST prefiks: **`/api/v1`**.
 
 ## 1. Asosiy ma'lumot
 
+- **Standart port:** `9091` (Railway/prodda odatda `PORT`).
 - Base path: `/api/v1`
 - Auth turi: `Authorization: Bearer <access_token>`
 - Public yo'llar:
   - `/api/v1/auth/**`
   - `/uploads-storage/**`
   - `/socket.io/**`
-  - swagger yo'llari
+  - swagger yo'llari (`/swagger-ui/**`, `/v3/api-docs/**`)
 - Static upload URL: `/uploads-storage/{key}`
 
 ## 2. Response format
@@ -199,21 +200,21 @@ Bo'sh filter uchun:
 {}
 ```
 
-Filter qoidalari:
+Filter qoidalari (`OrderPagingRequest`):
 
 - `search` bo'sh yoki `null` bo'lsa qidiruv o'chadi.
 - `search` quyidagi fieldlardan qidiradi: `orderName`, `receiverName`, `customer.fullName`, employee full name, employee username, category name.
 - `status` `OrderStatus` enum bo'yicha aniq filterlaydi.
-- `acceptedDate` `orders.acceptedDate` bilan teng sana bo'yicha filterlaydi.
-- `deadline` `orders.deadline` bilan teng sana bo'yicha filterlaydi.
-- `kind`, `customerId`, `employeeId`, `categoryId`, `from`, `to`, `deadlineFrom`, `deadlineTo` order paging requestida ishlatilmaydi.
+- `acceptedDate` `orders.accepted_date` bilan **teng** sana bo'yicha filterlaydi (oraliq emas).
+- `deadline` `orders.deadline` bilan **teng** sana bo'yicha filterlaydi (oraliq emas).
+- `OrderPagingRequest` faqat `search`, `status`, `acceptedDate`, `deadline` ni qabul qiladi; `kind`, `customerId`, `employeeId`, `categoryId` va sana **oraliqlari** (range) bu endpointda yo'q.
 
 Query ishlashi:
 
 - Repository `category`, `customer`, `employees`, `employees.user` ni `EntityGraph` orqali yuklaydi.
-- Query `DISTINCT` ishlatadi, chunki employee join bir orderni bir necha qatorda qaytarishi mumkin.
+- JPQL `DISTINCT` va employee join tufayli bir order bir nechta qatorda kelishi mumkinligi hisobga olingan.
 - Nullable `status`, `acceptedDate`, `deadline` filterlari PostgreSQL null-param type xatosini bermasligi uchun `COALESCE(:param, field)` orqali qo'llangan.
-- Default controller sort belgilanmagan; frontend query param bilan sort yuborishi kerak. Tavsiya: `sort=updatedAt,desc`.
+- Controllerda default sort yo'q; frontend `sort=updatedAt,desc` yuborishi tavsiya etiladi.
 
 Frontend uchun muhim qoidalar:
 
@@ -235,6 +236,7 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 ### UserTask logikasi
 
 - worker faqat o'ziga tegishli order taskini ko'radi
+- **Paging (`POST .../me/paging`):** filtr maydonlari — `search`, `statuses` (ro'yxat), `deadlineFrom`, `deadlineTo`. `acceptedDate` bo'yicha `from`/`to` **yo'q** (oldingi versiyadan olib tashlangan). Sort yuborilmasa backend `updatedAt,desc` qo'llaydi. Joriy userga biriktirish `Specification` ichida `EXISTS (order_employees)` bilan tekshiriladi.
 - `canWork = true` bo'lishi uchun order `IN_PROGRESS` va assignment `STARTED` bo'lishi kerak
 - `processedCount` requestda increment sifatida ishlaydi
 - yangi progress `order.amount` dan oshmasligi kerak
@@ -257,12 +259,12 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 ### Ishlash mantig'i
 
 - notification yaratilganda DB ga saqlanadi
-- `POST /notifications/me/paging` current user notificationlarini page ko'rinishida qaytaradi
+- `POST /api/v1/notifications/me/paging` current user notificationlarini page ko'rinishida qaytaradi
 - paging filterlari: `search`, `type`, `isRead`, `actionRequired`
 - notification payloadda route uchun `targetType`, `targetId`, `targetKind`, `route`, `orderKind` qaytadi
-- `GET /notifications/me/unread-count` current user uchun unread count qaytaradi
-- `PUT /notifications/{id}/read` faqat current userning notificationi uchun ishlaydi
-- `PUT /notifications/read-all` current userning barcha unread notificationlarini mark qiladi
+- `GET /api/v1/notifications/me/unread-count` current user uchun unread count qaytaradi
+- `PUT /api/v1/notifications/{id}/read` faqat current userning notificationi uchun ishlaydi
+- `PUT /api/v1/notifications/read-all` current userning barcha unread notificationlarini mark qiladi
 
 ### Turlar
 
@@ -281,18 +283,20 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 
 ### Flow
 
-1. Front rasmni upload qiladi.
-2. Response dan `uploadId` oladi.
-3. Order yoki expense requestida shu `uploadId` yuboriladi.
-4. Backend attach qilgach owner va URL ni set qiladi.
+1. Front rasmni `POST /api/v1/uploads` orqali yuklaydi.
+2. Javobdan **`id`** (UUID) olinadi; clientda bu qiymat DTO bo‘yicha ko‘pincha `uploadId` maydoniga yoziladi.
+3. Order, user profili yoki expense so‘rovida shu **`uploadId`** / **`id`** backend contractiga mos yuboriladi.
+4. Backend attach qilgach `owner_type` / `owner_id` va URL ni set qiladi.
+
+**DELETE:** yo‘l `DELETE /api/v1/uploads/{idOrKey}` — identifikator `uploads.id` yoki storage `key` (backend qoidasiga qarab).
 
 ## 9. Dashboard
 
 ### Endpointlar
 
 - `GET /api/v1/dashboard/orders-by-kind`
-- `GET /api/v1/dashboard/orders-by-status?type=ALBUM|VIGNETTE|PICTURE`
-- `GET /api/v1/dashboard/orders-by-category`
+- `GET /api/v1/dashboard/orders-by-status?type=ALBUM|VIGNETTE|PICTURE` (`type` majburiy)
+- `GET /api/v1/dashboard/orders-by-category?type=ALBUM|VIGNETTE|PICTURE` (`type` majburiy)
 
 ### Hisoblash logikasi
 
@@ -448,8 +452,8 @@ Izoh:
 1. User login bo'lgach `POST /api/v1/notifications/me/paging` bilan tarixni oling.
 2. Parallel ravishda socket ulang.
 3. `authenticated` kelgach realtime va replay notificationlarni qabul qiling.
-4. UI da ko'rsatilgan notificationni `PUT /notifications/{id}/read` bilan mark qiling.
-5. Hammasini birdan o'qilgan qilish kerak bo'lsa `PUT /notifications/read-all` ishlating.
+4. UI da ko'rsatilgan notificationni `PUT /api/v1/notifications/{id}/read` bilan mark qiling.
+5. Hammasini birdan o'qilgan qilish kerak bo'lsa `PUT /api/v1/notifications/read-all` ishlating.
 
 ## 12. Hozir muhim real qoidalar
 
@@ -469,8 +473,9 @@ Izoh:
 - `employees[].workStatus` response ichida qaytadi
 - `orders.status` `PAUSED` va `CANCELLED` ni ham qabul qiladi
 - worker update endpointida `status` o'rniga `workStatus` ishlatiladi
-- order paging soddalashtirilgan: `search`, `status`, `acceptedDate`, `deadline`
-- notificationlar uchun unbounded `GET /notifications/me` o'rniga `POST /notifications/me/paging` ishlatiladi
-- notification badge uchun `GET /notifications/me/unread-count` ishlatiladi
+- order paging: `search`, `status`, `acceptedDate`, `deadline` (ikkala sana ham aniq kun, oraliq emas)
+- **user task paging:** `deadlineFrom` / `deadlineTo` qoldi; `acceptedDate` uchun `from` / `to` olib tashlandi
+- notificationlar uchun unbounded `GET /api/v1/notifications/me` o'rniga `POST /api/v1/notifications/me/paging` ishlatiladi
+- notification badge uchun `GET /api/v1/notifications/me/unread-count` ishlatiladi
 - notification payload route maydonlari bilan boyitilgan: `orderKind`, `targetType`, `targetId`, `targetKind`, `route`
 - socket notification payloadi ham REST notification DTO bilan moslashtirilgan
