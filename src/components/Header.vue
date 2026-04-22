@@ -30,7 +30,7 @@
             :class="index === mainRoutes.length - 1 ? 'hidden' : 'of-hidden'"
         >
           <i class="w-4 text-sm h-3 flex" v-if="route.meta?.icon" :class="route.meta?.icon"></i>
-          <span class="">{{ route.meta?.title ?? route.name }}</span>
+          <span class="">{{ route.name }}</span>
         </router-link>
 
       </div>
@@ -156,7 +156,6 @@ import { authService } from "@/service/authService";
 import NotificationPanel from "@/components/notifications/NotificationPanel.vue";
 import { useNotifications } from "@/composables/useNotifications";
 
-/** Router child menyusi (`Layouts.vue` dagi `menuItems` bilan mos) */
 type HeaderMenuRoute = {
   path: string;
   name?: string | symbol | null;

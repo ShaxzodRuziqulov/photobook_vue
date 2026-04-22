@@ -21,7 +21,7 @@
           :class="!isDesktop && index === mainMenuItems.length -1 ? 'hidden' : 'of-hidden'"
       >
         <i v-if="item.meta?.icon" :class="item.meta.icon"></i>
-        {{ (item.meta as { title?: string } | undefined)?.title ?? item.name }}
+        {{ item.name }}
       </router-link>
       <div class="gap-2">
         <div

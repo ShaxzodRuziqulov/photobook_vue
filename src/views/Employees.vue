@@ -412,7 +412,6 @@ const rolesOptions = computed(() => {
   })
 })
 
-/** Jadval bilan bir xil: familiya, keyin ism; bo‘lmasa login. */
 const roleDialogTitle = computed(() => {
   const u = selectedUsers.value;
   if (!u) return "";
@@ -424,7 +423,6 @@ const roleDialogTitle = computed(() => {
   return un || "Xodim";
 });
 
-/** Ism-familiya bor bo‘lsa, alohida qatorda login (@…). */
 const roleDialogSubtitle = computed(() => {
   const u = selectedUsers.value;
   if (!u) return "";

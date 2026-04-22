@@ -106,9 +106,14 @@ const routes: Array<RouteRecordRaw> = [
     },
     {
         path: '/terms',
-        name: 'Terms',
+        name: 'TermsView',
         component: () =>import('../views/TermsView.vue')
     },
+    {
+        path: '/privacy',
+        name: 'PrivacyView',
+        component: () =>import('../views/PrivacyView.vue'),
+    }
 
 ]
 const router = createRouter({
@@ -122,6 +127,7 @@ router.beforeEach(async (to, _, next) => {
     const isAuthenticated = !!token;
     const isLoginPage = to.name === "Login";
     // const accepted = localStorage.getItem("terms_accepted");
+    // const privacy = localStorage.getItem("privacy_accepted");
 
 
     if (!to.meta.requiresAuth) {
@@ -157,6 +163,12 @@ router.beforeEach(async (to, _, next) => {
     //     return next('/home')
     // }
 
+    // if (privacy && to.path === "/privacy") {
+    //     return next('/home');
+    // }
+    // if (!privacy && to.path !== "/privacy") {
+    //     return next('/privacy');
+    // }
     next();
 });
 

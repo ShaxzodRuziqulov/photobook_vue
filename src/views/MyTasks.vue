@@ -192,18 +192,15 @@
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
 
-            <!-- progress -->
             <td class="p-2">
               <div class="h-2 w-full animate-pulse rounded-full bg-pb-border"></div>
               <div class="mt-2 h-3 w-16 animate-pulse rounded bg-pb-border"></div>
             </td>
 
-            <!-- status -->
             <td class="p-2">
               <div class="h-6 w-20 animate-pulse rounded-full bg-pb-border"></div>
             </td>
 
-            <!-- button -->
             <td class="p-2">
               <div class="h-8 w-24 animate-pulse rounded-lg bg-pb-border"></div>
             </td>
@@ -307,7 +304,6 @@ import { snapshotTaskProgressDialog } from "@/utils/updateFormDirty";
 const router = useRouter();
 const dataStore = useStore();
 const Toast = useToast();
-// const allTasks = computed(() => dataStore.state.tasks.content)
 
 const activeTaskForm = ref(false)
 const selectedTask = ref<UserTask | null>(null);

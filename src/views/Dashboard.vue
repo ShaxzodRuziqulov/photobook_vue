@@ -111,7 +111,7 @@
               <div class="relative grid grid-cols-2 gap-3">
                 <button
                     type="button"
-                    class="rounded-xl border border-white/25 bg-white/10 p-3 text-left backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                    class="rounded-xl cursor-pointer border border-white/25 bg-white/10 p-3 text-left backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                     @click="item.onClick('IN_PROGRESS')"
                 >
                   <div class="flex items-center justify-between text-white/90">
@@ -125,7 +125,7 @@
                 </button>
                 <button
                     type="button"
-                    class="rounded-xl border border-white/25 bg-white/10 p-3 text-left backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                    class="rounded-xl cursor-pointer border border-white/25 bg-white/10 p-3 text-left backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                     @click="item.onClick('COMPLETED')"
                 >
                   <div class="flex items-center justify-between text-white/90">
@@ -154,21 +154,6 @@
                     :style="{ width: getPercent(item.completed, item.total) + '%' }"
                 />
               </div>
-          </div>
-          <div class="mt-4 px-4 py-2">
-            <div class="flex items-center text-gray-600 justify-between text-sm mb-2">
-              <span class="font-bold text-md">Bajarilish foizi</span>
-              <span class="font-bold">
-              <i class="fa-solid fa-arrow-trend-up"></i>
-            {{ getPercent(item.completed, item.total) }}%
-          </span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div
-                  class="bg-blue-500 h-2.5 rounded-full transition-all duration-500"
-                  :style="{ width: getPercent(item.completed, item.total) + '%' }"
-              ></div>
-            </div>
           </div>
           <div class="p-4 flex flex-col text-gray-600">
             <div class="bg-gray-300 text-gray-800 text-sm font-semibold mb-4 rounded-lg p-3 flex items-center justify-between">
@@ -311,8 +296,8 @@
         <div class="mt-8 flex flex-col items-center justify-between gap-4 text-xs text-slate-500 md:flex-row">
           <p>© 2026 Photobook ERP. Barcha huquqlar himoyalangan.</p>
           <div class="flex gap-6">
-            <a href="#" class="transition hover:text-slate-300">Foydalanish shartlari</a>
-            <a href="#" class="transition hover:text-slate-300">Maxfiylik siyosati</a>
+            <router-link to="#" class="transition hover:text-slate-300">Foydalanish shartlari</router-link>
+            <router-link to="#" class="transition hover:text-slate-300">Maxfiylik siyosati</router-link>
           </div>
         </div>
       </div>
