@@ -240,7 +240,7 @@
                 }"
                 :options="orderedUsers"
                 disabledValue="Xodimni tanlang"
-                text-field="lastName"
+                text-field="firstName"
                 value-field="id"
                 isMultiple
                 label="Mas'ul xodim"

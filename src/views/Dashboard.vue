@@ -147,7 +147,7 @@
           <div class="p-4 flex flex-col text-gray-600">
             <div class="bg-gray-300 text-gray-800 text-sm font-semibold mb-4 rounded-lg p-3 flex items-center justify-between">
               <h2>Mahsulot turi bo'yicha hisobot</h2>
-              <span>jami: {{ item.allItems.length }}</span>
+              <span>jami: {{ item.allItems.reduce((sum, i) => sum + i.count, 0) }}</span>
             </div>
             <div
                 v-for="(status, index) in item.allItems"

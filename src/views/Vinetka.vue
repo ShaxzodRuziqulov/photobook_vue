@@ -220,7 +220,7 @@
                 }"
                 :options="orderedUsers"
                 disabledValue="Xodimni tanlang"
-                text-field="lastName"
+                text-field="firstName"
                 value-field="id"
                 isMultiple
                 label="Mas'ul xodim"
@@ -399,7 +399,6 @@
           <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
           <td class="p-2"><div class="h-4 w-24 bg-gray-200 rounded animate-pulse"></div></td>
 
-          <!-- progress -->
           <td class="p-2">
             <div class="w-full bg-gray-200 h-2 rounded-full animate-pulse"></div>
             <div class="h-3 w-16 mt-2 bg-gray-200 rounded animate-pulse"></div>
@@ -408,12 +407,10 @@
           <td class="p-2"><div class="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
 
 
-          <!-- status -->
           <td class="p-2">
             <div class="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
           </td>
 
-          <!-- button -->
           <td class="p-2">
             <div class="h-8 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
           </td>
@@ -421,7 +418,7 @@
         </tbody>
         <tbody v-else-if="filteredOrders.length > 0">
         <tr
-            class="border-t border-gray-600 hover:bg-gray-100"
+            class="border-t text-sm border-gray-600 hover:bg-gray-100"
             v-for="(order, index) in filteredOrders" :key="index"
         >
           <td class="p-1">{{ rowNumber(index) }}</td>
