@@ -25,34 +25,34 @@
       <div
           v-for="(cat, index) in categoryStatus"
           :key="index"
-          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm"
+          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-2 shadow-sm"
       >
-        <div class="flex w-full flex-col gap-1 border-b border-pb-border">
+        <div class="flex w-full flex-col gap-1 border-b border-pb-border pb-1">
           <h2 class="text-sm font-semibold uppercase text-pb-text">{{ cat.name }}</h2>
           <span class="text-sm text-pb-muted">
             Betlar:
             <span v-if="cat.defaultPages" class="font-semibold text-pb-text">{{ cat.defaultPages }}</span>
           </span>
         </div>
-        <div class="grid grid-cols-3 divide-x divide-pb-border pt-2">
+        <div class="grid grid-cols-3 divide-x divide-pb-border">
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Jami</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.total }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.total }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Bajarilgan</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.processed }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.processed }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Qoldi</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.remaining }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.remaining }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
@@ -345,7 +345,7 @@
           <th class="p-2 text-start">Mijoz</th>
           <th class="p-2 text-start">Qabul qilgan</th>
           <th class="p-2 text-start">Mas'ul</th>
-          <th class="p-2 text-start">Jarayon</th>
+          <th class="p-2 px-3 text-start">Jarayon</th>
           <th class="py-3 px-4 text-start">Sana</th>
           <th class="p-2 text-start">Muddat</th>
           <th class="p-2 text-start">Holat</th>
@@ -447,7 +447,7 @@
                   }"
                 ></span>
             </div>
-            <div class="mt-1 flex items-center justify-between px-1 text-sm text-pb-muted">
+            <div class="mt-1 flex items-center justify-between w-full text-sm text-pb-muted">
               <span>{{ getProcessedCount(order) || 0 }} / {{ order.amount }}</span>
               <span>{{order.pageCount || 0}}-Bet</span>
             </div>

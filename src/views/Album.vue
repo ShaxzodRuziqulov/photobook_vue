@@ -21,35 +21,35 @@
         class="grid grid-cols-1 animate-fade-in justify-between gap-3 rounded-xl border border-pb-border bg-pb-elevated/70 p-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
     >
       <div
-          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm"
+          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-2 shadow-sm"
           v-for="(cat, index) in categoryStatus"
           :key="index"
       >
         <div
-            class="flex w-full flex-col gap-1 border-b border-pb-border"
+            class="flex w-full flex-col gap-1 border-b border-pb-border pb-1"
         >
           <h2 class="text-sm uppercase font-semibold">{{cat.name}}</h2>
           <span class="text-sm text-pb-muted">Betlar: <span v-if="cat.defaultPages" class="font-semibold text-pb-text">{{ cat.defaultPages }}</span></span>
         </div>
-        <div class="grid grid-cols-3 divide-x divide-pb-border pt-2">
+        <div class="grid grid-cols-3 divide-x divide-pb-border">
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Jami</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.total }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.total }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Bajarilgan</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.processed }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.processed }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Qoldi</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.remaining }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.remaining }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
@@ -451,7 +451,7 @@
 <!--                </div>-->
               </div>
             </td>
-            <td class="py-2 px-4">
+            <td class="py-2 px-3">
               <div class="h-2 w-full overflow-hidden rounded-full bg-pb-border">
                 <span
                     v-if="getProcessedCount(album) && album.amount"
@@ -462,7 +462,7 @@
                   }"
                 ></span>
               </div>
-              <div class="mt-1 flex items-center justify-between px-1 text-sm text-pb-muted">
+              <div class="mt-1 flex items-center justify-between w-full text-sm text-pb-muted">
                 <span>{{ getProcessedCount(album) || 0 }} / {{ album.amount }}</span>
                 <span>{{album.pageCount || 0}}-Bet</span>
               </div>

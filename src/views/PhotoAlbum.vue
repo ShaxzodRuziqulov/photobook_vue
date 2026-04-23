@@ -25,34 +25,34 @@
       <div
           v-for="(cat, index) in categoryStatus"
           :key="index"
-          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm"
+          class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-2 shadow-sm"
       >
-        <div class="flex w-full flex-col gap-1 border-b border-pb-border">
+        <div class="flex w-full flex-col gap-1 border-b border-pb-border pb-1">
           <h2 class="text-sm font-semibold uppercase text-pb-text">{{ cat.name }}</h2>
           <span class="text-sm text-pb-muted">
             Betlar:
             <span v-if="cat.defaultPages != null && cat.defaultPages !== ''" class="font-semibold text-pb-text">{{ cat.defaultPages }}</span>
           </span>
         </div>
-        <div class="grid grid-cols-3 divide-x divide-pb-border pt-2">
+        <div class="grid grid-cols-3 divide-x divide-pb-border">
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Jami</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.total }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.total }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Bajarilgan</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.processed }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.processed }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Qoldi</span>
             <div class="flex flex-wrap items-baseline justify-center gap-1">
-              <span class="text-lg font-bold tabular-nums text-pb-accent sm:text-xl">{{ cat.remaining }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.remaining }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
@@ -404,13 +404,13 @@
           </td>
           <td class="p-2">{{ album.customerName }}</td>
           <td class="p-2">{{ album.receiverName }}</td>
-          <td class="px-1">
+          <td class="">
             <div
                 v-for="emp in album.employees"
                 :key="emp.employeeId"
                 class="border-b border-pb-border py-1"
             >
-              <div class="flex text-sm gap-1 items-center">
+              <div class="flex text-sm gap-1 items-center justify-between">
                 <i
                     v-if="(emp.processedCount ?? 0) === album.amount"
                     class="fa-solid fa-circle-check text-green-600"
@@ -424,9 +424,9 @@
                     class="fa-regular fa-circle text-pb-muted"
                 />
                 <span class="flex p-1">{{ getFullName(emp.employeeName) }}</span>
-              </div>
-              <div class="flex items-center justify-between text-sm">
-                <span>{{emp.processedCount}} ta</span>
+                <div class="flex items-center justify-between text-sm">
+                  <span>{{emp.processedCount}} ta</span>
+                </div>
               </div>
               <div v-if="emp.notes" class="break-words pl-5 text-xs text-pb-muted">
                 Izoh: {{ emp.notes }}
