@@ -15,6 +15,8 @@ import router from "@/router";
 
 const NOTIFICATION_LIMIT = 100;
 const REALTIME_NOTIFICATION_CLOCK_SKEW_MS = 5000;
+/** Bir nechta socket-xabar ketma-ket kelsa, vazifa/buyurtma ro'yxatini bir marta yangilash */
+const SOCKET_LIST_REFRESH_DEBOUNCE_MS = 400;
 const ORDER_FETCH_SIZE = 100;
 const DEFAULT_ORDER_SORT = "updatedAt,desc";
 const orderStateKeyByKind: Record<OrderKind, "albums" | "vignettes" | "pictures"> = {
@@ -30,6 +32,33 @@ const ORDER_STATUSES: OrderStatus[] = ["PENDING", "IN_PROGRESS", "PAUSED", "COMP
 
 const parseOrderStatus = (value?: string): OrderStatus =>
     (value && ORDER_STATUSES.includes(value as OrderStatus) ? value : "IN_PROGRESS") as OrderStatus;
+
+const NOTIFICATION_TYPES: NotificationType[] = [
+    "ORDER_ASSIGNED",
+    "TASK_ACTIVATED",
+    "ORDER_UPDATED",
+    "ORDER_STATUS_CHANGED",
+];
+
+const parseNotificationType = (item: any): NotificationType => {
+    const raw = item?.type ?? item?.notification_type ?? item?.notificationType;
+    if (raw == null || raw === "") {
+        return "ORDER_UPDATED";
+    }
+    const normalized = String(raw).trim().toUpperCase().replace(/-/g, "_");
+    return (NOTIFICATION_TYPES.find(t => t === normalized) ?? "ORDER_UPDATED") as NotificationType;
+};
+
+const parseNotificationRead = (item: any): boolean => {
+    const v = item?.read ?? item?.isRead ?? item?.is_read;
+    if (typeof v === "boolean") return v;
+    if (typeof v === "string") {
+        const s = v.trim().toLowerCase();
+        if (s === "true" || s === "1") return true;
+        if (s === "false" || s === "0") return false;
+    }
+    return Boolean(v);
+};
 
 export const useStore = defineStore('item', () => {
     const state = ref({
@@ -106,7 +135,7 @@ export const useStore = defineStore('item', () => {
 
     const normalizeNotification = (item: any): NotificationItem => ({
         id: item?.id || buildNotificationKey(item) || crypto.randomUUID(),
-        type: item?.type || "ORDER_UPDATED",
+        type: parseNotificationType(item),
         title: item?.title || "Bildirishnoma",
         message: item?.message || "",
         kind: item?.kind || item?.orderKind || item?.order_kind,
@@ -124,7 +153,7 @@ export const useStore = defineStore('item', () => {
         workStatus: item?.workStatus || item?.work_status || "PENDING",
         actionRequired: Boolean(item?.actionRequired ?? item?.action_required),
         createdAt: item?.createdAt || item?.created_at || new Date().toISOString(),
-        read: Boolean(item?.read ?? item?.isRead ?? item?.is_read),
+        read: parseNotificationRead(item),
         readAt: item?.readAt || item?.read_at || null,
     });
 
@@ -198,10 +227,22 @@ export const useStore = defineStore('item', () => {
         const page = filters.page ?? (append ? state.value.notificationsPaging.pageNumber + 1 : 0);
         const size = filters.size ?? state.value.notificationsPaging.pageSize ?? 10;
         const sort = filters.sort || "createdAt,desc";
-        const { page: _page, size: _size, sort: _sort, ...body } = filters;
-        const requestBody = Object.fromEntries(
-            Object.entries(body).filter(([, value]) => value !== undefined && value !== "")
-        );
+        const { page: _page, size: _size, sort: _sort, ...rest } = filters;
+
+        const requestBody: Record<string, unknown> = {};
+        const search = typeof rest.search === "string" ? rest.search.trim() : "";
+        if (search) {
+            requestBody.search = search;
+        }
+        if (rest.type) {
+            requestBody.type = rest.type;
+        }
+        if (rest.actionRequired === true || rest.actionRequired === false) {
+            requestBody.actionRequired = rest.actionRequired;
+        }
+        if (rest.isRead === true || rest.isRead === false) {
+            requestBody.isRead = rest.isRead;
+        }
 
         const { data } = await axiosInstance.post(
             "/api/v1/notifications/me/paging",
@@ -424,31 +465,38 @@ export const useStore = defineStore('item', () => {
 
     // Order CRUD
     const addOrder = async (item: OrderCreateDto) => {
-        const { data } = await axiosInstance.post("/api/v1/orders", item);
+        await axiosInstance.post("/api/v1/orders", item);
         await loadOrders(item.kind);
-        const createdId =
-            data && typeof data === "object"
-                ? String((data as { id?: string }).id ?? (data as { orderId?: string }).orderId ?? "").trim()
-                : "";
-        pushLocalOrderActivitySignal({
-            action: "created",
-            orderId: createdId || "new",
-            orderName: item.orderName,
-            kind: item.kind,
-            status: item.status,
-        });
+        try {
+            await refreshUnreadNotificationsCount();
+        } catch {
+            // badge yangilanmasa ham buyurtma ro'yxati muhim
+        }
     };
 
     const updateOrder = async (id: string, item: OrderCreateDto) => {
-        await axiosInstance.put(`/api/v1/orders/${id}`, item);
+        const bucket = state.value[orderStateKeyByKind[item.kind]];
+        const existing = bucket.items.find((order: Order) => order.id === id);
+        const previousStatus = existing?.status;
+        const statusChanged =
+            Boolean(existing && previousStatus !== undefined && previousStatus !== item.status);
+
+        const putBody: OrderCreateDto = statusChanged
+            ? {...item, status: previousStatus as Order["status"]}
+            : item;
+
+        await axiosInstance.put(`/api/v1/orders/${id}`, putBody);
+
+        if (statusChanged) {
+            await axiosInstance.put(`/api/v1/orders/${id}/status`, {toStatus: item.status});
+        }
+
         await loadOrders(item.kind);
-        pushLocalOrderActivitySignal({
-            action: "updated",
-            orderId: id,
-            orderName: item.orderName,
-            kind: item.kind,
-            status: item.status,
-        });
+        try {
+            await refreshUnreadNotificationsCount();
+        } catch {
+            //
+        }
     };
 
     const deleteOrder = async (id: string, kind: OrderKind) => {
@@ -533,6 +581,35 @@ export const useStore = defineStore('item', () => {
         }
     }
 
+    let socketTasksRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    let socketOrdersRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    let pendingSocketOrderKind: OrderKind | null = null;
+
+    const scheduleTasksRefreshFromSocket = () => {
+        if (socketTasksRefreshTimer) {
+            clearTimeout(socketTasksRefreshTimer);
+        }
+        socketTasksRefreshTimer = setTimeout(() => {
+            socketTasksRefreshTimer = null;
+            void loadGetUserTasks();
+        }, SOCKET_LIST_REFRESH_DEBOUNCE_MS);
+    };
+
+    const scheduleOrdersRefreshFromSocket = (kind: OrderKind) => {
+        pendingSocketOrderKind = kind;
+        if (socketOrdersRefreshTimer) {
+            clearTimeout(socketOrdersRefreshTimer);
+        }
+        socketOrdersRefreshTimer = setTimeout(() => {
+            const k = pendingSocketOrderKind;
+            socketOrdersRefreshTimer = null;
+            pendingSocketOrderKind = null;
+            if (k) {
+                void loadOrders(k);
+            }
+        }, SOCKET_LIST_REFRESH_DEBOUNCE_MS);
+    };
+
     const refreshFromNotification = async (notification: SocketNotification) => {
         const normalized = upsertNotification(notification);
         const createdAtTime = new Date(normalized.createdAt).getTime();
@@ -550,7 +627,7 @@ export const useStore = defineStore('item', () => {
         const currentPath = router.currentRoute.value.path;
 
         if (currentPath === "/tasks") {
-            await loadGetUserTasks();
+            scheduleTasksRefreshFromSocket();
             return;
         }
 
@@ -564,11 +641,13 @@ export const useStore = defineStore('item', () => {
         const currentOrderKind = kindByPath[currentPath];
         const shouldRefreshOrders =
             Boolean(currentOrderKind) &&
-            ["ORDER_UPDATED", "ORDER_STATUS_CHANGED", "ORDER_ASSIGNED"].includes(notification.type);
+            ["ORDER_UPDATED", "ORDER_STATUS_CHANGED", "ORDER_ASSIGNED", "TASK_ACTIVATED"].includes(
+                notification.type
+            );
 
         if (!shouldRefreshOrders) return;
 
-        await loadOrders(currentOrderKind);
+        scheduleOrdersRefreshFromSocket(currentOrderKind);
     }
 
     const loadUploadImage = async (file: File) => {
@@ -658,6 +737,7 @@ export const useStore = defineStore('item', () => {
         addUser, updateUser, deleteUser, loadUsers,
         loadMaterials, addMaterial, updateMaterial, deleteMaterial,
         loadOrders, addOrder, updateOrder, deleteOrder,
+        refreshUnreadNotificationsCount,
         addCategory, updateCategory, deleteCategory,
     }
 })

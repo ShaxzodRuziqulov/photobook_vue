@@ -1,4 +1,19 @@
 /// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+    readonly VITE_BASE_API: string
+    readonly VITE_ENABLE_SOCKET?: string
+    /**
+     * Bo'sh bo'lsa: production build da VITE_BASE_API dan origin;
+     * `npm run dev` da — window.location.origin (Vite /socket.io proxy).
+     */
+    readonly VITE_SOCKET_BASE_URL?: string
+}
+
+interface ImportMeta {
+    readonly env: ImportMetaEnv
+}
+
 declare module '*.vue' {
     import type { DefineComponent } from 'vue'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
@@ -6,18 +21,3 @@ declare module '*.vue' {
     export default component
 }
 
-declare namespace SocketIOClient {
-    interface Socket {
-        connected: boolean
-        on(event: string, callback: (...args: any[]) => void): this
-        emit(event: string, ...args: any[]): this
-        connect(): this
-        disconnect(): this
-        removeAllListeners(): this
-    }
-}
-
-declare module 'socket.io-client' {
-    function io(url: string, options?: Record<string, unknown>): SocketIOClient.Socket
-    export default io
-}

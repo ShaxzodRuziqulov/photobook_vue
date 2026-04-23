@@ -1,18 +1,12 @@
 # BACKEND LOGIC
 
-Bu fayl backendning amaldagi logikasini tushuntiradi. Asosiy maqsad front bilan integratsiya uchun real contract va workflowni bir joyda ko‘rsatish. REST prefiks: **`/api/v1`**.
+Bu fayl backendning **biznes logikasi, ruxsatlar va oqimlarni** tushuntiradi (REST tanalarining to‘liq nusxasi bu yerda maqsad emas — ular [`BACKEND_API.md`](BACKEND_API.md) da).
 
-## 1. Asosiy ma'lumot
+**Endpoint jadvali:** [`BACKEND_API.md`](BACKEND_API.md) → **§0.1**. **Postman:** `postman/photobook-api.postman_collection.json`. **Papka:** [`README.md`](README.md).
 
-- **Standart port:** `9091` (Railway/prodda odatda `PORT`).
-- Base path: `/api/v1`
-- Auth turi: `Authorization: Bearer <access_token>`
-- Public yo'llar:
-  - `/api/v1/auth/**`
-  - `/uploads-storage/**`
-  - `/socket.io/**`
-  - swagger yo'llari (`/swagger-ui/**`, `/v3/api-docs/**`)
-- Static upload URL: `/uploads-storage/{key}`
+## 1. Transport va autentifikatsiya (qisqa)
+
+Port, JWT, `permitAll` yo‘llar, `refresh_token` formati — **`BACKEND_API.md` → §0**. Bu yerda takrorlanmaydi.
 
 ## 2. Response format
 
@@ -93,6 +87,7 @@ Paging endpointlar `POST /resource/paging` ko'rinishida.
 - `POST /api/v1/user-tasks/me/paging`
 - `PUT /api/v1/user-tasks/me/{id}`
 - `POST /api/v1/notifications/me/paging`
+- `GET /api/v1/notifications/me/unread-count`
 - `PUT /api/v1/notifications/{id}/read`
 - `PUT /api/v1/notifications/read-all`
 - `/api/v1/uploads/**`
@@ -153,10 +148,13 @@ Ruxsat etilgan transitionlar:
 
 - `PENDING -> IN_PROGRESS`
 - `PENDING -> PAUSED`
+- `PENDING -> COMPLETED`
 - `PENDING -> CANCELLED`
+- `IN_PROGRESS -> PENDING`
 - `IN_PROGRESS -> PAUSED`
 - `IN_PROGRESS -> COMPLETED`
 - `IN_PROGRESS -> CANCELLED`
+- `PAUSED -> PENDING`
 - `PAUSED -> IN_PROGRESS`
 - `PAUSED -> COMPLETED`
 - `PAUSED -> CANCELLED`
@@ -259,12 +257,12 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 ### Ishlash mantig'i
 
 - notification yaratilganda DB ga saqlanadi
-- `POST /api/v1/notifications/me/paging` current user notificationlarini page ko'rinishida qaytaradi
-- paging filterlari: `search`, `type`, `isRead`, `actionRequired`
+- `POST /notifications/me/paging` current user notificationlarini page ko'rinishida qaytaradi
+- paging filterlari: `search`, `type`, `isRead`, `actionRequired` (`type` bo‘yicha filtrlash `NotificationRepository` JPQL: `LOWER(n.type) = LOWER(:type)`; bo‘sh/`null` — barchasi)
 - notification payloadda route uchun `targetType`, `targetId`, `targetKind`, `route`, `orderKind` qaytadi
-- `GET /api/v1/notifications/me/unread-count` current user uchun unread count qaytaradi
-- `PUT /api/v1/notifications/{id}/read` faqat current userning notificationi uchun ishlaydi
-- `PUT /api/v1/notifications/read-all` current userning barcha unread notificationlarini mark qiladi
+- `GET /notifications/me/unread-count` current user uchun unread count qaytaradi
+- `PUT /notifications/{id}/read` faqat current userning notificationi uchun ishlaydi
+- `PUT /notifications/read-all` current userning barcha unread notificationlarini mark qiladi
 
 ### Turlar
 
@@ -283,12 +281,10 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 
 ### Flow
 
-1. Front rasmni `POST /api/v1/uploads` orqali yuklaydi.
-2. Javobdan **`id`** (UUID) olinadi; clientda bu qiymat DTO bo‘yicha ko‘pincha `uploadId` maydoniga yoziladi.
-3. Order, user profili yoki expense so‘rovida shu **`uploadId`** / **`id`** backend contractiga mos yuboriladi.
-4. Backend attach qilgach `owner_type` / `owner_id` va URL ni set qiladi.
-
-**DELETE:** yo‘l `DELETE /api/v1/uploads/{idOrKey}` — identifikator `uploads.id` yoki storage `key` (backend qoidasiga qarab).
+1. Front rasmni upload qiladi.
+2. Response dan `uploadId` oladi.
+3. Order yoki expense requestida shu `uploadId` yuboriladi.
+4. Backend attach qilgach owner va URL ni set qiladi.
 
 ## 9. Dashboard
 
@@ -300,14 +296,14 @@ Bu bo'lim worker login bo'lganda o'ziga tegishli ishlarni ko'rishi va update qil
 
 ### Hisoblash logikasi
 
-- Dashboard count qiymatlari order soni hisoblanadi, `orders.amount` yig'indisi emas.
+- `orders-by-kind` va `orders-by-status` count qiymatlari order soni hisoblanadi, `orders.amount` yig'indisi emas.
 - Service paging data yoki `findAll()` ishlatmaydi.
 - `orders-by-kind` `orders` jadvalida `GROUP BY kind` bilan hisoblaydi.
 - `orders-by-status?type=...` tanlangan `OrderKind` bo'yicha `GROUP BY status` bilan hisoblaydi.
-- `orders-by-category?type=...` `product_categories` dan boshlanib, `orders` ga `LEFT JOIN` qiladi va `GROUP BY category` bilan hisoblaydi.
+- `orders-by-category?type=...` `product_categories` dan boshlanib, `orders` va final `order_employees` bosqichiga `LEFT JOIN` qiladi. Bu endpoint hozir category bo'yicha **final step `processed_count` yig'indisini** qaytaradi, orderlar sonini emas.
 - `orders-by-kind` barcha `OrderKind` enum qiymatlarini qaytaradi. Bazada yo'q qiymatlar `0`.
 - `orders-by-status` barcha `OrderStatus` enum qiymatlarini qaytaradi. Bazada yo'q qiymatlar `0`.
-- `orders-by-category` tanlangan type dagi categorylarni qaytaradi. Order yo'q categorylar `0`.
+- `orders-by-category` tanlangan type dagi categorylarni qaytaradi. Final processed count yo'q categorylar `0`.
 
 ### Rasmda ko'rsatilgan dashboardga moslik
 
@@ -325,7 +321,7 @@ Amaldagi APIlar bu UI ni yopadi:
 - `Jarayonda`: `GET /api/v1/dashboard/orders-by-status?type=ALBUM` natijasida `status = IN_PROGRESS` itemlar `count` yig'indisi olinadi.
 - `Bajarilgan`: `GET /api/v1/dashboard/orders-by-status?type=ALBUM` natijasida `status = COMPLETED` itemlar `count` yig'indisi olinadi.
 - `Bajarilish foizi`: frontend `COMPLETED / total * 100` qilib hisoblaydi. `total` uchun `orders-by-kind` yoki `orders-by-status` yig'indisi ishlatiladi.
-- `Mahsulot turi bo'yicha hisobot`: `GET /api/v1/dashboard/orders-by-category?type=ALBUM` mos keladi.
+- `Mahsulot turi bo'yicha hisobot`: `GET /api/v1/dashboard/orders-by-category?type=ALBUM` mos keladi, lekin qiymat order soni emas, final bosqichdagi `processed_count` yig'indisi.
 
 ## 10. Socket Notification
 
@@ -421,10 +417,10 @@ Izoh:
 
 ### Notification triggerlar
 
-- `POST /api/v1/orders`: active workerga `TASK_ACTIVATED`, qolganlarga `ORDER_ASSIGNED`
-- `PUT /api/v1/orders/{id}`: biriktirilgan employee larga `ORDER_UPDATED`
-- `PUT /api/v1/orders/{id}/status`: biriktirilgan employee larga `ORDER_STATUS_CHANGED`
-- `PUT /api/v1/user-tasks/me/{id}`: active worker almashsa yangi workerga `TASK_ACTIVATED`
+- `POST /api/v1/orders` (`notifyOrderAssigned`): har bir `order_employees` qatori uchun alohida bildirishnoma — shu qatordagi foydalanuvchi uchun `assignment.workStatus == STARTED` **va** `order.status == IN_PROGRESS` bo‘lsa **`TASK_ACTIVATED`**, aks holda **`ORDER_ASSIGNED`** (bir nechta xodimda turlar aralash bo‘lishi mumkin).
+- `PUT /api/v1/orders/{id}` (`notifyOrderUpdated`): barcha biriktirilganlarga **`ORDER_UPDATED`**.
+- `PUT /api/v1/orders/{id}/status`: barcha biriktirilganlarga **`ORDER_STATUS_CHANGED`**; shu bilan birga aktiv navbat boshqacha foydalanuvchiga o‘tgan bo‘lsa **`TASK_ACTIVATED`** ham (`notifyTaskActivated`).
+- `PUT /api/v1/user-tasks/me/{id}`: workflow qayta hisoblangach aktiv worker almashsa — yangi aktiv workerga **`TASK_ACTIVATED`** (`UserTaskService` → `SocketIoService`).
 
 ## 11. Frontend uchun tavsiya qilingan oqimlar
 
@@ -452,8 +448,8 @@ Izoh:
 1. User login bo'lgach `POST /api/v1/notifications/me/paging` bilan tarixni oling.
 2. Parallel ravishda socket ulang.
 3. `authenticated` kelgach realtime va replay notificationlarni qabul qiling.
-4. UI da ko'rsatilgan notificationni `PUT /api/v1/notifications/{id}/read` bilan mark qiling.
-5. Hammasini birdan o'qilgan qilish kerak bo'lsa `PUT /api/v1/notifications/read-all` ishlating.
+4. UI da ko'rsatilgan notificationni `PUT /notifications/{id}/read` bilan mark qiling.
+5. Hammasini birdan o'qilgan qilish kerak bo'lsa `PUT /notifications/read-all` ishlating.
 
 ## 12. Hozir muhim real qoidalar
 
@@ -475,7 +471,14 @@ Izoh:
 - worker update endpointida `status` o'rniga `workStatus` ishlatiladi
 - order paging: `search`, `status`, `acceptedDate`, `deadline` (ikkala sana ham aniq kun, oraliq emas)
 - **user task paging:** `deadlineFrom` / `deadlineTo` qoldi; `acceptedDate` uchun `from` / `to` olib tashlandi
-- notificationlar uchun unbounded `GET /api/v1/notifications/me` o'rniga `POST /api/v1/notifications/me/paging` ishlatiladi
-- notification badge uchun `GET /api/v1/notifications/me/unread-count` ishlatiladi
+- notificationlar uchun unbounded `GET /notifications/me` o'rniga `POST /notifications/me/paging` ishlatiladi
+- notification badge uchun `GET /notifications/me/unread-count` ishlatiladi
 - notification payload route maydonlari bilan boyitilgan: `orderKind`, `targetType`, `targetId`, `targetKind`, `route`
 - socket notification payloadi ham REST notification DTO bilan moslashtirilgan
+
+## 14. Hujjatlar va Postman (2026-04-23)
+
+- **Postman:** `postman/photobook-api.postman_collection.json` — barcha modullar, bildirishnomalar uchun alohida `type` filtr misollari (`ORDER_ASSIGNED`, `TASK_ACTIVATED`, `ORDER_UPDATED`, `ORDER_STATUS_CHANGED`), `Upload` endi kolleksiya JWT si bilan (operator/admin/menejer), Socket `OPTIONS` preflight namunasi.
+- **Endpoint jadvali:** `md/BACKEND_API.md` §0.1.
+- **API batafsil:** `md/BACKEND_API.md` (yangilangan: `refresh_token`, bildirishnoma `type` ro‘yxati, upload `DELETE` `idOrKey`, socket `OPTIONS`).
+- **Frontend contract:** `md/FRONTEND_CONTRACT.md` (`refresh_token`, upload JWT, bildirishnoma `type`, `GET /auth/me` amaliyoti).

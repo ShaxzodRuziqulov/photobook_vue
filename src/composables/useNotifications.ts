@@ -36,11 +36,17 @@ export const useNotifications = () => {
     const unreadCount = computed(() => appStore.unreadNotificationsCount);
 
     const filteredNotifications = computed(() => {
-        if (activeTab.value === "UNREAD") {
-            return notifications.value.filter(notification => !notification.read);
+        let list = notifications.value;
+
+        if (notificationTypeFilter.value) {
+            list = list.filter(n => n.type === notificationTypeFilter.value);
         }
 
-        return notifications.value;
+        if (activeTab.value === "UNREAD") {
+            return list.filter(notification => !notification.read);
+        }
+
+        return list;
     });
 
     const notificationFilters = computed(() => ({
