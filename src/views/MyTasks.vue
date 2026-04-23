@@ -462,6 +462,11 @@ const completedTask = async () => {
     await axiosInstance.put(`/api/v1/user-tasks/me/${selectedTask.value?.orderId}`, payload);
     activeTaskForm.value = false;
     await dataStore.loadGetUserTasks();
+    try {
+      await dataStore.refreshUnreadNotificationsCount();
+    } catch {
+      //
+    }
     Toast.success("Bajarildi!");
   } catch {
   } finally {
