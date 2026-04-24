@@ -68,7 +68,7 @@
           >
             <option value="">Turi: hammasi</option>
             <option
-                v-for="option in typeOptions"
+                v-for="option in visibleTypeOptions"
                 :key="option.value"
                 :value="option.value"
             >
@@ -78,11 +78,17 @@
         </div>
       </div>
     </div>
-    <div v-if="notifications.length" class="notify-list transition-all duration-200">
+    <div
+        v-if="notifications.length"
+        class="notify-list transition-all duration-200"
+        role="listbox"
+        aria-label="Bildirishnomalar ro'yxati"
+    >
       <NotificationItem
           v-for="item in notifications"
           :key="item.id"
           :item="item"
+          :selected="item.id === selectedNotificationId"
           @click="$emit('notification-click', item)"
       />
       <div class="notify-actions">
@@ -116,10 +122,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 import NotificationItem from "@/components/notifications/NotificationItem.vue";
+import { NOTIFICATION_TYPES_ADMIN_FILTER_ONLY } from "@/constants/notificationTypes";
+import { authService } from "@/service/authService";
 import type { NotificationItem as NotificationItemType, NotificationType, PagingResponse } from "@/typeModules/useModules";
 
-defineProps<{
+const props = defineProps<{
   notifications: NotificationItemType[];
   paging: PagingResponse<NotificationItemType>;
   unreadCount: number;
@@ -131,7 +141,22 @@ defineProps<{
   search: string;
   type: NotificationType | "";
   typeOptions: { value: NotificationType; text: string }[];
+  selectedNotificationId: string | null;
 }>();
+
+const authStore = authService();
+const { state: authState } = storeToRefs(authStore);
+
+/** Admin tur filtrlari faqat ROLE_ADMIN / ROLE_MANAGER (Pinia storeToRefs bilan kuzatiladi). */
+const visibleTypeOptions = computed(() => {
+  const roles = authState.value.roles;
+  const canSeeAdminFilters =
+    roles.includes("ROLE_ADMIN") || roles.includes("ROLE_MANAGER");
+  if (canSeeAdminFilters) {
+    return props.typeOptions;
+  }
+  return props.typeOptions.filter(o => !NOTIFICATION_TYPES_ADMIN_FILTER_ONLY.has(o.value));
+});
 
 const emit = defineEmits<{
   "update:active-tab": [tab: "UNREAD" | "ALL"];
@@ -151,6 +176,17 @@ const onSearchInput = (event: Event) => {
 const onTypeChange = (event: Event) => {
   emit("update:type", (event.target as HTMLSelectElement).value as NotificationType | "");
 };
+
+watch(
+  visibleTypeOptions,
+  (options) => {
+    const current = props.type;
+    if (current && !options.some(o => o.value === current)) {
+      emit("update:type", "");
+    }
+  },
+  { flush: "post" },
+);
 </script>
 
 <style scoped>

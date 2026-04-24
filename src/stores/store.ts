@@ -31,6 +31,15 @@ const LOCAL_NOTIFICATION_PREFIX = "local:";
 
 const ORDER_STATUSES: OrderStatus[] = ["PENDING", "IN_PROGRESS", "PAUSED", "COMPLETED"];
 
+/** POST /orders/paging `status` — faqat enum; noto'g'ri qiymat 400 berishi mumkin */
+const ORDER_PAGING_STATUS = new Set<string>([
+    "PENDING",
+    "IN_PROGRESS",
+    "PAUSED",
+    "COMPLETED",
+    "CANCELLED",
+]);
+
 const parseOrderStatus = (value?: string): OrderStatus =>
     (value && ORDER_STATUSES.includes(value as OrderStatus) ? value : "IN_PROGRESS") as OrderStatus;
 
@@ -279,10 +288,15 @@ export const useStore = defineStore('item', () => {
             ? [...state.value.notifications, ...notifications]
             : notifications;
 
-        state.value.notifications = nextItems
-            .filter((item: NotificationItem, index: number, list: NotificationItem[]) =>
-                list.findIndex((current: NotificationItem) => current.id === item.id) === index
-            )
+        const seenIds = new Set<string>();
+        const deduped: NotificationItem[] = [];
+        for (const item of nextItems) {
+            if (seenIds.has(item.id)) continue;
+            seenIds.add(item.id);
+            deduped.push(item);
+        }
+
+        state.value.notifications = deduped
             .sort((a: NotificationItem, b: NotificationItem) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
@@ -296,7 +310,9 @@ export const useStore = defineStore('item', () => {
         if (requestBody.isRead === false) {
             state.value.notificationsUnreadCount = paging.totalElements;
         } else {
-            await refreshUnreadNotificationsCount();
+            void refreshUnreadNotificationsCount().catch(() => {
+                //
+            });
         }
 
         state.value.notificationsLoadedAt = Date.now();
@@ -337,13 +353,19 @@ export const useStore = defineStore('item', () => {
             Object.entries(item).filter(([, value]) => value !== undefined && value !== null && value !== "")
         ) as Partial<T>;
 
-    const buildOrderPagingBody = (params: Partial<PagingRequest>): Partial<PagingRequest> => {
+    const buildOrderPagingBody = (params: Partial<PagingRequest>, kind: OrderKind): Record<string, unknown> => {
         const acceptedDate = params.acceptedDate ?? params.from;
         const deadline = params.deadline ?? params.to ?? params.deadlineTo;
+        const rawStatus = params.status;
+        const status =
+            typeof rawStatus === "string" && ORDER_PAGING_STATUS.has(rawStatus)
+                ? rawStatus
+                : undefined;
 
         return removeEmptyFields({
+            kind,
             search: params.search?.trim() || undefined,
-            status: params.status || undefined,
+            status,
             acceptedDate: acceptedDate || undefined,
             deadline: deadline || undefined,
         });
@@ -390,7 +412,7 @@ export const useStore = defineStore('item', () => {
     };
 
     const fetchAllOrders = async (
-        body: Partial<PagingRequest>,
+        body: Record<string, unknown>,
         sort: string
     ): Promise<Order[]> => {
         const orders: Order[] = [];
@@ -426,7 +448,7 @@ export const useStore = defineStore('item', () => {
         const paging = state.value.paging[kind];
         const page = params.page ?? params.pageNumber ?? paging.pageNumber;
         const size = params.size ?? params.pageSize ?? paging.pageSize;
-        const body = buildOrderPagingBody(params);
+        const body = buildOrderPagingBody(params, kind);
         const sort = params.sort || DEFAULT_ORDER_SORT;
         const orders = await fetchAllOrders(body, sort);
         const kindOrders = orders.filter(item => item.kind === kind);

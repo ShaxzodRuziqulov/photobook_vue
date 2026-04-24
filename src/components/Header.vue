@@ -55,7 +55,7 @@
           ></div>
           <NotificationPanel
               v-if="isNotificationsOpen"
-              :notifications="filteredNotifications"
+              :notifications="notifications"
               :paging="notificationsPaging"
               :unread-count="unreadCount"
               :error="notificationsError"
@@ -66,6 +66,7 @@
               :search="notificationSearch"
               :type="notificationTypeFilter"
               :type-options="notificationTypeOptions"
+              :selected-notification-id="selectedNotificationId"
               @update:active-tab="selectNotificationTab"
               @update:search="notificationSearch = $event"
               @update:type="notificationTypeFilter = $event"
@@ -254,7 +255,7 @@ const openToProfile = () => {
 const isDesktop = computed(() => window.innerWidth > 768);
 const {
   activeTab,
-  filteredNotifications,
+  notifications,
   handleNotificationClick,
   isNotificationSoundEnabled,
   isNotificationsLoading,
@@ -264,6 +265,7 @@ const {
   notificationSearch,
   notificationTypeFilter,
   notificationTypeOptions,
+  selectedNotificationId,
   notificationsError,
   notificationsPaging,
   retryNotifications,

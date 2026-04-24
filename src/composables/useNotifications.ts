@@ -1,27 +1,11 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRouter, type RouteLocationRaw } from "vue-router";
 import { notificationTypeOptions } from "@/constants/notificationTypes";
 import { notificationSoundService } from "@/service/notificationSoundService";
-import { authService } from "@/service/authService";
 import { useStore } from "@/stores/store";
-import type { NotificationItem, NotificationType, OrderKind } from "@/typeModules/useModules";
-
-const notificationRouteByKind: Record<OrderKind, string> = {
-    ALBUM: "/album",
-    VIGNETTE: "/vignette",
-    PICTURE: "/picture",
-};
-
-const normalizeKind = (value?: string | null): OrderKind | null => {
-    if (!value) return null;
-    if (value === "PHOTO") return "PICTURE";
-    return value in notificationRouteByKind ? value as OrderKind : null;
-};
+import type { NotificationItem, NotificationType } from "@/typeModules/useModules";
 
 export const useNotifications = () => {
     const appStore = useStore();
-    const authStore = authService();
-    const router = useRouter();
 
     const isNotificationsOpen = ref(false);
     const isNotificationsLoading = ref(false);
@@ -30,24 +14,11 @@ export const useNotifications = () => {
     const activeTab = ref<"UNREAD" | "ALL">("UNREAD");
     const notificationSearch = ref("");
     const notificationTypeFilter = ref<NotificationType | "">("");
+    const selectedNotificationId = ref<string | null>(null);
 
     const notifications = computed(() => appStore.state.notifications);
     const notificationsPaging = computed(() => appStore.state.notificationsPaging);
     const unreadCount = computed(() => appStore.unreadNotificationsCount);
-
-    const filteredNotifications = computed(() => {
-        let list = notifications.value;
-
-        if (notificationTypeFilter.value) {
-            list = list.filter(n => n.type === notificationTypeFilter.value);
-        }
-
-        if (activeTab.value === "UNREAD") {
-            return list.filter(notification => !notification.read);
-        }
-
-        return list;
-    });
 
     const notificationFilters = computed(() => ({
         isRead: activeTab.value === "UNREAD" ? false : undefined,
@@ -57,6 +28,10 @@ export const useNotifications = () => {
 
     const loadNotificationsPage = async (append: boolean) => {
         if (isNotificationsLoading.value) return;
+
+        if (!append) {
+            selectedNotificationId.value = null;
+        }
 
         notificationsError.value = "";
         isNotificationsLoading.value = true;
@@ -81,6 +56,8 @@ export const useNotifications = () => {
 
         if (isNotificationsOpen.value) {
             void loadNotificationsPage(false);
+        } else {
+            selectedNotificationId.value = null;
         }
     };
 
@@ -102,59 +79,38 @@ export const useNotifications = () => {
     const markAllAsRead = async () => {
         if (!unreadCount.value) return;
         await appStore.markAllNotificationsRead();
+        selectedNotificationId.value = null;
     };
 
     const toggleNotificationSound = () => {
         isNotificationSoundEnabled.value = notificationSoundService.toggle();
     };
 
-    const resolveNotificationRoute = (item: NotificationItem | any): RouteLocationRaw => {
-        const orderIdRaw = item.orderId || item.order_id;
-        const orderQuery =
-            orderIdRaw !== undefined && orderIdRaw !== null && String(orderIdRaw).trim() !== ""
-                ? { orderId: String(orderIdRaw).trim() }
-                : {};
+    const handleNotificationClick = (item: NotificationItem | any) => {
+        const id = String(item.id ?? "");
+        selectedNotificationId.value = id;
 
-        if (authStore.state.roles.includes("ROLE_OPERATOR")) {
-            return Object.keys(orderQuery).length ? { path: "/tasks", query: orderQuery } : { path: "/tasks" };
+        if (item.read) return;
+        if (id.startsWith("local:")) {
+            appStore.markNotificationReadLocal(item.id);
+            return;
         }
-
-        if (item.route) {
-            const path = String(item.route).trim();
-            return Object.keys(orderQuery).length ? { path, query: orderQuery } : { path };
-        }
-
-        const kind = normalizeKind(
-            item.targetKind || item.target_kind || item.kind || item.orderKind || item.order_kind
-        );
-
-        const path = kind ? notificationRouteByKind[kind] : "/tasks";
-        return Object.keys(orderQuery).length ? { path, query: orderQuery } : { path };
+        void appStore.markNotificationRead(item.id).catch((error) => {
+            console.error("Notification mark as read failed:", error);
+        });
     };
 
-    const handleNotificationClick = async (item: NotificationItem | any) => {
-        if (!item.read) {
-            if (String(item.id || "").startsWith("local:")) {
-                appStore.markNotificationReadLocal(item.id);
-            } else {
-                try {
-                    await appStore.markNotificationRead(item.id);
-                } catch (error) {
-                    console.error("Notification mark as read failed:", error);
-                }
-            }
-        }
+    watch(notificationTypeFilter, () => {
+        if (!isNotificationsOpen.value) return;
+        void loadNotificationsPage(false);
+    });
 
-        isNotificationsOpen.value = false;
-        await router.push(resolveNotificationRoute(item));
-    };
-
-    watch([notificationSearch, notificationTypeFilter], (_newValue, _oldValue, onCleanup) => {
+    watch(notificationSearch, (_newValue, _oldValue, onCleanup) => {
         if (!isNotificationsOpen.value) return;
 
         const timer = window.setTimeout(() => {
             void loadNotificationsPage(false);
-        }, 300);
+        }, 200);
 
         onCleanup(() => window.clearTimeout(timer));
     });
@@ -175,9 +131,10 @@ export const useNotifications = () => {
 
     return {
         activeTab,
-        filteredNotifications,
+        notifications,
         handleNotificationClick,
         isNotificationSoundEnabled,
+        selectedNotificationId,
         isNotificationsLoading,
         isNotificationsOpen,
         loadMoreNotifications,

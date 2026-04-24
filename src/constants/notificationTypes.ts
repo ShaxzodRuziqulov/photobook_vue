@@ -6,6 +6,13 @@ export type NotificationPresentation = {
     tone?: "default" | "admin";
 };
 
+/** Tur dropdown: faqat ADMIN/MANAGER uchun (qolgan rollarda yashirin) */
+export const NOTIFICATION_TYPES_ADMIN_FILTER_ONLY = new Set<NotificationType>([
+    "ADMIN_TASK_STEP_COMPLETED",
+    "ADMIN_TASK_HANDOFF",
+    "ADMIN_ORDER_WORK_COMPLETED",
+]);
+
 /** POST /notifications/me/paging filter va dropdown (NOTIFICATION_MISC emas) */
 export const notificationTypeOptions: { value: NotificationType; text: string }[] = [
     { value: "ORDER_ASSIGNED", text: "Biriktirilgan" },

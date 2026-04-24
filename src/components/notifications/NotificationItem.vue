@@ -1,9 +1,13 @@
 <template>
-  <button
-      type="button"
+  <div
+      role="option"
       class="notify-item"
-      :class="{ unread: !item.read }"
-      @click="$emit('click', item)"
+      :class="{ unread: !item.read, selected }"
+      :aria-selected="selected"
+      tabindex="0"
+      @click="emitActivate"
+      @keydown.enter.prevent="emitActivate"
+      @keydown.space.prevent="emitActivate"
   >
     <div class="notify-content">
       <div class="notify-item-top">
@@ -19,8 +23,8 @@
         >{{ presentation.label }}</span>
       </div>
     </div>
-    <span v-if="!item.read" class="unread-dot"></span>
-  </button>
+    <span v-if="!item.read" class="unread-dot" aria-hidden="true"></span>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -30,9 +34,10 @@ import type { NotificationItem } from "@/typeModules/useModules";
 
 const props = defineProps<{
   item: NotificationItem;
+  selected?: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   click: [item: NotificationItem];
 }>();
 
@@ -48,6 +53,10 @@ const formattedTime = computed(() => {
     minute: "2-digit",
   }).format(new Date(props.item.createdAt));
 });
+
+const emitActivate = () => {
+  emit("click", props.item);
+};
 </script>
 
 <style scoped>
@@ -60,20 +69,42 @@ const formattedTime = computed(() => {
   padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid var(--color-pb-border);
+  border-left: 3px solid transparent;
   background: var(--color-pb-surface);
-  transition: background-color 0.16s ease;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .notify-item:hover {
   background: var(--color-pb-app);
+  border-left-color: color-mix(in srgb, var(--color-pb-accent) 35%, transparent);
 }
 
-.notify-item.unread {
+.notify-item:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-pb-accent) 45%, transparent);
+}
+
+.notify-item.selected {
+  background: color-mix(in srgb, var(--color-pb-accent) 12%, var(--color-pb-surface));
+  border-left-color: var(--color-pb-accent);
+}
+
+.notify-item.selected:hover {
+  background: color-mix(in srgb, var(--color-pb-accent) 16%, var(--color-pb-app));
+}
+
+.notify-item.unread:not(.selected) {
   background: color-mix(in srgb, var(--color-pb-accent) 7%, var(--color-pb-surface));
 }
 
 .notify-content {
   min-width: 0;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .notify-item-top {
@@ -93,6 +124,8 @@ const formattedTime = computed(() => {
   flex-shrink: 0;
   font-size: 11px;
   color: var(--color-pb-muted);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .notify-message {
@@ -134,5 +167,6 @@ const formattedTime = computed(() => {
   margin-top: 6px;
   border-radius: 999px;
   background: var(--color-pb-accent);
+  flex-shrink: 0;
 }
 </style>
