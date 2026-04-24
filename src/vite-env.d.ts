@@ -8,6 +8,8 @@ interface ImportMetaEnv {
      * `npm run dev` da — window.location.origin (Vite /socket.io proxy).
      */
     readonly VITE_SOCKET_BASE_URL?: string
+    /** "true" bo'lsa: pollingdan keyin WebSocket upgrade (Railway WSS tuzatilgach). Default: faqat polling. */
+    readonly VITE_SOCKET_WS_UPGRADE?: string
 }
 
 interface ImportMeta {

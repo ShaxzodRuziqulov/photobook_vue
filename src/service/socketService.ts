@@ -41,11 +41,17 @@ class SocketService {
     private createSocket() {
         if (this.socket) return this.socket;
 
+        // Railway / ko'p reverse proxy ostida to'g'ridan-to'g'ri wss ko'pincha yopiladi yoki
+        // Upgrade-Connection boshqarilmaydi — brauzer "WebSocket connection failed" deb spam qiladi.
+        // Long-polling xuddi REST API kabi HTTPS orqali ishlaydi.
+        // WebSocketni qayta yoqish: production .env da VITE_SOCKET_WS_UPGRADE=true
+        const allowWsUpgrade =
+            String(import.meta.env.VITE_SOCKET_WS_UPGRADE || "").trim().toLowerCase() === "true";
+
         this.socket = io(this.resolveSocketBaseUrl(), {
             path: "/socket.io/",
-            // Dev + Vite: WS upgrade ko'pincha ishlamaydi va konsolni spam qiladi — faqat long-polling.
-            // Production: backend bilan to'g'ridan-to'g'ri — avval WebSocket.
-            transports: import.meta.env.DEV ? ["polling"] : ["websocket", "polling"],
+            transports: allowWsUpgrade ? ["polling", "websocket"] : ["polling"],
+            upgrade: allowWsUpgrade,
             withCredentials: true,
             autoConnect: false,
             reconnectionAttempts: 10,
