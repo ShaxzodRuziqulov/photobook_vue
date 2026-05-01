@@ -51,10 +51,7 @@
               {{ formatDate(order.lastLoggedAt) }}
             </td>
             <td class="px-3 py-2.5 text-center">
-              <div class="flex flex-col items-center gap-0.5">
-                <span class="font-bold tabular-nums text-pb-accent">{{ formatDelta(order.totalDelta) }}</span>
-                <span v-if="order.itemType" class="text-xs text-pb-muted">{{ order.itemType }}</span>
-              </div>
+              <span class="font-bold tabular-nums text-pb-accent">{{ formatDelta(order.totalDelta) }}</span>
             </td>
             <td class="px-3 py-2.5 text-center">
               <span
@@ -69,7 +66,7 @@
           <tfoot class="sticky bottom-0 border-t-2 border-pb-border bg-pb-elevated">
           <tr>
             <td colspan="3" class="px-3 py-2.5 text-sm font-semibold text-pb-text">
-              Jami dona ({{ orders.length }} ta order)
+              Jami: <span class="text-gray-500">{{ orders.length }} ta buyurtma</span>
             </td>
             <td class="px-3 py-2.5 text-center font-bold text-pb-accent tabular-nums">
               {{ formatDelta(totalDelta) }}

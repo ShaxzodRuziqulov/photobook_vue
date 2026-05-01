@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-page flex min-h-full w-full flex-col">
+  <div class="dashboard-page flex min-h-[vh] w-full flex-col">
     <div
         class="dashboard-content animate-fade-in mx-auto w-full max-w-7xl flex-1 space-y-10 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
     >
@@ -11,33 +11,18 @@
             Buyurtmalar, jarayonlar va kategoriyalar bo‘yicha tezkor statistika.
           </p>
         </div>
-        <div v-if="isEmployee" class="mt-4 sm:mt-0">
-          <div class="flex items-center gap-4 rounded-2xl border border-pb-border bg-pb-elevated/50 p-4 shadow-sm backdrop-blur-sm transition hover:border-pb-accent/30">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-pb-accent to-indigo-600 text-white shadow-md">
-              <i class="fa-solid fa-chart-line text-xl"></i>
-            </div>
-            <div>
-              <p class="text-[11px] font-bold uppercase tracking-widest text-pb-muted">Mening natijam (oylik)</p>
-              <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-black tabular-nums text-pb-text">{{ myMonthlyTotal }}</span>
-                <span class="text-sm font-semibold text-pb-muted">dona</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </header>
 
       <section aria-label="Asosiy ko‘rsatkichlar">
-        <h2 class="mb-4 text-sm font-bold text-pb-text">Tezkor statistika</h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <div
               v-for="(item, index) in getAlbums"
               :key="item.id"
               role="button"
               tabindex="0"
-              class="group relative flex min-h-[7.5rem] cursor-pointer flex-col justify-between overflow-hidden rounded-xl border border-pb-border bg-pb-surface p-5 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-pb-accent/25 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-pb-accent"
+              class=" flex min-h-[7.5rem] cursor-pointer flex-col justify-between overflow-hidden rounded-xl border border-pb-border p-5 shadow-sm transition duration-200 ease-out hover:-translate-y-0.5 hover:border-pb-accent/25 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-pb-accent"
               :class="[
-                'border-l-4',
+                'border-l-3',
                 borderColors[index % borderColors.length].base,
                 borderColors[index % borderColors.length].full,
               ]"
@@ -64,9 +49,9 @@
                         : index % 8 === 2
                           ? 'bg-gradient-to-br from-violet-500 to-fuchsia-600'
                           : index % 8 === 3
-                            ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+                            ? 'bg-gradient-to-br from-cyan-500 to-cyan-600'
                             : index % 8 === 4
-                              ? 'bg-gradient-to-br from-rose-500 to-fuchsia-600'
+                              ? 'bg-gradient-to-br from-blue-700 to-fuchsia-700'
                               : index % 8 === 5
                                 ? 'bg-gradient-to-br from-indigo-500 to-blue-600'
                                 : index % 8 === 6
@@ -105,10 +90,10 @@
                 :class="[
                   'relative px-5 pb-5 pt-5 text-white',
                   index % 3 === 0
-                    ? 'bg-gradient-to-br from-indigo-600 via-indigo-500 to-teal-600'
+                    ? 'bg-gradient-to-br from-cyan-600 via-cyan-600 to-cyan-700'
                     : index % 3 === 1
-                      ? 'bg-gradient-to-br from-teal-600 to-cyan-600'
-                      : 'bg-gradient-to-br from-violet-600 to-indigo-600',
+                      ? 'bg-gradient-to-br from-teal-600 to-cyan-700'
+                      : 'bg-gradient-to-br from-cyan-600 to-cyan-800',
                 ]"
             >
               <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_100%_0%,rgba(255,255,255,0.12),transparent)]" />
@@ -323,30 +308,11 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
 import { useStore } from "@/stores/store";
-import { authService } from "@/service/authService";
 import { useRouter } from "vue-router";
 import axiosInstance from "@/axios";
 
 const dataStore = useStore();
-const auth = authService();
 const router = useRouter();
-
-const myMonthlyTotal = ref<number | string>(0);
-const isEmployee = computed(() => auth.state.roles.includes("ROLE_OPERATOR"));
-
-const loadMyStats = async () => {
-  if (!isEmployee.value) return;
-  try {
-    const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const { data } = await axiosInstance.get<number>("/api/v1/work-logs/my-monthly", {
-      params: { month }
-    });
-    myMonthlyTotal.value = data ?? 0;
-  } catch (e) {
-    console.error("Failed to load my stats:", e);
-  }
-};
 
 type DashboardOrderKind = "ALBUM" | "VIGNETTE" | "PICTURE";
 type DashboardStatus = "PENDING" | "IN_PROGRESS" | "PAUSED" | "COMPLETED" | "CANCELLED";
@@ -373,8 +339,8 @@ const borderColors = [
   { base: "border-l-blue-500", full: "hover:border-blue-400" },
   { base: "border-l-emerald-500", full: "hover:border-emerald-400" },
   { base: "border-l-violet-500", full: "hover:border-violet-400" },
-  { base: "border-l-amber-500", full: "hover:border-amber-400" },
-  { base: "border-l-rose-500", full: "hover:border-rose-400" },
+  { base: "border-l-cyan-500", full: "hover:border-amber-400" },
+  { base: "border-l-blue-800", full: "hover:border-rose-400" },
   { base: "border-l-indigo-500", full: "hover:border-indigo-400" },
   { base: "border-l-teal-500", full: "hover:border-teal-400" },
   { base: "border-l-green-500", full: "hover:border-green-400" },
@@ -716,7 +682,6 @@ const getCircleProgress = (percentage: number) => {
 onMounted(async (): Promise<void> => {
   await Promise.all([
     loadAllStats(),
-    loadMyStats(),
     dataStore.loadUsers(),
     dataStore.loadMaterials(),
     dataStore.loadCategory("ALBUM"),

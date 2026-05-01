@@ -5,10 +5,10 @@
       no-header
       custom-class="w-full max-w-2xl"
       @close="$emit('close')"
-      body-class="flex max-h-[min(88vh,600px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
+      body-class="flex max-h-[min(80vh,600px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
   >
     <div class="flex min-h-0 flex-1 flex-col">
-      <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-11 sm:pt-4">
+      <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-6 sm:pt-6">
         <h2 class="text-base font-semibold text-pb-text">Buyurtma faollik tarixi</h2>
         <p v-if="orderName" class="mt-0.5 text-sm text-pb-muted">{{ orderName }}</p>
       </div>

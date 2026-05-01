@@ -272,6 +272,7 @@
           <th class="p-2 text-start">Ism</th>
           <th class="p-2 text-start">Rasm</th>
           <th class="p-2 text-start">User Nomi</th>
+          <th class="p-2 text-start">Kasbi</th>
           <th class="p-2 text-start">Role</th>
           <th class="p-2 text-start">Izoh</th>
           <th class="p-2 text-start">Telefon</th>
@@ -293,6 +294,7 @@
                 :src="getAvatarUrl(user.avatarUrl)" alt="">
           </td>
           <td class="p-2">{{user.username}}</td>
+          <td class="p-2">{{user.profession}}</td>
           <td class="p-2">
             <div class="flex flex-wrap gap-1">
               <span
