@@ -1,9 +1,9 @@
 <template>
   <div class="dashboard-page flex min-h-[vh] w-full flex-col">
     <div
-        class="dashboard-content animate-fade-in mx-auto w-full max-w-7xl flex-1 space-y-10 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
+        class="dashboard-content animate-fade-in mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
     >
-      <header class="flex flex-col gap-1 border-b border-pb-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header class="flex flex-col gap-1 border-b border-pb-border pb-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p class="text-xs font-bold uppercase tracking-wide text-pb-accent">Boshqaruv paneli</p>
           <h1 class="mt-1 text-2xl font-bold text-pb-text sm:text-3xl">Umumiy ko‘rinish</h1>
@@ -13,7 +13,7 @@
         </div>
       </header>
 
-      <section aria-label="Asosiy ko‘rsatkichlar">
+      <section>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <div
               v-for="(item, index) in getAlbums"
