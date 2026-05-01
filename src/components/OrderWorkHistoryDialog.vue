@@ -3,12 +3,12 @@
       :show="show"
       has-close-icon
       no-header
-      custom-class="w-full max-w-2xl"
+      custom-class="w-full max-w-2xl mt-20"
       @close="$emit('close')"
       body-class="flex max-h-[min(80vh,600px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
   >
     <div class="flex min-h-0 flex-1 flex-col">
-      <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-6 sm:pt-6">
+      <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-10 sm:pt-6">
         <h2 class="text-base font-semibold text-pb-text">Buyurtma faollik tarixi</h2>
         <p v-if="orderName" class="mt-0.5 text-sm text-pb-muted">{{ orderName }}</p>
       </div>
@@ -23,9 +23,9 @@
           <div
               v-for="(item, idx) in timeline"
               :key="idx"
-              class="relative flex items-center gap-4 pl-10"
+              class="relative flex items-center gap-4"
           >
-            <div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-full border border-pb-border bg-pb-surface shadow-sm">
+            <div class=" left-0 flex h-10 w-10 items-center justify-center rounded-full border border-pb-border bg-pb-surface shadow-sm">
               <i v-if="item.type === 'STATUS'" class="fa-solid fa-rotate text-pb-accent text-xs"></i>
               <i v-else class="fa-solid fa-hammer text-emerald-500 text-xs"></i>
             </div>
