@@ -232,6 +232,7 @@
                   @click="openPreview(task.imageUrl)"
                   v-if="task.imageUrl"
                   class="w-14 h-10 sm:h-10 lg:h-12 cursor-pointer rounded-xl"
+                  loading="lazy"
                   :src="getAvatarUrl(task.imageUrl)" alt="">
             </td>
             <td class="p-2 text-sm font-semibold text-pb-accent">{{statusOrder[task.kind]}}</td>

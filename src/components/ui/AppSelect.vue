@@ -206,10 +206,21 @@ const updateDropdownPosition = () => {
 
   topPx = Math.min(Math.max(DROPDOWN_GUTTER, topPx), vh - DROPDOWN_GUTTER - 40)
 
+  const vw = window.innerWidth
+  const isMobile = vw < 640
+  let leftPx = rect.left
+  let widthPx = rect.width
+
+  if (isMobile) {
+    const sidePad = 12
+    widthPx = Math.min(rect.width, vw - sidePad * 2)
+    leftPx = Math.max(sidePad, Math.min(leftPx, vw - widthPx - sidePad))
+  }
+
   dropdownPanelStyle.value = {
     top: `${topPx}px`,
-    left: `${rect.left}px`,
-    width: `${rect.width}px`,
+    left: `${leftPx}px`,
+    width: `${widthPx}px`,
     maxHeight: `${maxH}px`,
   }
 }

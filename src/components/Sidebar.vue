@@ -52,6 +52,7 @@
                 v-if="userAvatar"
                 :src="userAvatar"
                 alt="Profil rasmi"
+                loading="lazy"
                 class="w-full h-full object-cover"
             >
             <i v-else class="fa-solid fa-user"></i>

@@ -423,6 +423,7 @@
                 v-if="order.imageUrl"
                 @click="openPreview(order.imageUrl)"
                 class="w-14 h-10 sm:h-10 lg:h-12 cursor-pointer rounded-xl"
+                loading="lazy"
                 :src="getAvatarUrl(order.imageUrl)" alt=""
             />
           </td>

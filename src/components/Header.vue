@@ -283,8 +283,8 @@ const {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
@@ -370,26 +370,34 @@ const {
 }
 
 .user-role {
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   color: rgba(255, 255, 255, 0.72);
 }
 
 .burger-menu {
   position: relative;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 
   span {
     position: relative;
     display: block;
-    width: 100%;
+    width: 26px;
     height: 3px;
     background-color: #ffffff;
     transition: background-color 0.3s ease-in-out;
-    top: 15px;
 
     &::before,
     &::after {
@@ -403,11 +411,11 @@ const {
     }
 
     &::before {
-      top: -10px;
+      top: -9px;
     }
 
     &::after {
-      top: 10px;
+      top: 9px;
     }
   }
 
@@ -416,11 +424,11 @@ const {
       background-color: transparent;
 
       &::before {
-        transform: translateY(10px) rotate(45deg);
+        transform: translateY(9px) rotate(45deg);
       }
 
       &::after {
-        transform: translateY(-10px) rotate(-45deg);
+        transform: translateY(-9px) rotate(-45deg);
       }
     }
   }

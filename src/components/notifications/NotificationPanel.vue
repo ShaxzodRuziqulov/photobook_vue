@@ -30,7 +30,7 @@
         <div class="flex items-center gap-2 w-full justify-around pt-4 text-sm font-bold text-pb-muted">
           <button
               type="button"
-              class="cursor-pointer flex w-full hover:text-slate-700"
+              class="cursor-pointer flex w-full hover:text-slate-700 active:opacity-70 transition-opacity"
               @click="$emit('update:active-tab', 'UNREAD')"
           >
             <span
@@ -42,7 +42,7 @@
           </button>
           <button
               type="button"
-              class="cursor-pointer flex w-full hover:text-slate-700"
+              class="cursor-pointer flex w-full hover:text-slate-700 active:opacity-70 transition-opacity"
               @click="$emit('update:active-tab', 'ALL')"
           >
             <span
@@ -207,11 +207,11 @@ watch(
 
 .notify-panel.mobile {
   position: fixed;
-  top: 70px;
+  top: calc(64px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
-  width: 95vw;
-  max-height: 80vh;
+  width: min(95vw, 440px);
+  max-height: calc(70vh - env(safe-area-inset-top, 0px));
   border-radius: 16px;
 }
 
@@ -260,8 +260,8 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   background: var(--color-pb-app);
   color: var(--color-pb-muted);
