@@ -27,7 +27,7 @@
             :to="route?.path"
           active-class="bg-white/15 text-white font-medium"
           class="p-2 gap-1 text-md flex max-lg:p-1 items-center text-center rounded-md text-white/90 hover:bg-white/10 hover:text-white transition duration-200"
-            :class="index === mainRoutes.length - 1 ? 'hidden' : 'of-hidden'"
+            :class="index === mainRoutes.length - 1 ? 'hidden' : ''"
         >
           <i class="w-4 text-sm h-3 flex" v-if="route.meta?.icon" :class="route.meta?.icon"></i>
           <span class="">{{ route.name }}</span>
@@ -156,6 +156,7 @@ import CDialog from "@/components/CDialog.vue";
 import { authService } from "@/service/authService";
 import NotificationPanel from "@/components/notifications/NotificationPanel.vue";
 import { useNotifications } from "@/composables/useNotifications";
+import { useIsDesktop } from "@/composables/useBreakpoint";
 
 type HeaderMenuRoute = {
   path: string;
@@ -252,7 +253,7 @@ const userAvatar = computed(() => {
 const openToProfile = () => {
   router.push("/profile");
 }
-const isDesktop = computed(() => window.innerWidth > 768);
+const isDesktop = useIsDesktop();
 const {
   activeTab,
   notifications,
@@ -283,8 +284,8 @@ const {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
@@ -370,26 +371,34 @@ const {
 }
 
 .user-role {
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   color: rgba(255, 255, 255, 0.72);
 }
 
 .burger-menu {
   position: relative;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 
   span {
     position: relative;
     display: block;
-    width: 100%;
+    width: 26px;
     height: 3px;
     background-color: #ffffff;
     transition: background-color 0.3s ease-in-out;
-    top: 15px;
 
     &::before,
     &::after {
@@ -403,11 +412,11 @@ const {
     }
 
     &::before {
-      top: -10px;
+      top: -9px;
     }
 
     &::after {
-      top: 10px;
+      top: 9px;
     }
   }
 
@@ -416,11 +425,11 @@ const {
       background-color: transparent;
 
       &::before {
-        transform: translateY(10px) rotate(45deg);
+        transform: translateY(9px) rotate(45deg);
       }
 
       &::after {
-        transform: translateY(-10px) rotate(-45deg);
+        transform: translateY(-9px) rotate(-45deg);
       }
     }
   }

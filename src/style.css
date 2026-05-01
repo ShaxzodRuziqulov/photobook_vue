@@ -45,13 +45,16 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Vertikal skroll paydo bo‘lganda kenglik “sakrab ketmasin” */
+    /* Vertikal skroll paydo bo’lganda kenglik “sakrab ketmasin” */
     scrollbar-gutter: stable;
   }
 
   body {
     @apply min-h-dvh bg-pb-app text-pb-text antialiased;
     overflow-x: clip;
+    /* iPhone notch / home indicator uchun safe-area */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   #app {
@@ -73,5 +76,16 @@
 .Vue-Toastification__container.top-left,
 .Vue-Toastification__container.top-right,
 .Vue-Toastification__container.top-center {
-  top: calc(4rem + 10px) !important;
+  top: calc(4rem + 10px + env(safe-area-inset-top, 0px)) !important;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Minimal touch target hajmi uchun yordamchi klass */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

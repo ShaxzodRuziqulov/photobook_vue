@@ -34,6 +34,156 @@
           />
         </header>
 
+        <!-- ─── Statistika paneli ─── -->
+        <section v-if="statsLoaded" class="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+          <!-- Oylik ish (operator) -->
+          <template v-if="isOperator">
+            <div class="stat-card col-span-2 sm:col-span-1">
+              <div class="stat-icon bg-blue-50 text-blue-600"><i class="fa-solid fa-chart-line"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">Bu oy</p>
+                <p class="stat-value">{{ myMonthly }} <span class="stat-unit">ta</span></p>
+                <p class="stat-sub" :class="monthGrowth >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                  <i :class="monthGrowth >= 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'"></i>
+                  {{ monthGrowth >= 0 ? '+' : '' }}{{ monthGrowth }}% o'tgan oyga nisbatan
+                </p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon bg-violet-50 text-violet-600"><i class="fa-solid fa-calendar-check"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">O'tgan oy</p>
+                <p class="stat-value">{{ myLastMonthly }} <span class="stat-unit">ta</span></p>
+              </div>
+            </div>
+
+            <div class="stat-card" :class="overdueCount > 0 ? 'border-red-200 bg-red-50' : ''">
+              <div class="stat-icon" :class="overdueCount > 0 ? 'bg-red-100 text-red-600' : 'bg-amber-50 text-amber-600'">
+                <i class="fa-solid fa-clock"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="stat-label">Muddati o'tgan</p>
+                <p class="stat-value" :class="overdueCount > 0 ? 'text-red-600' : ''">{{ overdueCount }} <span class="stat-unit">ta</span></p>
+                <p v-if="dueTodayCount > 0" class="stat-sub text-amber-600">
+                  <i class="fa-solid fa-triangle-exclamation"></i> Bugun: {{ dueTodayCount }} ta
+                </p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon bg-emerald-50 text-emerald-600"><i class="fa-solid fa-list-check"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">Faol vazifalar</p>
+                <p class="stat-value">{{ activeTasks.length }} <span class="stat-unit">ta</span></p>
+              </div>
+            </div>
+          </template>
+
+          <!-- Admin/Menejer uchun jamoa ko'rsatkichlari -->
+          <template v-else-if="isAdminOrManager">
+            <div class="stat-card">
+              <div class="stat-icon bg-blue-50 text-blue-600"><i class="fa-solid fa-users"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">Jami xodimlar</p>
+                <p class="stat-value">{{ leaderboard.length }} <span class="stat-unit">ta</span></p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon bg-emerald-50 text-emerald-600"><i class="fa-solid fa-trophy"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">Yetakchi (bu oy)</p>
+                <p class="stat-value truncate">{{ leaderboard[0]?.employeeFullName || '—' }}</p>
+                <p v-if="leaderboard[0]" class="stat-sub">{{ leaderboard[0].totalDelta }} ta ish</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon bg-violet-50 text-violet-600"><i class="fa-solid fa-chart-bar"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">Jami ish (bu oy)</p>
+                <p class="stat-value">{{ totalTeamWork }} <span class="stat-unit">ta</span></p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon bg-amber-50 text-amber-600"><i class="fa-solid fa-calculator"></i></div>
+              <div class="min-w-0">
+                <p class="stat-label">O'rtacha (kishi)</p>
+                <p class="stat-value">{{ avgTeamWork }} <span class="stat-unit">ta</span></p>
+              </div>
+            </div>
+          </template>
+        </section>
+
+        <!-- Operator faol vazifalar -->
+        <section v-if="statsLoaded && isOperator && activeTasks.length" class="mb-3 rounded-xl border border-pb-border bg-pb-surface p-3 shadow-sm sm:p-4">
+          <h2 class="mb-3 text-sm font-bold text-pb-text flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-pb-accent"></i>
+            Faol vazifalar
+          </h2>
+          <div class="space-y-3">
+            <div v-for="task in activeTasks.slice(0, 5)" :key="task.id" class="task-progress-item">
+              <div class="flex min-w-0 items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-semibold text-pb-text">{{ task.orderName }}</p>
+                  <p class="text-xs text-pb-muted">{{ task.categoryName }} · {{ kindLabel[task.kind] }}</p>
+                </div>
+                <div class="shrink-0 text-right">
+                  <span class="text-sm font-bold text-pb-text">{{ task.processedCount ?? 0 }}/{{ task.availableToProcess ?? 0 }}</span>
+                  <p class="text-[11px] text-pb-muted">{{ taskPercent(task) }}%</p>
+                </div>
+              </div>
+              <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-pb-border">
+                <div
+                  class="h-full rounded-full transition-[width] duration-500"
+                  :class="taskPercent(task) >= 100 ? 'bg-emerald-500' : taskPercent(task) >= 60 ? 'bg-pb-accent' : 'bg-amber-400'"
+                  :style="{ width: taskPercent(task) + '%' }"
+                />
+              </div>
+              <div v-if="task.deadline" class="mt-1 flex items-center gap-1 text-[11px]" :class="isOverdue(task.deadline) ? 'text-red-500' : isDueToday(task.deadline) ? 'text-amber-600' : 'text-pb-muted'">
+                <i class="fa-regular fa-calendar"></i>
+                Muddat: {{ formatDeadline(task.deadline) }}
+                <span v-if="isOverdue(task.deadline)" class="font-semibold"> · Kechikkan</span>
+                <span v-else-if="isDueToday(task.deadline)" class="font-semibold"> · Bugun!</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Admin leaderboard -->
+        <section v-if="statsLoaded && isAdminOrManager && leaderboard.length" class="mb-3 rounded-xl border border-pb-border bg-pb-surface shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-pb-border">
+            <h2 class="text-sm font-bold text-pb-text flex items-center gap-2">
+              <i class="fa-solid fa-ranking-star text-pb-accent"></i>
+              Xodimlar reytingi — {{ currentMonthLabel }}
+            </h2>
+          </div>
+          <div class="divide-y divide-pb-border">
+            <div
+              v-for="(emp, idx) in leaderboard.slice(0, 8)"
+              :key="emp.employeeId"
+              class="flex items-center gap-3 px-4 py-2.5"
+            >
+              <span class="w-6 shrink-0 text-center text-sm font-bold" :class="idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-pb-muted'">
+                {{ idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1 }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-pb-text">{{ emp.employeeFullName || emp.employeeId }}</p>
+                <div class="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-pb-border">
+                  <div
+                    class="h-full rounded-full bg-pb-accent"
+                    :style="{ width: leaderboard[0]?.totalDelta ? (emp.totalDelta / leaderboard[0].totalDelta * 100) + '%' : '0%' }"
+                  />
+                </div>
+              </div>
+              <span class="shrink-0 text-sm font-bold tabular-nums text-pb-text">{{ emp.totalDelta }}</span>
+            </div>
+          </div>
+        </section>
+
         <form class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_15.5rem]" @submit.prevent="profileSubmit">
           <div class="space-y-3">
             <section class="overflow-hidden rounded-xl border border-pb-border bg-pb-surface shadow-sm">
@@ -225,7 +375,7 @@ import { authService } from "@/service/authService";
 import axiosInstance from "@/axios";
 import axios from "axios";
 import { useRouter } from "vue-router";
-import type { UserForm } from "@/typeModules/useModules";
+import type { UserForm, UserTask, MonthlyWorkReport } from "@/typeModules/useModules";
 import { useToast } from "vue-toastification";
 import { snapshotProfileMePatch } from "@/utils/updateFormDirty";
 
@@ -506,6 +656,81 @@ const roleLabel = computed(() => {
   return "";
 });
 
+const isOperator = computed(() => auth.state.roles.includes("ROLE_OPERATOR"));
+const isAdminOrManager = computed(() =>
+  auth.state.roles.includes("ROLE_ADMIN") || auth.state.roles.includes("ROLE_MANAGER")
+);
+
+// ─── Stats state ───
+const statsLoaded = ref(false);
+const myMonthly = ref(0);
+const myLastMonthly = ref(0);
+const activeTasks = ref<UserTask[]>([]);
+const leaderboard = ref<MonthlyWorkReport[]>([]);
+
+const now = new Date();
+const currentMonthParam = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+const prevMonthParam = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}`;
+
+const uzMonths = ["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"];
+const currentMonthLabel = `${uzMonths[now.getMonth()]} ${now.getFullYear()}`;
+
+const monthGrowth = computed(() => {
+  if (!myLastMonthly.value) return myMonthly.value > 0 ? 100 : 0;
+  return Math.round(((myMonthly.value - myLastMonthly.value) / myLastMonthly.value) * 100);
+});
+
+const totalTeamWork = computed(() => leaderboard.value.reduce((s, e) => s + e.totalDelta, 0));
+const avgTeamWork = computed(() =>
+  leaderboard.value.length ? Math.round(totalTeamWork.value / leaderboard.value.length) : 0
+);
+
+const kindLabel: Record<string, string> = { ALBUM: "Albom", VIGNETTE: "Vinetka", PICTURE: "Fotokitob" };
+
+const taskPercent = (task: UserTask) => {
+  const done = task.processedCount ?? 0;
+  const total = task.availableToProcess ?? 0;
+  return total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+};
+
+const todayStr = new Date().toISOString().slice(0, 10);
+const isOverdue = (deadline: string) => deadline && deadline.slice(0, 10) < todayStr;
+const isDueToday = (deadline: string) => deadline && deadline.slice(0, 10) === todayStr;
+
+const overdueCount = computed(() => activeTasks.value.filter(t => t.deadline && isOverdue(t.deadline)).length);
+const dueTodayCount = computed(() => activeTasks.value.filter(t => t.deadline && isDueToday(t.deadline)).length);
+
+const formatDeadline = (deadline: string) => {
+  if (!deadline) return "";
+  const d = new Date(deadline);
+  return `${d.getDate()} ${uzMonths[d.getMonth()]}`;
+};
+
+const loadStats = async () => {
+  try {
+    if (isOperator.value) {
+      const [cur, prev, tasks] = await Promise.allSettled([
+        axiosInstance.get<number>("/api/v1/work-logs/my-monthly", { params: { month: currentMonthParam } }),
+        axiosInstance.get<number>("/api/v1/work-logs/my-monthly", { params: { month: prevMonthParam } }),
+        axiosInstance.post("/api/v1/user-tasks/me/paging", { statuses: ["IN_PROGRESS", "PENDING"] }, { params: { page: 0, size: 20 } }),
+      ]);
+      if (cur.status === "fulfilled") myMonthly.value = Number(cur.value.data) || 0;
+      if (prev.status === "fulfilled") myLastMonthly.value = Number(prev.value.data) || 0;
+      if (tasks.status === "fulfilled") activeTasks.value = tasks.value.data?.content || [];
+    } else if (isAdminOrManager.value) {
+      const { data } = await axiosInstance.get<MonthlyWorkReport[]>("/api/v1/work-logs/monthly", {
+        params: { month: currentMonthParam },
+      });
+      leaderboard.value = (data || []).sort((a, b) => b.totalDelta - a.totalDelta);
+    }
+  } catch (e) {
+    console.error("Stats yuklanmadi:", e);
+  } finally {
+    statsLoaded.value = true;
+  }
+};
+
 const initials = computed(() => {
   const source = profileTitle.value.trim();
   return (
@@ -671,6 +896,7 @@ onMounted(async () => {
   isInitialLoading.value = true;
   await loadProfile();
   isInitialLoading.value = false;
+  loadStats();
 });
 
 onUnmounted(() => {
@@ -910,6 +1136,65 @@ onUnmounted(() => {
     animation: none;
     opacity: 0.35;
   }
+}
+
+.stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-pb-border);
+  background: var(--color-pb-surface);
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-pb-muted);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-pb-text);
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.stat-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-pb-muted);
+}
+
+.stat-sub {
+  font-size: 11px;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-progress-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--color-pb-elevated);
+  border: 1px solid var(--color-pb-border);
 }
 
 .profile-cover {

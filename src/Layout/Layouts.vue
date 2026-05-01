@@ -106,21 +106,21 @@ onBeforeUnmount(() => {
   z-index: 999;
   position: fixed;
   color: white;
-  width: 45px;
-  height: 45px;
-  right: 5px;
-  bottom: 30px;
-  font-size: 24px;
+  width: 48px;
+  height: 48px;
+  right: -60px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  font-size: 22px;
   font-weight: 600;
   text-align: center;
-  line-height: 45px;
-  border-radius: 3px;
+  line-height: 48px;
+  border-radius: 12px;
   cursor: pointer;
   opacity: 0;
   transition: all .3s ease;
 }
 .scrollBtn.activeScroll {
   opacity: 1;
-  right: 20px;
+  right: max(16px, env(safe-area-inset-right, 16px));
 }
 </style>

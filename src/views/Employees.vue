@@ -247,7 +247,7 @@
       </div>
     </div>
 
-    <div class="animate-fade-in flex w-full flex-col gap-4 overflow-x-auto rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm sm:p-6">
+    <div class="animate-fade-in flex w-full flex-col gap-4 rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm sm:p-6">
       <div v-if="isLoading" class="space-y-3">
         <div
             v-for="i in 6"
@@ -255,7 +255,76 @@
             class="h-12 animate-pulse rounded-lg bg-pb-border"
         ></div>
       </div>
-      <table v-else class="w-full table-auto text-sm">
+
+      <!-- Mobil: card ko'rinish -->
+      <div v-else-if="allUsers.length" class="flex flex-col gap-3 sm:hidden">
+        <div
+            v-for="(user, index) in allUsers"
+            :key="user.id"
+            class="rounded-xl border border-pb-border bg-pb-elevated p-4 flex flex-col gap-3"
+        >
+          <div class="flex items-center gap-3">
+            <img
+                v-if="user.avatarUrl"
+                class="w-14 h-14 cursor-pointer rounded-full object-cover shrink-0"
+                loading="lazy"
+                @click="openPreview(user.avatarUrl)"
+                :src="getAvatarUrl(user.avatarUrl)" alt=""
+            />
+            <div v-else class="w-14 h-14 rounded-full bg-pb-border flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-user text-pb-muted text-xl"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold text-pb-text truncate">{{ user.lastName }} {{ user.firstName }}</p>
+              <p class="text-sm text-pb-muted truncate">{{ user.username }}</p>
+            </div>
+            <span class="text-xs font-medium text-pb-muted shrink-0">#{{ Number(index) + 1 }}</span>
+          </div>
+          <div class="flex flex-wrap gap-1">
+            <span
+                v-for="role in user.roles"
+                :key="role.id"
+                class="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-pb-accent"
+            >
+              {{ roleStatus[role.name] }}
+            </span>
+          </div>
+          <div v-if="user.phone || user.bio" class="text-sm text-pb-label space-y-1">
+            <p v-if="user.phone"><span class="font-medium">Tel:</span> {{ user.phone }}</p>
+            <p v-if="user.bio" class="truncate"><span class="font-medium">Izoh:</span> {{ user.bio }}</p>
+          </div>
+          <div class="flex flex-wrap gap-2 pt-1 border-t border-pb-border">
+            <CButton
+                type="button"
+                text="Rol"
+                size="sm"
+                variant="outline-accent"
+                @click="changeRole(user)"
+            />
+            <CButton
+                text="Tahrirlash"
+                type="button"
+                size="sm"
+                variant="outline-edit"
+                @click="editItem(user)"
+            />
+            <CButton
+                text="O'chirish"
+                type="button"
+                size="sm"
+                variant="danger"
+                @click="deleteItem(user.id)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: jadval ko'rinish -->
+      <div v-else-if="!allUsers.length && !isLoading" class="sm:hidden flex items-center justify-center p-6 text-pb-muted">
+        Xodim topilmadi!
+      </div>
+
+      <table v-if="!isLoading" class="hidden sm:table w-full table-auto text-sm">
         <colgroup>
           <col style="width: 5%">
           <col style="width: 15%">
@@ -290,6 +359,7 @@
           <td class="p-2 flex items-center">
             <img
                 v-if="user.avatarUrl" class="w-16 h-10 lg:h-16 cursor-pointer rounded-full object-cover"
+                loading="lazy"
                 @click="openPreview(user.avatarUrl)"
                 :src="getAvatarUrl(user.avatarUrl)" alt="">
           </td>

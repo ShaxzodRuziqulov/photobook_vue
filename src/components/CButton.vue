@@ -115,8 +115,8 @@ const variants: Record<TButtonVariants, string> = {
 };
 
 const sizes: Record<TButtonSizes, string> = {
-  xs: "h-[24px] px-1 text-[11px]",
-  sm: "h-[32px] px-2 text-sm",
+  xs: "h-[36px] px-2 text-xs",
+  sm: "h-[36px] px-3 text-sm",
   md: "h-9 px-4 text-sm",
   lg: "h-11 px-4 text-lg leading-20",
   xl: "h-[52px] px-4 text-sm leading-20",
@@ -125,12 +125,12 @@ const sizes: Record<TButtonSizes, string> = {
   "text-xl": "h-[36px] text-sm",
   "text-lg": "h-[36px] text-sm",
   "text-md": "h-[28px] text-sm",
-  "text-sm": "h-[25px] text-[12px]",
-  "text-xs": "h-[23px] text-[11px] font-medium",
+  "text-sm": "h-[28px] text-xs",
+  "text-xs": "h-[28px] text-xs font-medium",
 
   //// adaptive
 
-  "sm-lg": "h-[32px] md:h-11 px-2 md:px-4 text-xs md:text-sm",
+  "sm-lg": "h-[36px] md:h-11 px-2 md:px-4 text-xs md:text-sm",
 };
 
 const loaderFill = computed(() => {
