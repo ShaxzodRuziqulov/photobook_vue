@@ -56,7 +56,6 @@
               >{{ order.category }}</span>
               <span v-else class="text-pb-muted">—</span>
             </td>
-            <td>{{order.category}}</td>
             <td class="px-3 py-2.5 text-center text-pb-muted tabular-nums">
               {{ formatDate(order.lastLoggedAt) }}
             </td>
