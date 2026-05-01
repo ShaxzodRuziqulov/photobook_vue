@@ -1,5 +1,5 @@
 <template>
-  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-6 lg:mx-auto lg:max-w-7xl">
+  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-2 lg:px-0 lg:mx-auto lg:max-w-7xl">
     <div class="flex flex-col items-center justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm sm:flex-row">
       <div class="flex items-center gap-4">
         <img class="h-12 w-12 shrink-0 object-contain" src="../assets/album.png" alt="">
@@ -72,7 +72,7 @@
         has-close-icon
         no-header
         :show="isVisible"
-        custom-class="w-full max-w-md"
+        custom-class="w-full max-w-md mt-12"
         @close="closeForm"
         body-class="flex max-h-[min(88vh,640px)] flex-col overflow-hidden rounded-xl border border-pb-border !bg-pb-surface p-0 shadow-lg"
     >
@@ -364,11 +364,11 @@
             class="w-full table-auto rounded">
           <colgroup>
             <col style="width: 2%">
-            <col style="width: 13%">
             <col style="width: 12%">
             <col style="width: 12%">
             <col style="width: 12%">
-            <col style="width: 13%">
+            <col style="width: 12%">
+            <col style="width: 15%">
             <col style="width: 14%">
             <col style="width: 10%">
             <col style="width: 10%">
@@ -387,7 +387,7 @@
             <th class="p-3 text-start">Sana</th>
             <th class="p-2 text-start">Muddat</th>
             <th class="p-2 text-start">Holat</th>
-            <th class="p-2 text-end">Amallar</th>
+            <th class="py-2 px-3 text-start">Amallar</th>
           </tr>
           </thead>
           <tbody v-if="isLoading">
@@ -496,13 +496,13 @@
             >
             <span
                 :class="[statusColor[album.status],
-                  'rounded-xl px-3 py-1 font-semibold text-sm'
+                  'rounded-xl px-2 py-1.5 font-semibold text-sm'
                 ]">
               {{ statusLabel[album.status] }}
             </span>
             </td>
-            <td class="py-2 px-3 text-end">
-              <div class="flex flex-nowrap items-center justify-end gap-2.5">
+            <td class="p-2 text-end">
+              <div class="flex flex-nowrap items-center justify-end gap-2">
                 <CButton
                     type="button"
                     text="Tarix"

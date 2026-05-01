@@ -1,5 +1,5 @@
 <template>
-  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-6 lg:mx-auto lg:max-w-7xl">
+  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-2 lg:px-0 lg:mx-auto lg:max-w-7xl">
     <div class="flex flex-col items-center justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm sm:flex-row">
       <div class="flex items-center gap-4">
         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pb-elevated text-pb-accent">
@@ -370,7 +370,7 @@
           <th class="py-3 px-4 text-start">Sana</th>
           <th class="p-2 text-start">Muddat</th>
           <th class="p-2 text-start">Holat</th>
-          <th class="p-2 text-end">Amallar</th>
+          <th class="py-2 px-3 text-start">Amallar</th>
         </tr>
         </thead>
         <tbody v-if="isLoading">
@@ -410,7 +410,7 @@
         <tbody v-else-if="filteredOrders.length > 0">
         <tr
             :id="'pb-order-' + order.id"
-            class="border-t border-pb-border text-sm text-gray-600 transition hover:bg-pb-elevated hover:bg-gray-100"
+            class="border-t border-pb-border text-sm text-gray-600 transition hover:bg-gray-100"
             v-for="(order, index) in filteredOrders" :key="order.id"
         >
           <td class="p-1">{{ rowNumber(index) }}</td>

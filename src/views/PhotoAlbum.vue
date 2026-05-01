@@ -1,5 +1,5 @@
 <template>
-  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-6 lg:mx-auto lg:max-w-7xl">
+  <div class="app-page flex w-full min-w-0 flex-col gap-5 px-4 py-6 text-pb-text sm:px-2 lg:px-0 lg:mx-auto lg:max-w-7xl">
     <div class="flex flex-col items-center justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm sm:flex-row">
       <div class="flex items-center gap-4">
         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pb-elevated text-pb-accent">

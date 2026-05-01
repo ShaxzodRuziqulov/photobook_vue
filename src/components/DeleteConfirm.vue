@@ -2,7 +2,7 @@
 
 <template>
   <p class="text-lg font-semibold my-4 text-pb-text">{{ title }}</p>
-  <div class="flex flex-nowrap justify-center gap-3">
+  <div class="flex pb-4 flex-nowrap justify-center gap-3">
     <CButton
         type="button"
         text="Ha, o'chirish"

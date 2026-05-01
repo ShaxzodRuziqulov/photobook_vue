@@ -1,6 +1,74 @@
 <template>
   <div class="dashboard-page flex min-h-[vh] w-full flex-col">
+    <div v-if="isLoading" class="dashboard-page flex min-h-screen w-full flex-col bg-pb-app">
+      <div class="animate-pulse mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <header class="flex flex-col gap-1 border-b border-pb-border pb-2 sm:flex-row sm:items-end sm:justify-between">
+          <div class="space-y-2">
+            <div class="h-4 w-32 rounded bg-pb-border"></div>
+            <div class="h-8 w-48 rounded bg-pb-border sm:h-10"></div>
+            <div class="h-4 w-64 rounded bg-pb-border/60"></div>
+          </div>
+        </header>
+        <section>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div v-for="i in 8" :key="i" class="h-32 rounded-xl border border-pb-border bg-pb-surface p-5 shadow-sm">
+              <div class="flex items-start justify-between">
+                <div class="h-11 w-11 rounded-xl bg-pb-border"></div>
+                <div class="h-9 w-9 rounded-lg bg-pb-border/40"></div>
+              </div>
+              <div class="mt-4 flex items-end justify-between border-t border-pb-border pt-4">
+                <div class="h-4 w-24 rounded bg-pb-border"></div>
+                <div class="h-6 w-12 rounded bg-pb-border"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="mb-4 h-5 w-40 rounded bg-pb-border"></div>
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div v-for="i in 3" :key="i" class="flex flex-col overflow-hidden rounded-xl border border-pb-border bg-pb-surface shadow-sm">
+              <div class="bg-pb-border/30 px-5 pb-5 pt-5">
+                <div class="flex items-center justify-between">
+                  <div class="h-6 w-24 rounded bg-pb-border"></div>
+                  <div class="h-7 w-20 rounded bg-pb-border/50"></div>
+                </div>
+                <div class="my-5 border-t border-pb-border/50"></div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div v-for="j in 2" :key="j" class="h-20 rounded-xl bg-pb-border/40"></div>
+                </div>
+              </div>
+              <div class="border-t border-pb-border px-5 py-4 space-y-3">
+                <div class="flex justify-between">
+                  <div class="h-4 w-24 rounded bg-pb-border"></div>
+                  <div class="h-4 w-12 rounded bg-pb-border"></div>
+                </div>
+                <div class="h-2 w-full rounded-full bg-pb-border"></div>
+              </div>
+              <div class="p-4 space-y-3">
+                <div class="h-10 w-full rounded-lg bg-pb-border/20"></div>
+                <div class="space-y-2">
+                  <div v-for="k in 3" :key="k" class="h-8 w-full rounded bg-pb-border/10"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="rounded-xl border border-pb-border bg-pb-surface p-5 sm:p-6 shadow-sm">
+          <div class="flex justify-between border-b border-pb-border pb-4">
+            <div class="h-6 w-48 rounded bg-pb-border"></div>
+            <div class="h-6 w-24 rounded bg-pb-border"></div>
+          </div>
+          <div class="mt-8 grid grid-cols-1 gap-10 md:grid-cols-3">
+            <div v-for="i in 3" :key="i" class="flex flex-col items-center">
+              <div class="relative mb-6 h-[180px] w-[180px] rounded-full border-[14px] border-pb-border"></div>
+              <div class="w-full h-32 rounded-xl bg-pb-border/20 border border-pb-border"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
     <div
+        v-else
         class="dashboard-content animate-fade-in mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
     >
       <header class="flex flex-col gap-1 border-b border-pb-border pb-2 sm:flex-row sm:items-end sm:justify-between">
@@ -382,6 +450,7 @@ const photoCount = ref<number>(0);
 const albumItems = ref<BreakdownItem[]>([]);
 const vignetteItems = ref<BreakdownItem[]>([]);
 const photoItems = ref<BreakdownItem[]>([]);
+const isLoading = ref(false);
 
 const getAlDashboardCounts = async () => {
   const counts: Record<DashboardOrderKind, number> = {
@@ -389,6 +458,7 @@ const getAlDashboardCounts = async () => {
     VIGNETTE: 0,
     PICTURE: 0,
   };
+  isLoading.value = true;
 
   try {
     const { data } = await axiosInstance.get<DashboardCountItem[]>("/api/v1/dashboard/orders-by-kind")
@@ -398,6 +468,7 @@ const getAlDashboardCounts = async () => {
         counts[key] = getItemCount(item);
       }
     })
+    isLoading.value = false;
   }
   catch (error) {
     console.error(error);
@@ -414,6 +485,7 @@ const getStatusCounts = async (type: "ALBUM" | "VIGNETTE" | "PICTURE") => {
     COMPLETED: 0,
     CANCELLED: 0,
   }
+  isLoading.value = true;
 
   try {
     const { data } = await axiosInstance.get<DashboardCountItem[]>("/api/v1/dashboard/orders-by-status", {
@@ -427,6 +499,7 @@ const getStatusCounts = async (type: "ALBUM" | "VIGNETTE" | "PICTURE") => {
         result[key] = count;
       }
     })
+    isLoading.value = false;
   } catch (error) {
     console.error(`orders-by-status failed for ${type}:`, error);
   }
@@ -680,14 +753,22 @@ const getCircleProgress = (percentage: number) => {
 // };
 
 onMounted(async (): Promise<void> => {
-  await Promise.all([
-    loadAllStats(),
-    dataStore.loadUsers(),
-    dataStore.loadMaterials(),
-    dataStore.loadCategory("ALBUM"),
-    dataStore.loadCategory("VIGNETTE"),
-    dataStore.loadCategory("PICTURE"),
-  ]);
+
+  isLoading.value = true
+
+  try {
+    await Promise.all([
+      loadAllStats(),
+      dataStore.loadUsers(),
+      dataStore.loadMaterials(),
+      dataStore.loadCategory("ALBUM"),
+      dataStore.loadCategory("VIGNETTE"),
+      dataStore.loadCategory("PICTURE"),
+    ]);
+    isLoading.value = false
+  } catch (error) {
+    console.error(error)
+  }
 })
 </script>
 <style scoped>

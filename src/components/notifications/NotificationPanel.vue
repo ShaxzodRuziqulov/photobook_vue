@@ -19,7 +19,7 @@
             </button>
             <button
                 type="button"
-                class="notify-read-all cursor-pointer transition-colors"
+                class="notify-read-all hover:bg-blue-100 p-2 rounded-md cursor-pointer transition-colors"
                 :disabled="unreadCount === 0"
                 @click="$emit('mark-all-read')"
             >

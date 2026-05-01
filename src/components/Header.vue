@@ -3,7 +3,7 @@
       class="flex flex-col overflow-visible bg-pb-header w-full border-b border-pb-header-border"
   >
     <div
-        class="w-full h-16 px-2 2xl:px-4 gap-2 text-white grid grid-cols-[1fr_auto_1fr] grid-flow-col-dense items-center shadow-sm transition-colors"
+        class="w-full h-16 px-2 2xl:px-4 gap-2 text-white grid grid-cols-[1fr_auto_auto] grid-flow-col-dense items-center shadow-sm transition-colors"
     >
       <div class="flex items-center h-full">
         <div class="flex text-md items-center">
@@ -35,7 +35,7 @@
 
       </div>
       <div
-          class="flex gap-2 items-center justify-end"
+          class="flex gap-2 pl-6 items-center justify-end"
       >
         <div class="relative">
           <button
