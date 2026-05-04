@@ -1182,7 +1182,7 @@ const resetForm = () => {
     amount: 0,
     acceptedDate: getToday(),
     deadline: "",
-    status: "PENDING",
+    status: "IN_PROGRESS",
     imageUrl: "",
     notes: "",
     uploadId: ""
