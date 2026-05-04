@@ -149,6 +149,15 @@ const resolveStatusLabel = (status: string): string => {
   }
 };
 
+const resolveCategoryBadge = (category: string): string => {
+  const key = category.toLowerCase();
+  if (key.includes("albom") || key.includes("album")) return "bg-violet-100 text-violet-700";
+  if (key.includes("vinetka")) return "bg-amber-100 text-amber-700";
+  if (key.includes("maktab")) return "bg-sky-100 text-sky-700";
+  if (key.includes("nikoh")) return "bg-pink-100 text-pink-700";
+  return "bg-pb-elevated text-pb-label";
+};
+
 const resolveStatusBadge = (status: string): string => {
   switch (status) {
     case "COMPLETED":

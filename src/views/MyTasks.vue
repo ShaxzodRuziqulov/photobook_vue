@@ -407,7 +407,9 @@ const statsLoading = ref(false);
 
 const now = new Date();
 const uzMonths = ["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"];
-const todayStr = now.toISOString().slice(0, 10);
+const toDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+const todayStr = toDateKey(now);
 
 const selectedYear = ref(now.getFullYear());
 const selectedMonth = ref(now.getMonth());
@@ -588,11 +590,11 @@ const activeFormTask = (task: UserTask) => {
   form.value.itemType = task.itemType || ''
   form.value.amount = task.amount || 0
   form.value.processedCount = 0
-  form.value.notes = task.notes || ''
+  form.value.notes = ''
   form.value.canWork = true
   form.value.workStatus = task.remainingTotal === 0 ? "COMPLETED" : "STARTED"
   activeTaskForm.value = true;
-  taskProgressBaseline.value = snapshotTaskProgressDialog(task.notes || "", 0);
+  taskProgressBaseline.value = snapshotTaskProgressDialog("", 0);
 }
 
 const queryOrderId = () => {
@@ -629,21 +631,29 @@ const completedTask = async () => {
     }
 
     const taskId = selectedTask.value?.id || selectedTask.value?.orderId;
+    const nextRemainingAvailable = remainingAvailable - increment;
     await axiosInstance.put(`/api/v1/user-tasks/me/${taskId}`, {
-
       processedCount: increment,
+      notes: form.value.notes?.trim() || null,
+      workStatus: nextRemainingAvailable <= 0 ? "COMPLETED" : "STARTED",
     });
     activeTaskForm.value = false;
     await dataStore.loadGetUserTasks();
 
-    await loadMyMonthlyStats()
+    await loadMyMonthlyStats();
     try {
       await dataStore.refreshUnreadNotificationsCount();
     } catch {
       //
     }
     Toast.success("Bajarildi!");
-  } catch {
+  } catch (e: any) {
+    const msg =
+      e?.response?.data?.errors?.request?.[0] ||
+      e?.response?.data?.message ||
+      "Xatolik yuz berdi";
+    Toast.error(msg);
+    await dataStore.loadGetUserTasks();
   } finally {
     isLoading.value = false;
   }

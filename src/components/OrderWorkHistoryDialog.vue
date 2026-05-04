@@ -13,10 +13,10 @@
         <div class="mt-0.5 flex items-center gap-2">
           <p v-if="orderName" class="text-sm text-pb-muted">{{ orderName }}</p>
           <span
-              v-if="category"
-              class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-              :class="resolveCategoryBadge(category)"
-          >{{ category }}</span>
+              v-if="resolveOrderKindLabel()"
+              class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide"
+              :class="resolveCategoryBadge()"
+          >{{ resolveOrderKindLabel() }}</span>
         </div>
       </div>
       <div class="min-h-0 flex-1 overflow-auto p-4 sm:p-6">
@@ -72,6 +72,13 @@
                     <div class="text-xs text-pb-muted">
                       {{ item.stepOrder }}-qadam • Jami: {{ item.snapshot }}
                     </div>
+                    <div
+                        v-if="item.notes"
+                        class="mt-1 rounded-md border border-pb-border bg-pb-surface px-2.5 py-1.5 text-xs text-pb-muted"
+                    >
+                      <span class="font-semibold text-pb-text">Izoh:</span>
+                      {{ item.notes }}
+                    </div>
                   </div>
                 </template>
               </div>
@@ -92,6 +99,8 @@ import CDialog from "@/components/CDialog.vue";
 import CButton from "@/components/CButton.vue";
 import axiosInstance from "@/axios";
 import { useStore } from "@/stores/store";
+import type { OrderKind } from "@/typeModules/useModules";
+import { localizeOrderStatusTokens } from "@/utils/localizeOrderStatusTokens";
 
 interface StatusHistoryItem {
   fromStatus: string;
@@ -105,17 +114,19 @@ interface WorkLogItem {
   delta: number;
   snapshot: number;
   stepOrder: number;
+  notes?: string | null;
   loggedAt: string;
 }
 
 type TimelineItem =
     | { type: 'STATUS'; timestamp: string; fromStatus: string; toStatus: string }
-    | { type: 'WORK'; timestamp: string; employeeId: string; delta: number; snapshot: number; stepOrder: number };
+    | { type: 'WORK'; timestamp: string; employeeId: string; delta: number; snapshot: number; stepOrder: number; notes?: string | null };
 
 const props = defineProps<{
   show: boolean;
   orderId: string;
   orderName?: string;
+  kind?: OrderKind;
   category?: string;
   statusColor: Record<string, string>;
   statusLabel: Record<string, string>;
@@ -142,15 +153,31 @@ const timeline = computed<TimelineItem[]>(() => {
       employeeId: w.employeeId,
       delta: w.delta,
       snapshot: w.snapshot,
-      stepOrder: w.stepOrder
+      stepOrder: w.stepOrder,
+      notes: w.notes
     }))
   ];
 
   return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 });
 
-const resolveCategoryBadge = (cat: string): string => {
-  const key = cat.toLowerCase();
+const orderKindLabels: Record<OrderKind, string> = {
+  ALBUM: "Albom",
+  VIGNETTE: "Vinetka",
+  PICTURE: "Rasmli albom",
+};
+
+const resolveOrderKindLabel = (): string => {
+  if (props.kind && props.kind in orderKindLabels) return orderKindLabels[props.kind];
+  return props.category || "";
+};
+
+const resolveCategoryBadge = (): string => {
+  if (props.kind === "ALBUM") return "bg-violet-100 text-violet-700";
+  if (props.kind === "VIGNETTE") return "bg-amber-100 text-amber-700";
+  if (props.kind === "PICTURE") return "bg-sky-100 text-sky-700";
+
+  const key = (props.category || "").toLowerCase();
   if (key.includes("albom") || key.includes("album")) return "bg-violet-100 text-violet-700";
   if (key.includes("vinetka")) return "bg-amber-100 text-amber-700";
   if (key.includes("maktab")) return "bg-sky-100 text-sky-700";
@@ -162,6 +189,11 @@ const resolveEmployeeName = (employeeId: string): string => {
   const user = store.state.user.items.find(u => u.id === employeeId);
   if (!user) return employeeId.slice(0, 8) + "...";
   return `${user.lastName} ${user.firstName}`.trim() || user.username;
+};
+
+const resolveStatusLabel = (status: string | null | undefined): string => {
+  if (!status) return "—";
+  return localizeOrderStatusTokens(status);
 };
 
 const formatDateTime = (dt: string): string => {

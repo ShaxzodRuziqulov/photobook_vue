@@ -310,6 +310,8 @@ export interface MonthlyWorkReport {
 export interface EmployeeMonthlyOrderSummary {
     orderId: string;
     orderName: string;
+    kind?: OrderKind;
+    orderKind?: OrderKind;
     category: string;
     itemType: string;
     status: OrderStatus | string;
