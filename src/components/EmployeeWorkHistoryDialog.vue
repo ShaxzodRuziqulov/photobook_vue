@@ -53,8 +53,8 @@
               >{{ order.category }}</span>
               <p v-if="order.itemType" class="text-xs text-pb-accent">{{ order.itemType }}</p>
             </td>
-            <td class="px-3 py-2.5 text-center">
-              Vinetka / Albom
+            <td class="px-3 py-2.5 text-center text-blue-600">
+              {{order.kind}}
             </td>
             <td class="px-3 py-2.5 text-center text-pb-muted tabular-nums">
               {{ formatDate(order.lastLoggedAt) }}
