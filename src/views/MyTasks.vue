@@ -220,7 +220,7 @@
         <div v-else-if="categoryGroups.length === 0" class="text-sm text-pb-muted">
           Bajarilgan vazifalar mavjud emas
         </div>
-        <div v-else class="flex flex-wrap gap-2">
+        <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
           <div
             v-for="group in categoryGroups"
             :key="`${group.categoryId}-${group.kind}`"
