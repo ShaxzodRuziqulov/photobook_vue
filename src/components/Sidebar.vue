@@ -138,14 +138,18 @@ const mainMenuItems: ComputedRef = computed(() => {
 
   const routes = props.menuItems
 
-  if (isAdmin.value || isManager.value) {
+  if (isAdmin.value) {
     return routes;
   }
 
+  const HIDDEN_FOR_MANAGER = ["/users"];
+
+  if (isManager.value) {
+    return routes.filter(r => !HIDDEN_FOR_MANAGER.includes(r.path));
+  }
+
   if (isOperator.value) {
-    return routes?.filter( (r: any) =>
-        ["/tasks", "/profile"].includes(r.path)
-    )
+    return routes.filter((r) => ["/tasks", "/profile"].includes(r.path));
   }
 
   return routes;
