@@ -746,7 +746,7 @@ const completedTask = async () => {
     });
 
     await loadMyMonthlyStats();
-    loadCategoryStats();
+    await loadCategoryStats()
     try {
       await dataStore.refreshUnreadNotificationsCount();
     } catch {
@@ -826,7 +826,7 @@ onMounted(async () => {
     await nextTick();
     await openTaskFromRouteQuery();
     await loadMyMonthlyStats();
-    loadCategoryStats();
+    await loadCategoryStats();
   } catch {
   } finally {
     isLoading.value = false;
