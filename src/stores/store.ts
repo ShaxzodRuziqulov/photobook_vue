@@ -590,7 +590,10 @@ export const useStore = defineStore('item', () => {
         await loadUsers()
     }
 
+    let lastTaskFilters: Partial<IPaging> = {};
+
     const loadGetUserTasks = async (filters: Partial<IPaging> = {} ) => {
+        lastTaskFilters = filters;
         const res = await axiosInstance.post("/api/v1/user-tasks/me/paging",
             {
                 search: filters.search || '',
@@ -628,7 +631,7 @@ export const useStore = defineStore('item', () => {
         }
         socketTasksRefreshTimer = setTimeout(() => {
             socketTasksRefreshTimer = null;
-            void loadGetUserTasks();
+            void loadGetUserTasks(lastTaskFilters);
         }, SOCKET_LIST_REFRESH_DEBOUNCE_MS);
     };
 

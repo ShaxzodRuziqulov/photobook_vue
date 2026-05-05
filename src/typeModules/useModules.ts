@@ -254,6 +254,7 @@ export interface UserTask {
 export interface CategoryMonthlyStats {
     categoryId: string;
     categoryName: string;
+    kind: string;
     workMonth: string;
     orderCount: number;
     totalProcessed: number;
@@ -262,6 +263,7 @@ export interface CategoryMonthlyStats {
 export interface CategoryGroup {
     categoryId: string;
     categoryName: string;
+    kind: string;
     totalOrderCount: number;
     totalProcessed: number;
     months: CategoryMonthlyStats[];

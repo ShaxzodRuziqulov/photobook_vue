@@ -214,7 +214,7 @@
             :key="group.categoryId"
             class="min-w-[180px] rounded-xl border border-pb-border bg-pb-surface px-3 py-3"
           >
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex items-center gap-2 mb-1">
               <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-500">
                 <i class="fa-solid fa-tag text-xs"></i>
               </div>
@@ -222,6 +222,9 @@
                 {{ group.categoryName }}
               </span>
             </div>
+            <span class="text-[10px] font-medium text-pb-muted mb-2 block">
+              {{ group.kind === 'ALBUM' ? 'Albom' : group.kind === 'VIGNETTE' ? 'Vinetka' : 'Rasmli albom' }}
+            </span>
             <p class="text-lg font-bold tabular-nums text-pb-text leading-tight">
               {{ group.totalOrderCount }}
               <span class="text-sm font-medium text-pb-muted">ta order</span>
@@ -249,12 +252,12 @@
         <AppInput
             v-model="formData"
             type="date"
-            label="Qabul sanasi"
+            label="Muddat boshi"
         />
         <AppInput
             v-model="endData"
             type="date"
-            label="Tugash sanasi"
+            label="Muddat tugashi"
         />
         <CButton
             type="button"
@@ -448,17 +451,19 @@ const categoryStatsLoading = ref(false);
 
 const categoryGroups = computed<CategoryGroup[]>(() => {
   const map = new Map<string, CategoryGroup>();
-  for (const item of categoryStats.value.filter(i => i.workMonth === selectedMonthParam.value)) {
-    if (!map.has(item.categoryId)) {
-      map.set(item.categoryId, {
+  for (const item of categoryStats.value) {
+    const key = `${item.categoryId}-${item.kind}`;
+    if (!map.has(key)) {
+      map.set(key, {
         categoryId: item.categoryId,
         categoryName: item.categoryName,
+        kind: item.kind,
         totalOrderCount: 0,
         totalProcessed: 0,
-        months: []
+        months: [],
       });
     }
-    const group = map.get(item.categoryId)!;
+    const group = map.get(key)!;
     group.totalOrderCount += Number(item.orderCount);
     group.totalProcessed += Number(item.totalProcessed);
     group.months.push(item);
@@ -543,14 +548,19 @@ const monthAcceptedDateTo = computed(() => {
 
 const reloadTasksByMonth = () => {
   dataStore.loadGetUserTasks({
+    search: formFilter.value || '',
+    statuses: formStatus.value ? [formStatus.value] : [],
     acceptedDateFrom: monthAcceptedDateFrom.value,
     acceptedDateTo: monthAcceptedDateTo.value,
+    deadlineFrom: formData.value || undefined,
+    deadlineTo: endData.value || undefined,
   });
 };
 
 watch([selectedYear, selectedMonth], () => {
   loadMyMonthlyStats();
   reloadTasksByMonth();
+  loadCategoryStats();
 });
 
 const formatWorkMonth = (workMonth: string) => {
@@ -561,7 +571,9 @@ const formatWorkMonth = (workMonth: string) => {
 const loadCategoryStats = async () => {
   categoryStatsLoading.value = true;
   try {
-    const res = await axiosInstance.get<CategoryMonthlyStats[]>('/api/v1/user-tasks/me/stats/by-category');
+    const res = await axiosInstance.get<CategoryMonthlyStats[]>('/api/v1/user-tasks/me/stats/by-category', {
+      params: { month: selectedMonthParam.value },
+    });
     categoryStats.value = res.data;
   } catch {
     categoryStats.value = [];
