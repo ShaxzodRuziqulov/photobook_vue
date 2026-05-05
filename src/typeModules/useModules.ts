@@ -255,6 +255,7 @@ export interface CategoryMonthlyStats {
     categoryId: string;
     categoryName: string;
     kind: string;
+    defaultPages: number | null;
     workMonth: string;
     orderCount: number;
     totalProcessed: number;
@@ -264,6 +265,7 @@ export interface CategoryGroup {
     categoryId: string;
     categoryName: string;
     kind: string;
+    defaultPages: number | null;
     totalOrderCount: number;
     totalProcessed: number;
     months: CategoryMonthlyStats[];

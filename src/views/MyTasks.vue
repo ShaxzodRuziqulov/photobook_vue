@@ -154,19 +154,31 @@
             </div>
           </div>
 
-          <!-- Oldingi oy -->
-          <div class="flex items-center gap-3 rounded-xl border border-pb-border bg-pb-surface px-3 py-3">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-500">
-              <i class="fa-solid fa-calendar text-sm"></i>
+
+          <!-- Oldingi oydan qolgan -->
+          <div class="flex items-center gap-3 rounded-xl border px-3 py-3"
+            :class="prevMonthUnfinishedCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-pb-border bg-pb-surface'"
+          >
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              :class="prevMonthUnfinishedCount > 0 ? 'bg-orange-100 text-orange-500' : 'bg-violet-50 text-violet-400'"
+            >
+              <i v-if="prevMonthUnfinishedLoading" class="fa-solid fa-spinner fa-spin text-sm"></i>
+              <i v-else class="fa-solid fa-calendar-xmark text-sm"></i>
             </div>
             <div class="min-w-0">
-              <span class="text-[11px] font-semibold uppercase tracking-wide text-pb-muted">Oldingi oy</span>
-              <p class="text-xl font-bold tabular-nums text-pb-text leading-tight">
-                {{ statsLoading ? '...' : myLastMonthlyStats }}
-                <span class="text-sm font-medium text-pb-muted">dona</span>
+              <span class="text-[11px] font-semibold uppercase tracking-wide text-pb-muted">Oldingi oydan</span>
+              <p class="text-xl font-bold tabular-nums leading-tight"
+                :class="prevMonthUnfinishedCount > 0 ? 'text-orange-600' : 'text-pb-text'"
+              >
+                {{ prevMonthUnfinishedLoading ? '...' : prevMonthUnfinishedCount }}
+                <span class="text-sm font-medium text-pb-muted">ta</span>
+              </p>
+              <p class="text-[11px] text-pb-muted mt-0.5">
+                {{ prevMonthUnfinishedCount > 0 ? 'tugallanmagan' : 'hammasi bajarilgan' }}
               </p>
             </div>
           </div>
+
           <div class="flex items-center gap-3 rounded-xl border px-3 py-3"
             :class="overdueTasksCount > 0 ? 'border-red-200 bg-red-50' : 'border-pb-border bg-pb-surface'"
           >
@@ -208,28 +220,40 @@
         <div v-else-if="categoryGroups.length === 0" class="text-sm text-pb-muted">
           Bajarilgan vazifalar mavjud emas
         </div>
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 flex-wrap gap-3">
+        <div v-else class="flex flex-wrap gap-2">
           <div
             v-for="group in categoryGroups"
-            :key="group.categoryId"
-            class="rounded-xl border border-pb-border bg-pb-surface px-3 py-3"
+            :key="`${group.categoryId}-${group.kind}`"
+            class="min-w-[160px] rounded-xl border border-pb-border bg-pb-surface px-3 py-3 flex flex-col gap-3"
           >
-            <div class="flex items-center gap-2 mb-1">
-              <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+            <!-- Top: icon + name + kind -->
+            <div class="flex items-start gap-2">
+              <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-500 mt-0.5">
                 <i class="fa-solid fa-tag text-xs"></i>
               </div>
-              <span class="text-[11px] font-semibold uppercase tracking-wide text-pb-muted truncate">
-                {{ group.categoryName }}
-              </span>
+              <div class="min-w-0">
+                <span class="block truncate text-[11px] font-bold uppercase tracking-wide text-pb-text">
+                  {{ group.categoryName }}
+                </span>
+                <span class="text-[11px] text-pb-muted">
+                  {{ group.kind === 'ALBUM' ? 'Albom' : group.kind === 'VIGNETTE' ? 'Vinetka' : 'Rasmli albom' }}
+                </span>
+              </div>
             </div>
-            <span class="text-[10px] font-medium text-pb-muted mb-2 block">
-              {{ group.kind === 'ALBUM' ? 'Albom' : group.kind === 'VIGNETTE' ? 'Vinetka' : 'Rasmli albom' }}
-            </span>
-            <p class="text-lg font-bold tabular-nums text-pb-text leading-tight">
-              {{ group.totalOrderCount }}
-              <span class="text-sm font-medium text-pb-muted">ta order</span>
-            </p>
-            <p class="text-[12px] font-semibold text-pb-accent">{{ group.totalProcessed }} dona</p>
+            <!-- Bottom: order count left, page count right -->
+            <div class="flex items-end justify-between gap-2">
+              <div>
+                <p class="text-base font-bold tabular-nums text-pb-text leading-tight">
+                  {{ group.totalOrderCount }}
+                  <span class="text-sm font-medium text-pb-muted">ta order</span>
+                </p>
+                <p class="text-[12px] font-semibold text-pb-accent">{{ group.totalProcessed }} dona</p>
+              </div>
+              <div v-if="group.defaultPages" class="text-right shrink-0">
+                <p class="text-xl font-bold tabular-nums text-pb-text leading-tight">{{ group.defaultPages }}</p>
+                <p class="text-[11px] text-pb-muted">bet</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -446,6 +470,9 @@ const myMonthlyStats = ref<number>(0);
 const myLastMonthlyStats = ref<number>(0);
 const statsLoading = ref(false);
 
+const prevMonthUnfinishedCount = ref<number>(0);
+const prevMonthUnfinishedLoading = ref(false);
+
 const categoryStats = ref<CategoryMonthlyStats[]>([]);
 const categoryStatsLoading = ref(false);
 
@@ -458,6 +485,7 @@ const categoryGroups = computed<CategoryGroup[]>(() => {
         categoryId: item.categoryId,
         categoryName: item.categoryName,
         kind: item.kind,
+        defaultPages: item.defaultPages ?? null,
         totalOrderCount: 0,
         totalProcessed: 0,
         months: [],
@@ -546,6 +574,36 @@ const monthAcceptedDateTo = computed(() => {
   return `${selectedYear.value}-${m}-${String(lastDay).padStart(2, '0')}`;
 });
 
+const prevMonthAcceptedDateFrom = computed(() => {
+  const d = new Date(selectedYear.value, selectedMonth.value - 1, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+});
+
+const prevMonthAcceptedDateTo = computed(() => {
+  const d = new Date(selectedYear.value, selectedMonth.value, 0);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+});
+
+const loadPrevMonthUnfinished = async () => {
+  prevMonthUnfinishedLoading.value = true;
+  try {
+    const res = await axiosInstance.post<{ totalElements: number }>(
+      '/api/v1/user-tasks/me/paging',
+      {
+        statuses: ['PENDING', 'IN_PROGRESS', 'PAUSED'],
+        acceptedDateFrom: prevMonthAcceptedDateFrom.value,
+        acceptedDateTo: prevMonthAcceptedDateTo.value,
+      },
+      { params: { page: 0, size: 1 } }
+    );
+    prevMonthUnfinishedCount.value = res.data.totalElements ?? 0;
+  } catch {
+    prevMonthUnfinishedCount.value = 0;
+  } finally {
+    prevMonthUnfinishedLoading.value = false;
+  }
+};
+
 const reloadTasksByMonth = () => {
   dataStore.loadGetUserTasks({
     search: formFilter.value || '',
@@ -561,6 +619,7 @@ watch([selectedYear, selectedMonth], () => {
   loadMyMonthlyStats();
   reloadTasksByMonth();
   loadCategoryStats();
+  loadPrevMonthUnfinished();
 });
 
 const formatWorkMonth = (workMonth: string) => {
@@ -839,6 +898,7 @@ onMounted(async () => {
     await openTaskFromRouteQuery();
     await loadMyMonthlyStats();
     await loadCategoryStats();
+    void loadPrevMonthUnfinished();
   } catch {
   } finally {
     isLoading.value = false;
