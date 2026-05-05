@@ -288,9 +288,10 @@
     <OrderWorkHistoryDialog
         :show="workHistoryShow"
         :order-id="workHistoryOrderId"
+        :order-name="workHistoryOrderName"
         :statusColor="statusColor"
         :statusLabel="statusLabel"
-        category="Rasmli Albom"
+        :category="workHistoryCategoryName"
         @close="workHistoryShow = false"
     />
     <div class="animate-fade-in flex w-full min-w-0 flex-col gap-3 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm">
@@ -449,9 +450,9 @@
                   <span>{{emp.processedCount}} ta</span>
                 </div>
               </div>
-              <div v-if="emp.notes" class="break-words pl-5 text-xs text-pb-muted">
-                Izoh: {{ emp.notes }}
-              </div>
+<!--              <div v-if="emp.notes" class="break-words pl-5 text-xs text-pb-muted">-->
+<!--                Izoh: {{ emp.notes }}-->
+<!--              </div>-->
             </div>
           </td>
           <td class="py-2 px-3">
@@ -488,7 +489,7 @@
                   text="Tarix"
                   size="sm"
                   variant="outline-accent"
-                  @click="openWorkHistory(album.id)"
+                  @click="openWorkHistory(album)"
               />
               <CButton
                   type="button"
@@ -632,6 +633,23 @@ const orderEditBaseline = ref("");
 const workHistoryShow = ref(false);
 const workHistoryOrderId = ref("");
 const employeeResets = ref<Record<string, boolean>>({});
+const isVisible = ref(false);
+const selectedItem = ref<string | null>(null);
+const showConfirmItem = ref(false);
+const formStatus = ref<string | null>(null);
+const formData = ref<string | null>(null);
+const endData = ref<string | null>(null);
+const formFilter = ref<string | ''>('');
+const previewImage = ref<string | null>(null)
+const isLoading = ref(false);
+const errors = ref<Record<string, string>>({})
+const selectedFiles = ref<File[]>([])
+const previewUrl = ref<string | null>(null)
+const removedOldImage = ref(false)
+const imageUploading = ref(false)
+const isSubmitting = ref(false)
+const workHistoryOrderName = ref('')
+const workHistoryCategoryName = ref('')
 
 const getUserName = (id: string): string => {
   const user = allUsers.value.find((u: any) => u.id === id);
@@ -643,21 +661,13 @@ const toggleEmployeeReset = (id: string) => {
   employeeResets.value[id] = !employeeResets.value[id];
 };
 
-const openWorkHistory = (id: string) => {
-  workHistoryOrderId.value = id;
+const openWorkHistory = (order: Order) => {
+  workHistoryOrderId.value = order.id;
+  workHistoryCategoryName.value = order.categoryName;
+  workHistoryOrderName.value = order.orderName;
   workHistoryShow.value = true;
 };
 
-const isVisible = ref(false);
-const selectedItem = ref<string | null>(null);
-const showConfirmItem = ref(false);
-const formStatus = ref<string | null>(null);
-const formData = ref<string | null>(null);
-const endData = ref<string | null>(null);
-const formFilter = ref<string | ''>('');
-const previewImage = ref<string | null>(null)
-const isLoading = ref(false);
-const errors = ref<Record<string, string>>({})
 
 const openPreview = (url: string) => {
   previewImage.value = url;
@@ -676,11 +686,6 @@ const getAvatarUrl = (url: string | undefined): string => {
   return `${BASE_URL}${url}`;
 
 };
-const selectedFiles = ref<File[]>([])
-const previewUrl = ref<string | null>(null)
-const removedOldImage = ref(false)
-const imageUploading = ref(false)
-const isSubmitting = ref(false)
 
 const orderImageDisplaySrc = computed(() => {
   const u = itemForm.value.imageUrl

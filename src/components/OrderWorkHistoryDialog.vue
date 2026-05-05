@@ -11,12 +11,15 @@
       <div class="shrink-0 border-b border-pb-border px-4 pb-2 pt-10 sm:pt-6">
         <h2 class="text-base font-semibold text-pb-text">Buyurtma faollik tarixi</h2>
         <div class="mt-0.5 flex items-center gap-2">
-          <p v-if="orderName" class="text-sm text-pb-muted">{{ orderName }}</p>
+          <p v-if="orderName" class="text-sm font-semibold text-pb-text">
+            {{ orderName }}
+          </p>
           <span
               v-if="resolveOrderKindLabel()"
-              class="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wide"
-              :class="resolveCategoryBadge()"
-          >{{ resolveOrderKindLabel() }}</span>
+              class="shrink-0 rounded px-2 py-0.5 text-xs bg-violet-100 text-violet-600"
+          >
+            {{ category }}
+          </span>
         </div>
       </div>
       <div class="min-h-0 flex-1 overflow-auto p-4 sm:p-6">
@@ -173,9 +176,9 @@ const resolveOrderKindLabel = (): string => {
 };
 
 const resolveCategoryBadge = (): string => {
-  if (props.kind === "ALBUM") return "bg-violet-100 text-violet-700";
-  if (props.kind === "VIGNETTE") return "bg-amber-100 text-amber-700";
-  if (props.kind === "PICTURE") return "bg-sky-100 text-sky-700";
+  if (props.kind === "ALBUM") return "bg-blue-100 text-red-700";
+  if (props.kind === "VIGNETTE") return "bg-blue-100 text-amber-700";
+  if (props.kind === "PICTURE") return "bg-blue-100 text-sky-700";
 
   const key = (props.category || "").toLowerCase();
   if (key.includes("albom") || key.includes("album")) return "bg-violet-100 text-violet-700";

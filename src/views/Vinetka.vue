@@ -289,9 +289,10 @@
     <OrderWorkHistoryDialog
         :show="workHistoryShow"
         :order-id="workHistoryOrderId"
+        :order-name="workHistoryOrderName"
         :statusColor="statusColor"
         :statusLabel="statusLabel"
-        category="Vinetka"
+        :category="workHistoryCategoryName"
         @close="workHistoryShow = false"
     />
     <div class="animate-fade-in flex w-full min-w-0 flex-col gap-3 rounded-xl border border-pb-border bg-pb-surface px-4 py-3 shadow-sm">
@@ -457,9 +458,9 @@
                   <span>{{emp.processedCount}} ta</span>
                 </div>
               </div>
-              <div v-if="emp.notes" class="break-words pl-5 text-xs text-pb-muted">
-                Izoh: {{ emp.notes }}
-              </div>
+<!--              <div v-if="emp.notes" class="break-words pl-5 text-xs text-pb-muted">-->
+<!--                Izoh: {{ emp.notes }}-->
+<!--              </div>-->
             </div>
           </td>
           <td class="py-2 px-3">
@@ -496,7 +497,7 @@
                   text="Tarix"
                   size="sm"
                   variant="outline-accent"
-                  @click="openWorkHistory(order.id)"
+                  @click="openWorkHistory(order)"
               />
               <CButton
                   type="button"
@@ -636,8 +637,10 @@ const toggleEmployeeReset = (id: string) => {
   employeeResets.value[id] = !employeeResets.value[id];
 };
 
-const openWorkHistory = (id: string) => {
-  workHistoryOrderId.value = id;
+const openWorkHistory = (order: Order) => {
+  workHistoryOrderId.value = order.id;
+  workHistoryOrderName.value = order.orderName;
+  workHistoryCategoryName.value = order.categoryName;
   workHistoryShow.value = true;
 };
 
@@ -676,6 +679,8 @@ const previewUrl = ref<string | null>(null)
 const removedOldImage = ref(false)
 const imageUploading = ref(false)
 const isSubmitting = ref(false)
+const workHistoryOrderName = ref('')
+const workHistoryCategoryName = ref('')
 
 const orderImageDisplaySrc = computed(() => {
   const u = itemForm.value.imageUrl

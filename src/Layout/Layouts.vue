@@ -70,7 +70,7 @@ const toggleMenu = () => {
 }
 
 const onMainScroll = () => {
-  isOnActive.value = (mainScrollEl.value?.scrollTop ?? 0) > 400;
+  isOnActive.value = (mainScrollEl.value?.scrollTop ?? 0) > 900;
 };
 
 const scrollToTop = () => {
@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
 <style scoped>
 
 .scrollBtn {
-  z-index: 999;
+  z-index: 10;
   position: fixed;
   color: white;
   width: 48px;

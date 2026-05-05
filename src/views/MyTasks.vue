@@ -96,24 +96,25 @@
           />
         </div>
       </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <CButton
-            type="button"
-            text="Orqaga"
-            size="sm"
-            is-has-fa-icon
-            variant="ghost-accent"
-            fa-class="fa-solid fa-arrow-left"
-            @click="router.back()"
-        />
-        <h2 class="text-base font-bold text-pb-text sm:text-lg">Barcha vazifalar</h2>
-      </div>
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center justify-between gap-2">
+
+      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center justify-between gap-2 py-4">
+        <div class="flex shrink-0 items-center gap-2">
+          <CButton
+              type="button"
+              text="Orqaga"
+              size="sm"
+              is-has-fa-icon
+              variant="ghost-accent"
+              fa-class="fa-solid fa-arrow-left"
+              @click="router.back()"
+          />
+          <h2 class="text-base font-bold text-pb-text sm:text-lg">Barcha vazifalar</h2>
+        </div>
+        <div class="flex items-center sm:justify-start lg:justify-end w-full gap-4">
           <button
-            type="button"
-            class="flex h-8 w-8 items-center justify-center rounded-lg border border-pb-border bg-pb-surface text-pb-muted transition hover:bg-pb-app hover:text-pb-text active:scale-95"
-            @click="prevMonth"
+              type="button"
+              class="flex cursor-pointer h-8 w-8 items-center justify-center rounded-lg border border-pb-border bg-pb-surface text-pb-muted transition hover:bg-pb-app hover:text-pb-text active:scale-95"
+              @click="prevMonth"
           >
             <i class="fa-solid fa-chevron-left text-xs"></i>
           </button>
@@ -122,14 +123,16 @@
             <span v-if="isCurrentMonth" class="rounded-full bg-pb-accent/10 px-2 py-0.5 text-[11px] font-semibold text-pb-accent">Hozir</span>
           </div>
           <button
-            type="button"
-            class="flex h-8 w-8 items-center justify-center rounded-lg border border-pb-border bg-pb-surface text-pb-muted transition hover:bg-pb-app hover:text-pb-text active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
-            :disabled="isCurrentMonth"
-            @click="nextMonth"
+              type="button"
+              class="flex cursor-pointer h-8 w-8 items-center justify-center rounded-lg border border-pb-border bg-pb-surface text-pb-muted transition hover:bg-pb-app hover:text-pb-text active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+              :disabled="isCurrentMonth"
+              @click="nextMonth"
           >
             <i class="fa-solid fa-chevron-right text-xs"></i>
           </button>
         </div>
+      </div>
+      <div class="flex flex-col gap-2">
 
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <!-- Tanlangan oy natijasi -->
