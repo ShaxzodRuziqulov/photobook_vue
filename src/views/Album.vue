@@ -1048,11 +1048,6 @@ const statusLabel: Record<string, string> = {
   COMPLETED:   "Bajarilgan",
 };
 
-const oderReceiver = ref([
-  {value: "ADMIN", text: "ADMIN" },
-  {value: "MENEGER", text: "MENEGER" },
-])
-
 const visibleForm = () => {
   isVisible.value = true;
   resetForm()
@@ -1131,8 +1126,8 @@ const submitForm = async () => {
     resetForm()
     isVisible.value = false
 
-  } catch (err) {
-    console.error(err)
+  } catch (err: any) {
+    Toast.error(err?.response?.data?.message || "Xatolik yuz berdi")
   } finally {
     isSubmitting.value = false
   }

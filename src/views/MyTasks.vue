@@ -544,8 +544,6 @@ const prevMonthParam = computed(() => {
   return toParam(d.getFullYear(), d.getMonth());
 });
 
-const currentMonthLabel = computed(() => selectedMonthLabel.value);
-
 const monthGrowth = computed(() => {
   if (!myLastMonthlyStats.value) return myMonthlyStats.value > 0 ? 100 : 0;
   return Math.round(((myMonthlyStats.value - myLastMonthlyStats.value) / myLastMonthlyStats.value) * 100);
@@ -653,11 +651,6 @@ watch([selectedYear, selectedMonth], () => {
   void loadCategoryStats();
   void loadPrevMonthUnfinished();
 });
-
-const formatWorkMonth = (workMonth: string) => {
-  const [year, month] = workMonth.split('-');
-  return `${uzMonths[parseInt(month) - 1]} ${year}`;
-};
 
 const loadCategoryStats = async () => {
   categoryStatsLoading.value = true;
@@ -770,12 +763,6 @@ const getTaskProgressColor = (task: any) => {
 }
 
 const form = ref({
-  orderId: "",
-  orderName: "",
-  itemType: "",
-  stepOrder: null,
-  canWork: true,
-  amount: 0,
   processedCount: 0,
   notes: '',
   workStatus: "STARTED" as WorkStatus,
@@ -794,13 +781,8 @@ const filteredOrders = computed(() => {
 
 const activeFormTask = (task: UserTask) => {
   selectedTask.value = {...task };
-  form.value.orderId = task.orderId || ''
-  form.value.orderName = task.orderName || ''
-  form.value.itemType = task.itemType || ''
-  form.value.amount = task.amount || 0
   form.value.processedCount = 0
   form.value.notes = ''
-  form.value.canWork = true
   form.value.workStatus = task.remainingTotal === 0 ? "COMPLETED" : "STARTED"
   activeTaskForm.value = true;
   taskProgressBaseline.value = snapshotTaskProgressDialog("", 0);
@@ -826,7 +808,6 @@ const completedTask = async () => {
   isLoading.value = true;
   try {
     const remainingAvailable = selectedTask.value?.remainingAvailable ?? 0;
-    const remainingTotal = selectedTask.value?.remainingTotal ?? 0;
     const increment = Number(form.value.processedCount) || 0;
 
     if (increment <= 0) {
@@ -840,6 +821,10 @@ const completedTask = async () => {
     }
 
     const taskId = selectedTask.value?.id || selectedTask.value?.orderId;
+    if (!taskId) {
+      Toast.error("Vazifa topilmadi");
+      return;
+    }
     const nextRemainingAvailable = remainingAvailable - increment;
     await axiosInstance.put(`/api/v1/user-tasks/me/${taskId}`, {
       processedCount: increment,

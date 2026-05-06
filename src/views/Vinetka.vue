@@ -444,8 +444,8 @@
           <td class="px-1 ">
             <div
                 v-if="order.employees"
-                v-for="(emp, index) in getOrderedEmployees(order)"
-                :key="index"
+                v-for="emp in getOrderedEmployees(order)"
+                :key="emp.employeeId"
                 class="border-b border-pb-border"
             >
               <div class="flex text-sm items-center justify-between gap-1">
@@ -997,7 +997,7 @@ const allPagesNumbers = computed(() => {
 })
 
 const changePage = async (targetPage: number | '...') => {
-  if (targetPage === '...' || typeof targetPage !== 'number') return
+  if (targetPage === '...') return
   if (targetPage < 1 || targetPage > totalPages.value) return
 
   await dataStore.changePage("VIGNETTE", targetPage - 1, orderFilters.value)
@@ -1062,11 +1062,6 @@ const statusLabel: Record<string, string> = {
   PAUSED: "To'xtatilgan",
   COMPLETED:   "Bajarilgan",
 }
-
-const oderReceiver = ref([
-  {value: "ADMIN", text: "ADMIN" },
-  {value: "MENEGER", text: "MENEGER" },
-])
 
 const visibleForm = () => {
   isVisible.value = true;
@@ -1136,8 +1131,8 @@ const submitForm = async () => {
     resetForm()
     isVisible.value = false
 
-  } catch (err) {
-    console.error(err)
+  } catch (err: any) {
+    Toast.error(err?.response?.data?.message || "Xatolik yuz berdi")
   } finally {
     isSubmitting.value = false
   }
