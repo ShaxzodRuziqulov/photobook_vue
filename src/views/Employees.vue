@@ -725,6 +725,8 @@ const submitForm = async () => {
       Toast.success("Xodim qo'shildi");
     }
 
+    await store.loadUsers();
+
     revokePreviewUrl();
     visibleShow.value = false;
     isEditing.value = false;

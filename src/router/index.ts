@@ -20,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
             },
             {
                 path: '/tasks',
-                name: 'Mening vazifalarim',
+                name: 'Vazifalarim',
                 component: () => import('../views/MyTasks.vue'),
                 meta: {
                     requiresAuth: true,
@@ -39,7 +39,7 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: "/vignette",
                 name: "Vinetka",
-                component: () =>import('../views/Vinetka.vue'),
+                component: () =>import('../views/Vignette.vue'),
                 meta: {
                     requiresAuth: true,
                     icon: 'fa-solid fa-book-open'
@@ -96,7 +96,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'UserProfile',
                 component: () =>import('../views/UserProfile.vue'),
                 meta: {
-                    title: 'Profil',
+                    title: 'Profile',
                     requiresAuth: true,
                     icon: 'fas fa-user'
                 },

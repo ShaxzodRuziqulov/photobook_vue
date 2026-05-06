@@ -1,61 +1,56 @@
 <template>
-  <div
-      class="flex flex-col overflow-visible bg-pb-header w-full border-b border-pb-header-border"
-  >
-    <div
-        class="w-full h-16 px-2 2xl:px-4 gap-2 text-white grid grid-cols-[1fr_auto_auto] grid-flow-col-dense items-center shadow-sm transition-colors"
-    >
+  <div class="flex flex-col overflow-visible bg-pb-header w-full border-b border-pb-header-border">
+    <div class="w-full h-16 px-2 2xl:px-4 grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_auto] items-center gap-2 text-white shadow-sm transition-all">
       <div class="flex items-center h-full">
-        <div class="flex text-md items-center">
-          <img class="w-16" src="../assets/logo.png" alt="">
-          <div class="flex gap-1 flex-col items-center">
-            <h2>PHOTOBOOK</h2>
+        <div class="flex items-center text-[15px]">
+          <img class="w-16" src="../assets/logo.png" alt="Logo">
+          <div class="flex flex-col items-center gap-1">
+            <h2 class="m-0 text-base font-semibold">PHOTOBOOK</h2>
             <span
                 v-if="searchName"
                 class="text-xs bg-pb-role text-pb-role-text font-semibold rounded-lg py-0.5 px-2 uppercase tracking-wide"
-            >{{ searchName }}</span>
+            >
+              {{ searchName }}
+            </span>
           </div>
         </div>
       </div>
-
-      <div
-          v-if="isDesktop"
-          class="flex items-center w-full gap-1 flex-row">
+      <nav v-if="isDesktop" class="flex items-center justify-center w-full gap-1">
         <router-link
             v-for="(route, index) in mainRoutes"
             :key="index"
             :to="route?.path"
-          active-class="bg-white/15 text-white font-medium"
-          class="p-2 gap-1 text-md flex max-lg:p-1 items-center text-center rounded-md text-white/90 hover:bg-white/10 hover:text-white transition duration-200"
+            active-class="bg-white/15 text-white font-medium"
+            class="px-2 py-2 gap-1 text-[15px] flex items-center text-center rounded-md text-white/90 hover:bg-white/10 hover:text-white transition-all duration-200 no-underline max-lg:px-1"
             :class="index === mainRoutes.length - 1 ? 'hidden' : ''"
         >
-          <i class="w-4 text-sm h-3 flex" v-if="route.meta?.icon" :class="route.meta?.icon"></i>
-          <span class="">{{ route.name }}</span>
+          <i v-if="route.meta?.icon" class="w-4 h-3 flex text-sm" :class="route.meta?.icon"></i>
+          <span>{{ route.name }}</span>
         </router-link>
-
-      </div>
-      <div
-          class="flex gap-2 pl-6 items-center justify-end"
-      >
+      </nav>
+      <div class="flex items-center justify-end gap-2">
         <div class="relative">
           <button
               type="button"
-              class="notify-button"
+              class="relative inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/8 text-white text-lg border-0 cursor-pointer transition-colors duration-200 overflow-visible hover:bg-white/14"
               @click="toggleNotifications"
           >
             <i class="fa-regular fa-bell"></i>
-            <span v-if="unreadCount > 0" class="notify-badge">
+            <span
+                v-if="unreadCount > 0"
+                class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-pb-danger border-2 border-pb-header text-white text-[11px] font-bold inline-flex items-center justify-center z-[3] shadow-[0_8px_20px_color-mix(in_srgb,var(--color-pb-danger)_35%,transparent)]"
+            >
               {{ unreadCount > 9 ? '9+' : unreadCount }}
             </span>
           </button>
           <div
               v-if="isNotificationsOpen"
-              class="notify-overlay"
+              class="fixed inset-0 bg-black/40 z-[15]"
               @click="isNotificationsOpen = false"
           ></div>
           <NotificationPanel
-              @close="closeNotifications"
               v-if="isNotificationsOpen"
+              @close="closeNotifications"
               :notifications="notifications"
               :paging="notificationsPaging"
               :unread-count="unreadCount"
@@ -78,72 +73,75 @@
               @load-more="loadMoreNotifications"
           />
         </div>
-        <button
-            v-if="isDesktop"
-            type="button"
-            class="user-chip"
-            @click="openToProfile"
-        >
-          <div class="user-avatar">
-            <img
-                v-if="userAvatar"
-                :src="userAvatar"
-                alt="Profil rasmi"
-                class="w-full h-full object-cover"
-            >
-            <i v-else class="fa-solid fa-user"></i>
-          </div>
-          <div class="user-copy">
-            <span class="user-name">{{ userName }}</span>
-            <span class="user-role">{{ searchName || "Foydalanuvchi" }}</span>
-          </div>
-        </button>
-        <CButton
-            v-if="isDesktop"
-            type="button"
-            text="Chiqish"
-            variant="danger"
-            is-has-fa-icon
-            faClass="fa-solid fa-arrow-right-from-bracket"
-            @click="backToLogin"
-        />
-        <CDialog
-            :show="isExit"
-            custom-class="w-full max-w-sm"
-            @close="isExit = false"
-            body-class="!bg-pb-surface rounded-xl p-4 text-center shadow-lg"
-        >
-          <div class="flex flex-col gap-3 mb-4">
-            <h2 class="text-base font-semibold text-pb-text">Chiqishni tasdiqlaysizmi?</h2>
-            <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
-              <CButton
-                  type="button"
-                  text="Bekor qilish"
-                  variant="ghost-accent"
-                  size="sm"
-                  @click="isExit = false"
-              />
-              <CButton
-                  type="button"
-                  text="Ha, chiqish"
-                  variant="danger"
-                  size="sm"
-                  @click="confirmBack"
-              />
+        <template v-if="isDesktop">
+          <button
+              type="button"
+              class="flex items-center gap-2.5 min-w-0 px-3 py-2 rounded-[10px] bg-white/8 border-0 cursor-pointer transition-colors duration-200 hover:bg-white/14"
+              @click="openToProfile"
+          >
+            <div class="w-[38px] h-[38px] rounded-full overflow-hidden flex items-center justify-center bg-white/14 text-white flex-shrink-0">
+              <img
+                  v-if="userAvatar"
+                  :src="userAvatar"
+                  alt="Profil rasmi"
+                  class="w-full h-full object-cover"
+              >
+              <i v-else class="fa-solid fa-user"></i>
             </div>
-          </div>
-        </CDialog>
-      </div>
-      <div class="flex justify-end">
+            <div class="flex flex-col min-w-0 text-left">
+              <span class="max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-white">
+                {{ userName }}
+              </span>
+              <span class="text-xs tracking-wider text-white/72">
+                {{ searchName || "Foydalanuvchi" }}
+              </span>
+            </div>
+          </button>
+          <CButton
+              v-if="isDesktop"
+              type="button"
+              text="Chiqish"
+              variant="danger"
+              is-has-fa-icon
+              faClass="fa-solid fa-arrow-right-from-bracket"
+              @click="backToLogin"
+          />
+        </template>
         <div
-            class="burger-menu"
             v-if="!isDesktop"
+            class="burger-menu"
             @click="toggleBurgerMenu"
             :class="{ active: isMenuOpen }"
         >
           <span></span>
         </div>
       </div>
+      <CDialog
+          :show="isExit"
+          custom-class="w-full max-w-sm"
+          @close="isExit = false"
+          body-class="!bg-pb-surface rounded-xl p-4 text-center shadow-lg"
+      >
+        <div class="flex flex-col gap-3 mb-4">
+          <h2 class="text-base font-semibold text-pb-text">Chiqishni tasdiqlaysizmi?</h2>
+          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
+            <CButton
+                type="button"
+                text="Bekor qilish"
+                variant="ghost-accent"
+                size="sm"
+                @click="isExit = false"
+            />
+            <CButton
+                type="button"
+                text="Ha, chiqish"
+                variant="danger"
+                size="sm"
+                @click="confirmBack"
+            />
+          </div>
+        </div>
+      </CDialog>
     </div>
   </div>
 </template>
@@ -290,103 +288,6 @@ const {
 </script>
 
 <style scoped>
-.notify-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 18px;
-  transition: background-color 0.2s ease;
-  overflow: visible;
-}
-
-.notify-button:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.notify-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--color-pb-danger);
-  border: 2px solid var(--color-pb-header);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-pb-danger) 35%, transparent);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-}
-
-.notify-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 15;
-}
-
-.user-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  transition: background-color 0.2s ease;
-}
-
-.user-chip:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.user-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.user-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  text-align: left;
-}
-
-.user-name {
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.user-role {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.72);
-}
-
 .burger-menu {
   position: relative;
   width: 44px;
@@ -398,51 +299,49 @@ const {
   justify-content: center;
   border-radius: 8px;
   transition: background-color 0.2s ease;
+}
 
-  &:active {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+.burger-menu:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
-  span {
-    position: relative;
-    display: block;
-    width: 26px;
-    height: 3px;
-    background-color: #ffffff;
-    transition: background-color 0.3s ease-in-out;
+.burger-menu span {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 3px;
+  background-color: #ffffff;
+  transition: background-color 0.3s ease-in-out;
+}
 
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 3px;
-      background-color: #ffffff;
-      transition: transform 0.3s ease-in-out;
-      left: 0;
-    }
+.burger-menu span::before,
+.burger-menu span::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background-color: #ffffff;
+  transition: transform 0.3s ease-in-out;
+  left: 0;
+}
 
-    &::before {
-      top: -9px;
-    }
+.burger-menu span::before {
+  top: -9px;
+}
 
-    &::after {
-      top: 9px;
-    }
-  }
+.burger-menu span::after {
+  top: 9px;
+}
 
-  &.active {
-    span {
-      background-color: transparent;
+.burger-menu.active span {
+  background-color: transparent;
+}
 
-      &::before {
-        transform: translateY(9px) rotate(45deg);
-      }
+.burger-menu.active span::before {
+  transform: translateY(9px) rotate(45deg);
+}
 
-      &::after {
-        transform: translateY(-9px) rotate(-45deg);
-      }
-    }
-  }
+.burger-menu.active span::after {
+  transform: translateY(-9px) rotate(-45deg);
 }
 </style>

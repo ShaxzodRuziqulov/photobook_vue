@@ -278,7 +278,6 @@
           </div>
         </div>
       </div>
-
       <div
           class="grid shrink-0 grid-cols-1 items-end gap-4 border-b border-pb-border py-3 text-sm sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-5"
       >
@@ -347,32 +346,25 @@
           <tbody v-if="isLoading">
           <tr v-for="i in 8" :key="i" class="border-t border-pb-border">
             <td class="p-2"><div class="h-4 w-6 animate-pulse rounded bg-pb-border"></div></td>
-
             <td class="space-y-2 p-2">
               <div class="h-4 w-32 animate-pulse rounded bg-pb-border"></div>
               <div class="h-3 w-24 animate-pulse rounded bg-pb-border"></div>
             </td>
-
             <td class="p-2">
               <div class="h-10 w-14 animate-pulse rounded-lg bg-pb-border"></div>
             </td>
-
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
-
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
-
             <td class="p-2">
               <div class="h-2 w-full animate-pulse rounded-full bg-pb-border"></div>
               <div class="mt-2 h-3 w-16 animate-pulse rounded bg-pb-border"></div>
             </td>
-
             <td class="p-2">
               <div class="h-6 w-20 animate-pulse rounded-full bg-pb-border"></div>
             </td>
-
             <td class="p-2">
               <div class="h-8 w-24 animate-pulse rounded-lg bg-pb-border"></div>
             </td>
@@ -841,7 +833,7 @@ const completedTask = async () => {
     try {
       await dataStore.refreshUnreadNotificationsCount();
     } catch {
-      //
+
     }
     Toast.success("Bajarildi!");
   } catch (e: any) {
