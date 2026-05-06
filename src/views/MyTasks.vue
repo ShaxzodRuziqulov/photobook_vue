@@ -501,7 +501,7 @@ const categoryStatsLoading = ref(false);
 const categoryGroups = computed<CategoryGroup[]>(() => {
   const map = new Map<string, CategoryGroup>();
   for (const item of categoryStats.value) {
-    const key = `${item.categoryId}-${item.kind}`;
+    const key = `${item.categoryId}-${item.kind}-${item.defaultPages ?? 0}`;
     if (!map.has(key)) {
       map.set(key, {
         categoryId: item.categoryId,
