@@ -8,7 +8,7 @@
         @click.stop
         :class="isMenuVisible ? 'translate-x-0' : '-translate-x-full'"
         v-if="mainMenuItems.length"
-        class="pt-10 w-full md:w-3/4 sm:1/2 lg:w-1/4 gap-3 pl-4 pr-20 h-dvh flex flex-col md:pt-16 bg-pb-sidebar absolute top-0 left-0 text-white z-20 transition-all ease-in-out duration-300 overflow-hidden border-r border-white/5 shadow-xl"
+        class="py-6 w-full md:w-3/4 sm:1/2 lg:w-1/4 gap-3 pl-4 pr-20 h-dvh flex flex-col md:pt-16 bg-pb-sidebar absolute top-0 left-0 text-white z-20 transition-all ease-in-out duration-300 overflow-hidden border-r border-white/5 shadow-xl"
 
     >
       <router-link
@@ -24,10 +24,34 @@
         {{ item.name }}
       </router-link>
       <div class="gap-2">
+        <button
+            v-if="!isDesktop"
+            type="button"
+            class="mobile-user-chip cursor-pointer"
+            @click="openToProfile"
+        >
+          <div class="flex gap-2">
+            <div class="mobile-user-avatar">
+              <img
+                  v-if="userAvatar"
+                  :src="userAvatar"
+                  alt="Profil rasmi"
+                  loading="lazy"
+                  class="w-full h-full object-cover"
+              >
+              <i v-else class="fa-solid fa-user"></i>
+            </div>
+            <div class="mobile-user-copy">
+              <span class="mobile-user-name">{{ userName }}</span>
+              <span class="mobile-user-role">{{ currentRole }}</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right-to-bracket pr-4"></i>
+        </button>
         <div
             v-if="!isDesktop"
             @click="backToLogin"
-            class="flex mb-2 items-center w-full rounded-md hover:bg-pb-sidebar-hover cursor-pointer p-2 gap-2"
+            class="flex my-2 items-center w-full rounded-md hover:bg-pb-sidebar-hover cursor-pointer p-2 gap-2"
         >
           <i class="fa-solid fa-arrow-right-from-bracket"/>
           <span class="flex items-start">Chiqish</span>
@@ -41,27 +65,6 @@
             variant="ghost-accent"
             @click="openToProfile"
         />
-        <button
-            v-if="!isDesktop"
-            type="button"
-            class="mobile-user-chip"
-            @click="openToProfile"
-        >
-          <div class="mobile-user-avatar">
-            <img
-                v-if="userAvatar"
-                :src="userAvatar"
-                alt="Profil rasmi"
-                loading="lazy"
-                class="w-full h-full object-cover"
-            >
-            <i v-else class="fa-solid fa-user"></i>
-          </div>
-          <div class="mobile-user-copy">
-            <span class="mobile-user-name">{{ userName }}</span>
-            <span class="mobile-user-role">{{ currentRole }}</span>
-          </div>
-        </button>
         <CDialog
             :show="isExit"
             custom-class="w-full max-w-sm"
@@ -214,9 +217,10 @@ watch(
 .mobile-user-chip {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 6px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
 }

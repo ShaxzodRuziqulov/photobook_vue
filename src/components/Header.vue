@@ -2,13 +2,13 @@
   <div class="flex flex-col overflow-visible bg-pb-header w-full border-b border-pb-header-border">
     <div class="w-full h-16 px-2 2xl:px-4 grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_auto] items-center gap-2 text-white shadow-sm transition-all">
       <div class="flex items-center h-full">
-        <div class="flex items-center text-[15px]">
+        <div class="flex items-center">
           <img class="w-16" src="../assets/logo.png" alt="Logo">
           <div class="flex flex-col items-center gap-1">
-            <h2 class="m-0 text-base font-semibold">PHOTOBOOK</h2>
+            <h2 class="m-0 text-xs font-semibold">PHOTOBOOK</h2>
             <span
                 v-if="searchName"
-                class="text-xs bg-pb-role text-pb-role-text font-semibold rounded-lg py-0.5 px-2 uppercase tracking-wide"
+                class="text-[10px] bg-pb-role text-pb-role-text font-semibold rounded-lg py-0.5 px-2 uppercase tracking-wide"
             >
               {{ searchName }}
             </span>

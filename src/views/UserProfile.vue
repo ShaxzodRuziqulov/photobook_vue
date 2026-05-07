@@ -42,7 +42,7 @@
                 <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                   <button
                       type="button"
-                      class="group relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-pb-elevated shadow ring-1 ring-pb-border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-pb-accent sm:h-[4.5rem] sm:w-[4.5rem]"
+                      class="group relative cursor-pointer flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-pb-elevated shadow ring-1 ring-pb-border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-pb-accent sm:h-[4.5rem] sm:w-[4.5rem]"
                       :disabled="avatarBusy"
                       aria-label="Profil rasmini tanlash"
                       @click="profileImageInput?.click()"
@@ -111,13 +111,12 @@
 
             <section class="rounded-xl border border-pb-border bg-pb-surface p-3 shadow-sm sm:p-4">
               <h2 class="mb-2 text-sm font-bold text-pb-text">Asosiy ma'lumotlar</h2>
-              <div class="grid gap-3 sm:grid-cols-2">
+              <div class="grid gap-3 sm:grid-cols-2 mb-3">
                 <AppInput label="Ism" placeholder="Masalan: Jamshid" type="text" v-model="form.firstName" />
                 <AppInput label="Familiya" placeholder="Masalan: Karimov" type="text" v-model="form.lastName" />
                 <AppInput label="Kasb" placeholder="Dizayner, operator..." type="text" v-model="form.profession" />
                 <AppInput label="Telefon" placeholder="+998 90 123 45 67" type="text" v-model="form.phone" />
               </div>
-              <h2 class="mb-2 mt-3 text-sm font-bold text-pb-text">Bio</h2>
               <AppInput
                   label="Qisqa tavsif"
                   placeholder="Tajriba yoki lavozim bo'yicha qisqa izoh..."

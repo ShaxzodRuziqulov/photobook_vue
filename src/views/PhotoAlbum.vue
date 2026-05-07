@@ -341,6 +341,8 @@
                 variant="ghost-accent"
                 @click="closeFilter"
                 class="mb-1"
+                is-has-fa-icon
+                faClass="fa-solid fa-filter-circle-xmark"
             />
           </div>
         </div>
@@ -368,7 +370,7 @@
           <th class="p-2 text-center">Rasm</th>
           <th class="p-2 text-start">Mijoz</th>
           <th class="p-2 text-start">Qabul qilgan</th>
-          <th class="p-2 text-start">Mas'ul</th>
+          <th class="p-2 text-center">Mas'ul</th>
           <th class="p-2 px-4 text-start">Jarayon</th>
           <th class="p-2 px-3 text-start">Sana</th>
           <th class="p-2 text-start">Muddat</th>
@@ -1154,6 +1156,18 @@ const getToday = () => {
   return `${year}-${month}-${day}`
 }
 
+const getDeadlineDate = () => {
+  const d = new Date()
+
+  d.setDate(d.getDate() + 3)
+
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 const resetForm = () => {
   if (previewUrl.value?.startsWith("blob:")) {
     URL.revokeObjectURL(previewUrl.value)
@@ -1174,7 +1188,7 @@ const resetForm = () => {
     pageCount: 0,
     amount: 0,
     acceptedDate: getToday(),
-    deadline: "",
+    deadline: getDeadlineDate(),
     status: "IN_PROGRESS",
     imageUrl: "",
     notes: "",

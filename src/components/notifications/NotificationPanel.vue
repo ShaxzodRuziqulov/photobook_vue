@@ -2,15 +2,15 @@
   <div class="notify-panel" :class="{ mobile: !isDesktop }">
     <div class="notify-head">
       <div class="flex flex-col items-center w-full">
-        <div class="flex items-center w-full justify-between">
+        <div class="flex items-center  w-full justify-between">
           <div>
-            <h3>Bildirishnomalar</h3>
+            <h3>Xabarlar</h3>
             <p>{{ unreadCount }} ta o'qilmagan</p>
           </div>
           <div class="notify-actions-top">
             <button
                 type="button"
-                class="notify-sound-toggle"
+                class="notify-sound-toggle cursor-pointer"
                 :class="{ active: soundEnabled }"
                 :title="soundEnabled ? 'Ovozni o\'chirish' : 'Ovozni yoqish'"
                 @click="$emit('toggle-sound')"

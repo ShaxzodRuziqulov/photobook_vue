@@ -74,7 +74,7 @@
       <header class="flex flex-col gap-1 border-b border-pb-border pb-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p class="text-xs font-bold uppercase tracking-wide text-pb-accent">Boshqaruv paneli</p>
-          <h1 class="mt-1 text-2xl font-bold text-pb-text sm:text-3xl">Umumiy ko‘rinish</h1>
+          <h1 class="mt-1 text-2xl font-bold text-pb-text sm:text-2xl">Umumiy ko‘rinish</h1>
           <p class="mt-1 max-w-2xl text-sm text-pb-muted">
             Buyurtmalar, jarayonlar va kategoriyalar bo‘yicha tezkor statistika.
           </p>
@@ -224,7 +224,7 @@
           </div>
           <div class="p-4 flex flex-col text-gray-600">
             <div class="bg-gray-300 text-gray-800 text-sm font-semibold mb-4 rounded-lg p-3 flex items-center justify-between">
-              <h2>Mahsulot turi bo'yicha hisobot</h2>
+              <h2>Mahsulot soni bo'yicha hisobot</h2>
               <span>jami: {{ item.allItems.reduce((sum, i) => sum + i.count, 0) }}</span>
             </div>
 
@@ -277,10 +277,6 @@
               class="flex flex-col items-center"
           >
             <div class="relative mb-6 inline-block">
-              <div
-                  class="pointer-events-none absolute -inset-2 rounded-full bg-gradient-to-r from-pb-accent/15 to-violet-500/15 opacity-60 blur-xl"
-                  aria-hidden="true"
-              />
               <svg width="180" height="180" class="-rotate-90 transform" aria-hidden="true">
                 <circle cx="90" cy="90" r="70" fill="none" stroke="rgb(226 232 240)" stroke-width="14" />
                 <defs>
@@ -569,19 +565,19 @@ const photosCategories = computed(() => dataStore.state.photoCategory?.length ||
 
 const getAlbums = computed( () => [
   { id: 1,
-    name: 'Jami albom',
+    name: 'Albomlar',
     itemCount: allAlbumCount.value,
     icon: "fa-solid fa-book",
     onclick: () => clickOpenPage('/album')
   },
   { id: 2,
-    name: 'Vinetka',
+    name: 'Vinetkalar',
     itemCount: allVignetteCount.value,
     icon: "fa-solid fa-book-open",
     onclick: () => clickOpenPage('/vignette')
   },
   { id: 3,
-    name: 'Rasmli albom',
+    name: 'Rasmli albomlar',
     itemCount: photoCount.value,
     icon: "fa-solid fa-images",
     onclick: () => clickOpenPage('/photo')
@@ -593,7 +589,7 @@ const getAlbums = computed( () => [
     onclick: () => clickOpenPage('/users')
   },
   { id: 5,
-    name: 'Jami xomashyo',
+    name: 'Jami xomashyolar',
     itemCount: allMaterialCount.value,
     icon: "fa-solid fa-warehouse",
     onclick: () => clickOpenPage('/material')
@@ -712,7 +708,7 @@ const categoryStats = computed(() => [
     icon: 'fa-solid fa-book-open',
     count: vignetteCategories.value,
     percentage: vignettePercentage.value,
-    color: 'text-green-600',
+    color: 'text-green-700',
     bgColor: "border-t-4 border-t-emerald-500 bg-pb-elevated",
     strokeColor: '#10b981',
     gradientFrom: '#10b981',

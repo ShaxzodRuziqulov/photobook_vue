@@ -1,44 +1,46 @@
 <template>
   <div class="space-y-1.5">
     <div class="flex items-center justify-between gap-2">
-      <label class="text-xs font-semibold text-pb-text">{{ label }}</label>
-      <span v-if="!imageSrc" class="text-[11px] text-pb-muted">ixtiyoriy</span>
-    </div>
-
-    <div
-      v-if="imageSrc"
-      class="relative overflow-hidden rounded-lg border border-pb-border bg-pb-app/40"
-    >
-      <div class="flex max-h-[112px] items-center justify-center p-1.5">
-        <img
-          :src="imageSrc"
-          alt=""
-          class="max-h-[104px] w-auto max-w-full rounded object-contain"
-        />
+      <div>
+        <label class="text-xs mr-2 font-semibold text-pb-text">{{ label }}</label>
+        <span v-if="!imageSrc" class="text-[11px] text-pb-muted">ixtiyoriy</span>
       </div>
+    </div>
+    <div class="flex items-center w-full gap-2 justify-around">
       <div
-          v-if="busy"
-          class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-slate-900/45 text-white"
+          v-if="imageSrc"
+          class="relative w-full overflow-hidden rounded-lg border border-pb-border bg-pb-app/40"
       >
-        <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-        <span class="text-[11px] font-medium">Yuklanmoqda</span>
+        <div class="flex max-h-[112px] p-1.5 items-center justify-center">
+          <img
+              :src="imageSrc"
+              alt=""
+              class="max-h-[60px] w-auto max-w-full rounded object-contain"
+          />
+        </div>
+        <div
+            v-if="busy"
+            class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-slate-900/45 text-white"
+        >
+          <span class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          <span class="text-[11px] font-medium">Yuklanmoqda</span>
+        </div>
+        <button
+            v-if="!busy"
+            type="button"
+            class="absolute cursor-pointer right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full border border-pb-border bg-pb-surface text-pb-error shadow-sm transition hover:bg-pb-error-soft"
+            title="Olib tashlash"
+            aria-label="Rasmni olib tashlash"
+            @click.stop="$emit('clear')"
+        >
+          <i class="fa-solid fa-xmark text-[11px]" aria-hidden="true" />
+        </button>
       </div>
-      <button
-          v-if="!busy"
-          type="button"
-          class="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full border border-pb-border bg-pb-surface text-pb-error shadow-sm transition hover:bg-pb-error-soft"
-          title="Olib tashlash"
-          aria-label="Rasmni olib tashlash"
-          @click.stop="$emit('clear')"
-      >
-        <i class="fa-solid fa-xmark text-[11px]" aria-hidden="true" />
-      </button>
-    </div>
 
-    <div
-        v-if="!(busy && imageSrc)"
-        class="relative rounded-lg border border-dashed transition-colors"
-        :class="[
+      <div
+          v-if="!(busy && imageSrc)"
+          class="relative w-full rounded-lg border border-dashed transition-colors"
+          :class="[
         isDragging ? 'border-pb-accent bg-pb-accent/5' : 'border-pb-border bg-pb-elevated/70',
         busy && !imageSrc ? 'pointer-events-none opacity-70' : 'cursor-pointer hover:border-pb-accent-muted',
         imageSrc ? 'py-2' : 'py-3.5',
@@ -79,6 +81,7 @@
             Fayl
           </span>
         </template>
+      </div>
       </div>
     </div>
   </div>

@@ -27,7 +27,7 @@
           v-for="(tab, index) in tabs"
           :key="index"
           type="button"
-          class="flex min-w-0 shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors active:scale-95 active:opacity-80"
+          class="flex min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors active:scale-95 active:opacity-80"
           :class="
             activeTabs === tab.id
               ? 'bg-pb-accent/10 text-pb-accent ring-1 ring-pb-accent/25'

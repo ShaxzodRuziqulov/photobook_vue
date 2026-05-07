@@ -96,7 +96,7 @@
           />
         </div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center justify-between gap-2 py-4">
+      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center justify-between gap-2 py-2">
         <div class="flex shrink-0 items-center gap-2">
           <CButton
               type="button"
@@ -147,9 +147,9 @@
                 <p class="text-xl font-bold tabular-nums text-pb-accent leading-tight">
                   {{ myMonthlyStats }}<span class="text-sm font-medium text-pb-muted"> dona</span>
                 </p>
-                <p v-if="myLastMonthlyStats > 0 || myMonthlyStats > 0" class="text-[11px] mt-0.5" :class="monthGrowth >= 0 ? 'text-emerald-600' : 'text-red-500'">
+                <p v-if="myLastMonthlyStats > 0 || myMonthlyStats > 0" class="text-[11px] flex items-center gap-2 mt-0.5" :class="monthGrowth >= 0 ? 'text-emerald-600' : 'text-red-500'">
                   <i :class="monthGrowth >= 0 ? 'fa-solid fa-arrow-trend-up' : 'fa-solid fa-arrow-trend-down'"></i>
-                  {{ monthGrowth >= 0 ? '+' : '' }}{{ monthGrowth }}% oldingi oydan
+                  <span>oldingi oydan {{monthGrowth > 0 ? "ko'p" : "kam"}}</span>
                 </p>
               </template>
             </div>
@@ -311,6 +311,8 @@
             variant="ghost-accent"
             @click="closeFilter"
             class="mb-1"
+            is-has-fa-icon
+            faClass="fa-solid fa-filter-circle-xmark"
         />
       </div>
       <div class="max-h-[min(70vh,calc(100dvh-17rem))] overflow-x-auto overflow-y-auto rounded-md border border-pb-border/60">
