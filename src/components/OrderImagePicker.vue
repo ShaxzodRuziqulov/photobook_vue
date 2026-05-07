@@ -15,7 +15,7 @@
           <img
               :src="imageSrc"
               alt=""
-              class="max-h-[60px] w-auto max-w-full rounded object-contain"
+              class="max-h-[50px] w-auto max-w-full rounded object-contain"
           />
         </div>
         <div

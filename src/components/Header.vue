@@ -5,7 +5,7 @@
         <div class="flex items-center">
           <img class="w-16" src="../assets/logo.png" alt="Logo">
           <div class="flex flex-col items-center gap-1">
-            <h2 class="m-0 text-xs font-semibold">PHOTOBOOK</h2>
+            <h2 class="m-0 text-sm font-semibold">PHOTOBOOK</h2>
             <span
                 v-if="searchName"
                 class="text-[10px] bg-pb-role text-pb-role-text font-semibold rounded-lg py-0.5 px-2 uppercase tracking-wide"
@@ -76,10 +76,10 @@
         <template v-if="isDesktop">
           <button
               type="button"
-              class="flex items-center gap-2.5 min-w-0 px-3 py-2 rounded-[10px] bg-white/8 border-0 cursor-pointer transition-colors duration-200 hover:bg-white/14"
+              class="flex items-center gap-1.5 min-w-0 px-2 py-1 rounded-[10px] bg-white/8 border-0 cursor-pointer transition-colors duration-200 hover:bg-white/14"
               @click="openToProfile"
           >
-            <div class="w-[38px] h-[38px] rounded-full overflow-hidden flex items-center justify-center bg-white/14 text-white flex-shrink-0">
+            <div class="w-[36px] h-[36px] rounded-full overflow-hidden flex items-center justify-center bg-white/14 text-white flex-shrink-0">
               <img
                   v-if="userAvatar"
                   :src="userAvatar"
@@ -89,13 +89,14 @@
               <i v-else class="fa-solid fa-user"></i>
             </div>
             <div class="flex flex-col min-w-0 text-left">
-              <span class="max-w-[160px] overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold text-white">
+              <span class="max-w-[160px] overflow-hidden whitespace-nowrap text-[10px] font-bold text-white">
                 {{ userName }}
               </span>
               <span class="text-xs tracking-wider text-white/72">
                 {{ searchName || "Foydalanuvchi" }}
               </span>
             </div>
+
           </button>
           <CButton
               v-if="isDesktop"
