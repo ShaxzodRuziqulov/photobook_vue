@@ -28,7 +28,7 @@
         <div
             class="flex w-full flex-col gap-1 border-b border-pb-border pb-1"
         >
-          <h2 class="text-sm uppercase font-semibold">{{cat.name}}</h2>
+          <h2 class="text-sm uppercase font-semibold break-words">{{cat.name}}</h2>
           <span class="text-sm text-pb-muted">Betlar: <span v-if="cat.defaultPages" class="font-semibold text-pb-text">{{ cat.defaultPages }}</span></span>
         </div>
         <div class="grid grid-cols-3 divide-x divide-pb-border">
@@ -436,8 +436,8 @@
           >
             <td class="py-2 px-3">{{ rowNumber(index) }}</td>
             <td class="p-2 break-all">
-              <p class="font-semibold">{{ album.orderName }}</p>
-              <p class="text-sm font-semibold text-pb-accent">{{album.categoryName}}</p>
+              <p class="font-semibold break-words">{{ album.orderName }}</p>
+              <p class="text-sm font-semibold text-pb-accent break-words">{{album.categoryName}}</p>
               <p class="text-sm font-semibold text-pb-muted">{{album.itemType}}</p>
             </td>
             <td class="p-2">

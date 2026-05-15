@@ -38,7 +38,7 @@
           <div class="flex flex-col gap-1 px-1.5 text-center sm:px-3">
             <span class="text-xs font-medium text-pb-muted sm:text-sm">Jami</span>
             <div class="flex flex-col items-center justify-center">
-              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg">{{ cat.total }}</span>
+              <span class="text-md font-bold tabular-nums text-pb-accent sm:text-lg break-words">{{ cat.total }}</span>
               <span class="text-xs text-pb-muted sm:text-sm">dona</span>
             </div>
           </div>
@@ -413,8 +413,8 @@
         >
           <td class="p-2 ">{{ rowNumber(index) }}</td>
           <td class="py-1 px-2 break-all">
-            <p class="font-semibold">{{ album.orderName }}</p>
-            <p class="text-sm font-semibold text-pb-accent">{{album.categoryName}}</p>
+            <p class="font-semibold break-words">{{ album.orderName }}</p>
+            <p class="text-sm font-semibold break-words text-pb-accent">{{album.categoryName}}</p>
             <p class="text-sm font-semibold text-pb-muted">{{album.itemType}}</p>
           </td>
           <td class="p-2">

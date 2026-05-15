@@ -243,7 +243,7 @@
         <div v-else-if="categoryGroups.length === 0" class="text-sm text-pb-muted">
           Bajarilgan vazifalar mavjud emas
         </div>
-        <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+        <div v-else class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
           <div
             v-for="group in categoryGroups"
             :key="`${group.categoryId}-${group.kind}`"
@@ -254,7 +254,7 @@
                 <i class="fa-solid fa-tag text-xs"></i>
               </div>
               <div class="flex flex-col">
-                <span class="truncate text-[11px] font-bold uppercase tracking-wide text-pb-text">
+                <span class="text-[11px] font-bold uppercase tracking-wide break-words text-pb-text">
                   {{ group.categoryName }}
                 </span>
                 <span class="text-[11px] font-semibold text-pb-muted">
@@ -383,7 +383,7 @@
             <td class="px-3 py-2">{{index + 1}}</td>
             <td class="p-2 break-all">
               <p class="font-semibold">{{ task.orderName }}</p>
-              <p class="text-sm font-semibold text-pb-accent">{{task.categoryName}}</p>
+              <p class="text-sm font-semibold text-pb-accent break-words">{{task.categoryName}}</p>
               <p class="text-sm font-semibold text-pb-muted">{{task.itemType}}</p>
             </td>
             <td class="p-2">

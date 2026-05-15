@@ -28,7 +28,7 @@
           class="flex flex-col justify-between gap-4 rounded-xl border border-pb-border bg-pb-surface px-4 py-2 shadow-sm"
       >
         <div class="flex w-full flex-col gap-1 border-b border-pb-border pb-1">
-          <h2 class="text-sm font-semibold uppercase text-pb-text">{{ cat.name }}</h2>
+          <h2 class="text-sm font-semibold uppercase text-pb-text break-words">{{ cat.name }}</h2>
           <span class="text-sm text-pb-muted">
             Betlar:
             <span v-if="cat.defaultPages" class="font-semibold text-pb-text">{{ cat.defaultPages }}</span>
@@ -421,8 +421,8 @@
         >
           <td class="p-1">{{ rowNumber(index) }}</td>
           <td class="p-2 break-all">
-            <p class="break-all font-semibold">{{ order.orderName }}</p>
-            <p class="text-sm font-semibold text-pb-accent">{{order.categoryName}}</p>
+            <p class="break-words font-semibold">{{ order.orderName }}</p>
+            <p class="text-sm font-semibold text-pb-accent break-words">{{order.categoryName}}</p>
           </td>
           <td class="p-2">
             <div
