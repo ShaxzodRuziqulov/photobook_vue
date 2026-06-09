@@ -39,47 +39,39 @@
           </h2>
         </div>
         <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
-          <div>
-            <AppInput
-                label="Tovar nomi *"
-                type="text"
-                placeholder="Tovar nomini kiriting"
-                v-model="form.itemName"
-                :maxlength="MATERIAL_LIMITS.itemNameMax"
-            />
-            <p v-if="errors.itemName" class="mt-1 text-xs text-pb-error">{{ errors.itemName }}</p>
-          </div>
-          <div>
-            <AppInput
-                label="Tovar turi"
-                type="text"
-                placeholder="Ixtiyoriy"
-                v-model="form.itemType"
-                :maxlength="MATERIAL_LIMITS.itemTypeMax"
-            />
-            <p v-if="errors.itemType" class="mt-1 text-xs text-pb-error">{{ errors.itemType }}</p>
-          </div>
-          <div>
-            <AppInput
-                label="Miqdori *"
-                type="number"
-                min="0"
-                step="0.001"
-                placeholder="0 yoki 12.345"
-                v-model="form.quantity"
-            />
-            <p v-if="errors.quantity" class="mt-1 text-xs text-pb-error">{{ errors.quantity }}</p>
-          </div>
-          <div>
-            <AppInput
-                label="Birligi"
-                type="text"
-                placeholder="dona, kg, m …"
-                v-model="form.unitName"
-                :maxlength="MATERIAL_LIMITS.unitNameMax"
-            />
-            <p v-if="errors.unitName" class="mt-1 text-xs text-pb-error">{{ errors.unitName }}</p>
-          </div>
+          <AppInput
+              label="Tovar nomi *"
+              type="text"
+              placeholder="Tovar nomini kiriting"
+              v-model="form.itemName"
+              :maxlength="MATERIAL_LIMITS.itemNameMax"
+              :externalError="errors.itemName"
+          />
+          <AppInput
+              label="Tovar turi"
+              type="text"
+              placeholder="Ixtiyoriy"
+              v-model="form.itemType"
+              :maxlength="MATERIAL_LIMITS.itemTypeMax"
+              :externalError="errors.itemType"
+          />
+          <AppInput
+              label="Miqdori *"
+              type="number"
+              min="0"
+              step="0.001"
+              placeholder="0 yoki 12.345"
+              v-model="form.quantity"
+              :externalError="errors.quantity"
+          />
+          <AppInput
+              label="Birligi"
+              type="text"
+              placeholder="dona, kg, m …"
+              v-model="form.unitName"
+              :maxlength="MATERIAL_LIMITS.unitNameMax"
+              :externalError="errors.unitName"
+          />
         </div>
         <div
             class="flex shrink-0 flex-col gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5 sm:flex-row sm:justify-end"

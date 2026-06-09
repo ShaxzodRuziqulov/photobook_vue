@@ -118,36 +118,30 @@
           </h2>
         </div>
         <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
-          <div>
-            <AppInput
-                label="Nomi *"
-                type="text"
-                placeholder="Kiriting"
-                v-model="form.name"
-                :maxlength="PRODUCT_CATEGORY_LIMITS.nameMax"
-            />
-            <p v-if="categoryErrors.name" class="mt-1 text-xs text-pb-error">{{ categoryErrors.name }}</p>
-          </div>
-          <div>
-            <AppInput
-                label="Betlar turi *"
-                type="text"
-                placeholder="2, 4, 6 …"
-                v-model="defaultPagesModel"
-                :maxlength="PRODUCT_CATEGORY_LIMITS.defaultPagesMax"
-            />
-            <p v-if="categoryErrors.defaultPages" class="mt-1 text-xs text-pb-error">{{ categoryErrors.defaultPages }}</p>
-          </div>
-          <div>
-            <AppInput
-                label="Ulchami"
-                type="text"
-                placeholder="20x30"
-                v-model="sizeModel"
-                :maxlength="PRODUCT_CATEGORY_LIMITS.sizeMax"
-            />
-            <p v-if="categoryErrors.size" class="mt-1 text-xs text-pb-error">{{ categoryErrors.size }}</p>
-          </div>
+          <AppInput
+              label="Nomi *"
+              type="text"
+              placeholder="Kiriting"
+              v-model="form.name"
+              :maxlength="PRODUCT_CATEGORY_LIMITS.nameMax"
+              :externalError="categoryErrors.name"
+          />
+          <AppInput
+              label="Betlar turi *"
+              type="text"
+              placeholder="2, 4, 6 …"
+              v-model="defaultPagesModel"
+              :maxlength="PRODUCT_CATEGORY_LIMITS.defaultPagesMax"
+              :externalError="categoryErrors.defaultPages"
+          />
+          <AppInput
+              label="Ulchami"
+              type="text"
+              placeholder="20x30"
+              v-model="sizeModel"
+              :maxlength="PRODUCT_CATEGORY_LIMITS.sizeMax"
+              :externalError="categoryErrors.size"
+          />
         </div>
         <div
             class="flex shrink-0 flex-col gap-2 border-t border-pb-border bg-pb-elevated px-4 py-2.5 sm:flex-row sm:justify-end"

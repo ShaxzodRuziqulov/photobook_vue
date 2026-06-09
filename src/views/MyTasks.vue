@@ -379,6 +379,7 @@
               class="border-t border-pb-border py-3 transition hover:bg-pb-elevated"
               v-for="(task, index) in filteredOrders"
               :key="index"
+              :class="taskTime(task)"
           >
             <td class="px-3 py-2">{{index + 1}}</td>
             <td class="p-2 break-all">
@@ -772,6 +773,29 @@ const filteredOrders = computed(() => {
       new Date(a.acceptedDate || 0).getTime()
   )
 })
+
+const taskTime = (task: any) => {
+  if (task.status === "COMPLETED") return ''
+
+  if (!task.deadline) return ''
+
+  const today = new Date()
+  today.setHours(5,0,0,0);
+
+  const deadLine = new Date(task.deadline)
+  deadLine.setHours(5,0,0,0);
+
+  const diff = deadLine.getTime() - today.getTime();
+
+  if (diff === 0) {
+    return 'bg-amber-50 border border-yellow-200'
+  }
+  if (diff < 0) {
+    return 'bg-red-100 border border-red-300'
+  }
+
+  return ''
+}
 
 const activeFormTask = (task: UserTask) => {
   selectedTask.value = {...task };

@@ -92,65 +92,50 @@
               @pick="onImagePicked"
               @clear="onFileRemove"
           />
-          <div class="flex flex-col w-full">
-            <AppSelect
-                v-model="itemForm.categoryId"
-                :options="categoryOptions"
-                disabledValue="Tanlang"
-                text-field="text"
-                value-field="value"
-                label="Vinetka turi"
-                @change="clearError('categoryId')"
+          <AppSelect
+              v-model="itemForm.categoryId"
+              :options="categoryOptions"
+              disabledValue="Tanlang"
+              text-field="text"
+              value-field="value"
+              label="Vinetka turi"
+              @change="clearError('categoryId')"
+              required
+              :errorText="errors.categoryId"
+          />
+          <div class="flex w-full gap-2 items-center justify-between">
+            <AppInput
+                label="Betlar soni"
+                type="number"
+                step="2"
+                class="w-full"
+                placeholder="2,4,6"
+                v-model="itemForm.pageCount"
+                @input="clearError('pageCount')"
+                :externalError="errors.pageCount"
             />
-            <p v-if="errors.categoryId" class="text-red-500 text-sm">
-              {{errors.categoryId}}
-            </p>
-          </div>
-          <div class="flex w-full gap-2 px-1 items-center justify-between">
-            <div class="flex flex-col w-full">
-              <AppInput
-                  label="Betlar soni"
-                  type="number"
-                  step="2"
-                  class="w-full"
-                  placeholder="2,4,6"
-                  v-model="itemForm.pageCount"
-                  @input="clearError('pageCount')"
-              />
-              <p v-if="errors.pageCount" class="text-red-500 text-sm">
-                {{errors.pageCount}}
-              </p>
-            </div>
-            <div class="flex flex-col w-full">
-              <AppInput
-                  type="number"
-                  class="w-full"
-                  placeholder=""
-                  label="Buyurtma soni"
-                  v-model="itemForm.amount"
-                  @input="clearError('amount')"
-              />
-              <p v-if="errors.amount" class="text-red-500 text-sm">
-                {{errors.amount}}
-              </p>
-            </div>
+            <AppInput
+                type="number"
+                class="w-full"
+                placeholder=""
+                label="Buyurtma soni"
+                v-model="itemForm.amount"
+                @input="clearError('amount')"
+                :externalError="errors.amount"
+            />
           </div>
           <div
               class="flex gap-2 items-center justify-between"
           >
-            <div class="flex flex-col w-full">
-              <AppInput
-                  type="text"
-                  placeholder="Masalan: Maktab"
-                  label="Nomi"
-                  class="w-full"
-                  v-model="itemForm.orderName"
-                  @input="clearError('orderName')"
-              />
-              <p v-if="errors.orderName" class="text-red-500 text-sm">
-                {{errors.orderName}}
-              </p>
-            </div>
+            <AppInput
+                type="text"
+                placeholder="Masalan: Maktab"
+                label="Nomi"
+                class="w-full"
+                v-model="itemForm.orderName"
+                @input="clearError('orderName')"
+                :externalError="errors.orderName"
+            />
             <AppInput
                 type="text"
                 class="w-full"
@@ -186,10 +171,9 @@
                 value-field="id"
                 isMultiple
                 label="Mas'ul xodim"
+                required
+                :errorText="errors.employees"
             />
-            <p v-if="errors.employees" class="text-red-500 text-sm">
-              {{errors.employees}}
-            </p>
             <div v-if="isEditing && itemForm.employees.length" class="mt-2 flex flex-col gap-1 rounded-lg border border-pb-border bg-pb-elevated p-2.5">
               <span class="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-pb-muted">Qayta boshlash</span>
               <label
@@ -218,30 +202,20 @@
           <div
               class="flex items-center w-full gap-2"
           >
-            <div class="flex flex-col w-full">
-              <AppInput
-                  v-model="itemForm.acceptedDate"
-                  label="Qabul qilingan sana"
-                  type="date"
-                  class="w-full"
-                  @input="clearError('acceptedDate')"
-              />
-              <p v-if="errors.acceptedDate" class="text-red-500 text-sm">
-                {{errors.acceptedDate}}
-              </p>
-            </div>
-            <div class="flex flex-col w-full">
-              <AppInput
-                  label="Tugash sanasi"
-                  type="date"
-                  class="w-full"
-                  v-model="itemForm.deadline"
-                  @input="clearError('deadline')"
-              />
-              <p v-if="errors.deadline" class="text-red-500 text-sm">
-                {{errors.deadline}}
-              </p>
-            </div>
+            <AppInput
+                v-model="itemForm.acceptedDate"
+                label="Qabul qilingan sana"
+                type="date"
+                class="w-full"
+                @input="clearError('acceptedDate')"
+            />
+            <AppInput
+                label="Tugash sanasi"
+                type="date"
+                class="w-full"
+                v-model="itemForm.deadline"
+                @input="clearError('deadline')"
+            />
           </div>
         </div>
         <div
@@ -418,6 +392,7 @@
             :id="'pb-order-' + order.id"
             class="border-t border-pb-border text-sm text-gray-600 transition hover:bg-gray-100"
             v-for="(order, index) in filteredOrders" :key="order.id"
+            :class="orderTaskTime(order)"
         >
           <td class="p-1">{{ rowNumber(index) }}</td>
           <td class="p-2 break-all">
@@ -775,6 +750,29 @@ const filteredOrders = computed(() => {
       new Date(a.acceptedDate).getTime()
   )
 })
+
+const orderTaskTime = (order: any) => {
+  if (order.status === "COMPLETED") return ''
+
+  if (!order.deadline) return ''
+
+  const today = new Date()
+  today.setHours(5,0,0,0);
+
+  const deadLine = new Date(order.deadline)
+  deadLine.setHours(5,0,0,0);
+
+  const diff = deadLine.getTime() - today.getTime();
+
+  if (diff === 0) {
+    return 'bg-amber-50 border border-yellow-200'
+  }
+  if (diff < 0) {
+    return 'bg-red-100 border border-red-200'
+  }
+
+  return ''
+}
 
 const scrollToOrderFromQuery = () => {
   const raw = route.query.orderId;

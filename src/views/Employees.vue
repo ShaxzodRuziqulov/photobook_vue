@@ -53,71 +53,63 @@
             </div>
             <div class="min-w-0 flex-1 space-y-3">
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div class="min-w-0 space-y-1">
-                  <AppInput
-                      label="Familiya *"
-                      type="text"
-                      maxlength="120"
-                      placeholder="Familiya"
-                      v-model="form.lastName"
-                      @update:model-value="clearFieldError('lastName')"
-                  />
-                  <p v-if="fieldErrors.lastName" class="text-pb-error text-xs">{{ fieldErrors.lastName }}</p>
-                </div>
-                <div class="min-w-0 space-y-1">
-                  <AppInput
-                      label="Ism *"
-                      type="text"
-                      maxlength="120"
-                      placeholder="Ism"
-                      v-model="form.firstName"
-                      @update:model-value="clearFieldError('firstName')"
-                  />
-                  <p v-if="fieldErrors.firstName" class="text-pb-error text-xs">{{ fieldErrors.firstName }}</p>
-                </div>
+                <AppInput
+                    label="Familiya *"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Familiya"
+                    v-model="form.lastName"
+                    @update:model-value="clearFieldError('lastName')"
+                    :externalError="fieldErrors.lastName"
+                />
+                <AppInput
+                    label="Ism *"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Ism"
+                    v-model="form.firstName"
+                    @update:model-value="clearFieldError('firstName')"
+                    :externalError="fieldErrors.firstName"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-2">
+                <AppInput
+                    label="Foydalanuvchi nomi *"
+                    type="text"
+                    maxlength="80"
+                    placeholder="Login"
+                    v-model="form.username"
+                    @update:model-value="clearFieldError('username')"
+                    :externalError="fieldErrors.username"
+                />
+                <AppInput
+                    :label="isEditing ? 'Parol (ixtiyoriy)' : 'Parol *'"
+                    type="password"
+                    :placeholder="passwordPlaceholder"
+                    v-model="form.password"
+                    @update:model-value="clearFieldError('password')"
+                    :externalError="fieldErrors.password"
+                />
               </div>
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div class="min-w-0 space-y-1">
-                  <AppInput
-                      label="Foydalanuvchi nomi *"
-                      type="text"
-                      maxlength="80"
-                      placeholder="Login"
-                      v-model="form.username"
-                      @update:model-value="clearFieldError('username')"
-                  />
-                  <p v-if="fieldErrors.username" class="text-pb-error text-xs">{{ fieldErrors.username }}</p>
-                </div>
-                <div class="min-w-0 space-y-1">
-                  <AppInput
-                      :label="isEditing ? 'Parol (ixtiyoriy)' : 'Parol *'"
-                      type="password"
-                      :placeholder="passwordPlaceholder"
-                      v-model="form.password"
-                      @update:model-value="clearFieldError('password')"
-                  />
-                  <p v-if="fieldErrors.password" class="text-pb-error text-xs">{{ fieldErrors.password }}</p>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div class="min-w-0">
-                  <AppInput
-                      label="Kasbi"
-                      type="text"
-                      maxlength="120"
-                      placeholder="Kasb"
-                      v-model="form.profession"
-                  />
-                </div>
-                <div class="min-w-0">
-                  <AppInput
-                      label="Telefon"
-                      type="text"
-                      maxlength="40"
-                      placeholder="+998901234567"
-                      v-model="form.phone"
-                  />
-                </div>
+                <AppInput
+                    label="Kasbi"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Kasb"
+                    v-model="form.profession"
+                />
+<!--                <div class="min-w-0">-->
+<!--                </div>-->
+                <AppInput
+                    label="Telefon"
+                    type="text"
+                    maxlength="40"
+                    placeholder="+998901234567"
+                    v-model="form.phone"
+                />
+<!--                <div class="min-w-0">-->
+<!--                </div>-->
               </div>
               <AppInput
                   label="Izoh"
@@ -591,13 +583,13 @@ const validateEmployeeForm = (): boolean => {
     ok = false;
   }
   if (!String(f.username ?? "").trim()) {
-    fieldErrors.value.username = "Foydalanuvchi nomi kiritilishi shart.";
+    fieldErrors.value.username = "Login kiritilishi shart.";
     ok = false;
   }
   const pwd = String(f.password ?? "").trim();
   if (!isEditing.value) {
     if (pwd.length < 4) {
-      fieldErrors.value.password = "Parol kamida 4 belgi bo'lishi kerak.";
+      fieldErrors.value.password = "Kamida 4 belgi bo'lishi kerak.";
       ok = false;
     }
   } else if (pwd.length > 0 && pwd.length < 4) {

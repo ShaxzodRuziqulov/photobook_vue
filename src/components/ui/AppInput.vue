@@ -7,6 +7,7 @@
           showError
             ? 'border border-pb-error bg-pb-error-soft focus-within:ring-2 focus-within:ring-red-200/70 focus-within:border-pb-error'
             : 'border border-pb-border focus-within:border-pb-accent focus-within:ring-2 focus-within:ring-pb-accent/20',
+            externalError ? 'border border-pb-error bg-pb-error-soft focus-within:ring-2 focus-within:ring-red-200/70 focus-within:border-pb-error' : ''
         ]"
     >
       <textarea
@@ -15,7 +16,8 @@
           v-model="model"
           class="w-full outline-none bg-transparent text-pb-text placeholder:text-slate-400"
           :placeholder="placeholder"
-          :maxlength="maxlength"
+          @focus="isInputFocused = true"
+          @blur="isInputFocused = false"
       ></textarea>
       <input
           v-else
@@ -42,14 +44,14 @@
         />
       </i>
     </div>
-    <span v-if="showError" class="text-pb-error text-xs absolute -bottom-5 left-0">
-  {{ errorMessage }}
+    <span v-if="showErrorComputed" class="text-red-600 text-sm -bottom-5 absolute left-0">
+      {{ props.externalError || errorMessage }}
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import {computed, ref, watch} from "vue";
 // import {useI18n} from "vue-i18n";
 
 const model = defineModel<string | null | number>();
@@ -72,6 +74,7 @@ interface IProps {
   max?: string;
   maxlength?: number | string;
   errorText?: string;
+  externalError?: string;
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -80,6 +83,7 @@ const props = withDefaults(defineProps<IProps>(), {
 });
 
 const emit = defineEmits(['iconClick']);
+const isInputFocused = ref(false);
 const showError = ref(false);
 const errorMessage = ref('');
 
@@ -97,6 +101,10 @@ const validate = () => {
   showError.value = false;
   return true;
 };
+
+const showErrorComputed = computed(() => {
+  return showError.value || !!props.externalError;
+});
 
 const iconClick = () => emit('iconClick');
 

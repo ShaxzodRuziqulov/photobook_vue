@@ -90,78 +90,58 @@
               @pick="onAlbumImagePicked"
               @clear="onAlbumImageClear"
           />
-          <div class="flex flex-col w-full">
-            <AppSelect
-                v-model="form.categoryId"
-                :options="categoryOptions"
-                disabledValue="Tanlang"
-                text-field="text"
-                value-field="value"
-                label="Albom turi"
-                @change="clearError('categoryId')"
-                :errorText="errors.categoryId"
+          <AppSelect
+              v-model="form.categoryId"
+              :options="categoryOptions"
+              disabledValue="Tanlang"
+              text-field="text"
+              value-field="value"
+              label="Albom turi"
+              @change="clearError('categoryId')"
+              required
+              :errorText="errors.categoryId"
+          />
+          <div class="flex w-full gap-2 items-center justify-between">
+            <AppInput
+                label="Betlar turi"
+                type="number"
+                step="2"
+                class="w-full"
+                @input="clearError('pageCount')"
+                placeholder="2,4,6,10,...,"
+                v-model="form.pageCount"
+                :class="{'border-red-500' : errors.pageCount}"
+                :externalError="errors.pageCount"
             />
-            <p v-if="errors.categoryId" class="text-red-500 text-sm">
-              {{errors.categoryId}}
-            </p>
-          </div>
-          <div class="flex w-full gap-2 px-1 items-center justify-between">
-            <div class="flex w-full flex-col">
-              <AppInput
-                  label="Betlar turi"
-                  type="number"
-                  step="2"
-                  class="w-full"
-                  @input="clearError('pageCount')"
-                  placeholder="2,4,6,10,...,"
-                  v-model="form.pageCount"
-                  :class="{'border-red-500' : errors.pageCount}"
-              />
-              <p v-if="errors.pageCount" class="text-red-500 text-sm">
-                {{errors.pageCount}}
-              </p>
-            </div>
-            <div class="flex flex-col w-full">
-              <AppInput
-                  type="number"
-                  class="w-full"
-                  placeholder=""
-                  label="Buyurtma soni"
-                  v-model="form.amount"
-                  @input="clearError('amount')"
-              />
-              <p v-if="errors.amount" class="text-red-500 text-sm">
-                {{errors.amount}}
-              </p>
-            </div>
+            <AppInput
+                type="number"
+                class="w-full"
+                placeholder=""
+                label="Buyurtma soni"
+                v-model="form.amount"
+                @input="clearError('amount')"
+                :externalError="errors.amount"
+            />
           </div>
           <div class="flex items-center justify-between w-full gap-2">
-            <div class="flex flex-col w-full">
-              <AppInput
-                  type="text"
-                  placeholder="Masalan: Bozor"
-                  label="Nomi"
-                  class="w-full"
-                  v-model="form.orderName"
-                  @input="clearError('orderName')"
-              />
-              <p v-if="errors.orderName" class="text-red-500 text-sm">
-                {{errors.orderName}}
-              </p>
-            </div>
-            <div class="flex flex-col w-full">
-              <AppInput
-                  type="text"
-                  placeholder="Masalan: Qora koja"
-                  label="Turi"
-                  class="w-full"
-                  v-model="form.itemType"
-                  @input="clearError('itemType')"
-              />
-              <p v-if="errors.itemType" class="text-red-500 text-sm">
-                {{errors.itemType}}
-              </p>
-            </div>
+            <AppInput
+                type="text"
+                placeholder="Masalan: Bozor"
+                label="Nomi"
+                class="w-full"
+                v-model="form.orderName"
+                @input="clearError('orderName')"
+                :externalError="errors.orderName"
+            />
+            <AppInput
+                type="text"
+                placeholder="Masalan: Qora koja"
+                label="Turi"
+                class="w-full"
+                v-model="form.itemType"
+                @input="clearError('itemType')"
+                :externalError="errors.itemType"
+            />
           </div>
           <div class="flex w-full gap-2 items-center justify-between">
             <AppInput
@@ -206,11 +186,13 @@
                 text-field="firstName"
                 value-field="id"
                 isMultiple
+                required
+                :errorText="errors.employees"
                 label="Mas'ul xodim"
             />
-            <p v-if="errors.employees" class="text-red-500 text-sm">
-              {{errors.employees}}
-            </p>
+<!--            <p v-if="errors.employees" class="text-red-500 text-sm">-->
+<!--              {{errors.employees}}-->
+<!--            </p>-->
             <div v-if="isEditing && form.employees.length" class="mt-2 flex flex-col gap-1 rounded-lg border border-pb-border bg-pb-elevated p-2.5">
               <span class="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-pb-muted">Qayta boshlash</span>
               <label
@@ -231,30 +213,21 @@
           <div
               class="flex items-center w-full gap-2"
           >
-            <div class="flex flex-col w-full">
-              <AppInput
-                  v-model="form.acceptedDate"
-                  label="Qabul qilingan sana"
-                  type="date"
-                  class="w-full"
-                  @input="clearError('acceptedDate')"
-              />
-              <p v-if="errors.acceptedDate" class="text-red-500 text-sm">
-                {{errors.acceptedDate}}
-              </p>
-            </div>
-            <div class="flex flex-col w-full">
-              <AppInput
-                  label="Tugash sanasi"
-                  type="date"
-                  class="w-full"
-                  v-model="form.deadline"
-                  @input="clearError('deadline')"
-              />
-              <p v-if="errors.deadline" class="text-red-500 text-sm">
-                {{errors.deadline}}
-              </p>
-            </div>
+            <AppInput
+                v-model="form.acceptedDate"
+                label="Qabul qilingan sana"
+                type="date"
+                class="w-full"
+                @input="clearError('acceptedDate')"
+                :externalError="errors.acceptedDate"
+            />
+            <AppInput
+                label="Tugash sanasi"
+                type="date"
+                class="w-full"
+                v-model="form.deadline"
+                @input="clearError('deadline')"
+            />
           </div>
           <div
               class="flex items-center w-full gap-2"
@@ -397,28 +370,28 @@
           </tr>
           </thead>
           <tbody v-if="isLoading">
-          <tr v-for="i in 8" :key="i" class="border-t border-pb-border">
-            <td class="p-2"><div class="h-4 w-6 animate-pulse rounded bg-pb-border"></div></td>
-
+          <tr v-for="i in 8" :key="i"
+              class="border-t border-pb-border"
+          >
+            <td class="p-2">
+              <div class="h-4 w-6 animate-pulse rounded bg-pb-border">
+              </div>
+            </td>
             <td class="space-y-2 p-2">
               <div class="h-4 w-32 animate-pulse rounded bg-pb-border"></div>
               <div class="h-3 w-24 animate-pulse rounded bg-pb-border"></div>
             </td>
-
             <td class="p-2">
               <div class="h-10 w-14 animate-pulse rounded-lg bg-pb-border"></div>
             </td>
-
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2"><div class="h-4 w-24 animate-pulse rounded bg-pb-border"></div></td>
-
             <td class="p-2">
               <div class="h-2 w-full animate-pulse rounded-full bg-pb-border"></div>
               <div class="mt-2 h-3 w-16 animate-pulse rounded bg-pb-border"></div>
             </td>
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
-
             <td class="p-2"><div class="h-4 w-20 animate-pulse rounded bg-pb-border"></div></td>
             <td class="p-2">
               <div class="h-6 w-20 animate-pulse rounded-full bg-pb-border"></div>
@@ -433,6 +406,7 @@
               :id="'pb-order-' + album.id"
               class="border-t border-pb-border text-sm transition hover:bg-pb-elevated"
               v-for="(album, index) in paginatedAlbums" :key="album.id"
+              :class="albumItemsTime(album)"
           >
             <td class="py-2 px-3">{{ rowNumber(index) }}</td>
             <td class="p-2 break-all">
@@ -999,6 +973,29 @@ const scrollToOrderFromQuery = () => {
   const el = document.getElementById(`pb-order-${oid}`);
   el?.scrollIntoView({ behavior: "smooth", block: "center" });
 };
+
+const albumItemsTime = (album: any) => {
+  if (album.status === "COMPLETED") return ''
+
+  if (!album.deadline) return ''
+
+  const today = new Date()
+  today.setHours(5,0,0,0);
+
+  const deadLine = new Date(album.deadline)
+  deadLine.setHours(5,0,0,0);
+
+  const diff = deadLine.getTime() - today.getTime();
+
+  if (diff === 0) {
+    return 'bg-amber-50 border border-yellow-200'
+  }
+  if (diff < 0) {
+    return 'bg-red-100 border border-red-200'
+  }
+
+  return ''
+}
 
 watch(
     () =>

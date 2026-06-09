@@ -9,7 +9,7 @@
         v-model="model"
         :disabled="disabled"
         class="p-2 pr-8 border rounded-lg w-full transition-all duration-200 bg-pb-surface text-pb-text shadow-sm shadow-slate-900/[0.04] focus:outline-none focus:ring-2 focus:ring-pb-accent/25 focus:border-pb-accent disabled:opacity-60 disabled:bg-pb-elevated disabled:cursor-not-allowed border-pb-border"
-        :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-pb-error focus:ring-red-200/70' : '']"
+        :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-pb-error focus:ring-red-200/70' : '', errorText ? '!border-red-500 focus:ring-red-200' : '']"
     >
       <option v-if="disabledValue" value="" disabled class="text-pb-muted">{{ disabledValue }}</option>
       <option v-if="hasReset" :value="null" class="text-pb-text">{{ resetText }}</option>
@@ -24,8 +24,8 @@
         {{ optionText(option) }}
       </option>
     </select>
-    <span v-if="required && !isMultiple" class="text-pb-error text-sm absolute -bottom-6 left-0">
-      {{ errorMessage }}
+    <span v-if="required && !isMultiple" class="text-pb-error text-sm absolute -bottom-5 left-0">
+      {{ errorMessage || errorText }}
     </span>
 
     <div v-if="isMultiple" class="relative select__container">
@@ -41,7 +41,7 @@
       </button>
       <div
           class="p-2 pr-8 border border-pb-border rounded-lg bg-pb-surface cursor-pointer min-h-[42px] flex flex-wrap gap-1 shadow-sm shadow-slate-900/[0.04]"
-          :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-pb-error' : '']"
+          :class="[disabled ? 'cursor-not-allowed' : 'cursor-pointer', showError ? '!border-pb-error' : '', errorText ? '!border-red-500 focus:ring-red-200' : '']"
           @click="toggleDropdown"
           ref="target"
       >
@@ -82,8 +82,8 @@
           </div>
         </div>
       </teleport>
-      <span v-if="required && isMultiple" class="text-pb-error text-sm absolute -bottom-6 left-0">
-        {{ errorMessage }}
+      <span v-if="required && isMultiple" class="text-pb-error text-sm absolute -bottom-5 left-0">
+        {{ errorMessage || errorText }}
       </span>
     </div>
   </div>
