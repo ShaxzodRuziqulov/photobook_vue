@@ -213,20 +213,15 @@
           <div
               class="flex items-center w-full gap-2"
           >
-            <AppInput
+            <AppDatePicker
                 v-model="form.acceptedDate"
                 label="Qabul qilingan sana"
-                type="date"
-                class="w-full"
-                @input="clearError('acceptedDate')"
-                :externalError="errors.acceptedDate"
+                placeholder="dd.mm.yyyy"
             />
-            <AppInput
-                label="Tugash sanasi"
-                type="date"
-                class="w-full"
+            <AppDatePicker
                 v-model="form.deadline"
-                @input="clearError('deadline')"
+                label="Tugash sanasi"
+                placeholder="dd.mm.yyyy"
             />
           </div>
           <div
@@ -315,15 +310,15 @@
                 has-reset
                 resetText="Hammasi"
             />
-            <AppInput
+            <AppDatePicker
                 v-model="formData"
-                type="date"
                 label="Qabul sanasi"
+                placeholder="dd.mm.yyyy"
             />
-            <AppInput
+            <AppDatePicker
                 v-model="endData"
-                type="date"
                 label="Tugash sanasi"
+                placeholder="dd.mm.yyyy"
             />
             <CButton
                 type="button"
@@ -591,6 +586,7 @@ import {
   snapshotOrderForm,
   type OrderFormSnapshotFields,
 } from "@/utils/updateFormDirty";
+import AppDatePicker from "@/components/AppDatePicker.vue";
 
 const router = useRouter();
 const route = useRoute();

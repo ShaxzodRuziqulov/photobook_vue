@@ -15,12 +15,17 @@
           <h1 class="text-md font-bold text-pb-text">Oylik ish hisoboti</h1>
         </div>
       </div>
-      <AppInput
-          type="month"
-          label=""
-          v-model="selectedMonth"
-          class="w-44"
-      />
+      <div class="flex flex-col gap-1">
+        <span class="text-sm font-medium text-pb-label">Hisobot oyi</span>
+        <VueDatePicker
+            v-model="monthPickerValue"
+            :month-picker="true"
+            auto-apply
+            :formats="{input: 'yyyy-MM'}"
+            placeholder="Oyni tanlang"
+            @update:model-value="onMonthChange"
+        />
+      </div>
     </div>
 
     <div class="animate-fade-in flex w-full flex-col gap-4 overflow-x-auto rounded-xl border border-pb-border bg-pb-surface p-4 shadow-sm sm:p-6">
@@ -99,16 +104,20 @@ import axiosInstance from "@/axios";
 import { useStore } from "@/stores/store";
 import type { MonthlyWorkReport } from "@/typeModules/useModules";
 import CButton from "@/components/CButton.vue";
-import AppInput from "@/components/ui/AppInput.vue";
 import EmployeeWorkHistoryDialog from "@/components/EmployeeWorkHistoryDialog.vue";
+import { VueDatePicker } from '@vuepic/vue-datepicker';
 
 const router = useRouter();
 const store = useStore();
 
 const now = new Date();
 const selectedMonth = ref(
-    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-);
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+)
+const monthPickerValue = ref({
+  month: now.getMonth(),
+  year: now.getFullYear()
+})
 
 const isLoading = ref(false);
 const report = ref<MonthlyWorkReport[]>([]);
@@ -156,6 +165,10 @@ const loadReport = async () => {
     isLoading.value = false;
   }
 };
+const onMonthChange = (value: any) => {
+  selectedMonth.value =
+      `${value.year}-${String(value.month + 1).padStart(2, '0')}`
+}
 
 watch(selectedMonth, loadReport);
 

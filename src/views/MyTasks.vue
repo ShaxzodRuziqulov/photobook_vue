@@ -294,15 +294,15 @@
             label="Qidirish"
             placeholder="Qidirish ..."
         />
-        <AppInput
+        <AppDatePicker
             v-model="formData"
-            type="date"
             label="Muddat boshi"
+            placeholder="dd.mm.yyyy"
         />
-        <AppInput
+        <AppDatePicker
             v-model="endData"
-            type="date"
             label="Muddat tugashi"
+            placeholder="dd.mm.yyyy"
         />
         <CButton
             type="button"
@@ -470,6 +470,7 @@ import AppInput from "@/components/ui/AppInput.vue";
 import AppSelect from "@/components/ui/AppSelect.vue";
 import { useRoute, useRouter } from "vue-router";
 import { snapshotTaskProgressDialog } from "@/utils/updateFormDirty";
+import AppDatePicker from "@/components/AppDatePicker.vue";
 
 const router = useRouter();
 const route = useRoute();
