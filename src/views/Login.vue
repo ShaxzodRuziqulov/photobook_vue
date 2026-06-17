@@ -122,12 +122,27 @@
                   required
               />
 
-              <CButton
-                  type="submit"
-                  text="Tizimga kirish"
-                  class="w-full mt-2 login-submit"
-                  variant="primary"
-              />
+              <div class="btn-eyes-stage" ref="stage"
+                   @mouseenter="startEyes" @mouseleave="stopEyes">
+                <CButton
+                    type="submit"
+                    text="Tizimga kirish"
+                    class="w-full mt-2 login-submit"
+                    variant="primary"
+                />
+                <div class="eyes-wrap" :class="{ visible: eyesOn }">
+                  <div class="eye-socket">
+                    <div class="eyeball" ref="eyeL">
+                      <div class="pupil" ref="pupilL"></div>
+                    </div>
+                  </div>
+                  <div class="eye-socket">
+                    <div class="eyeball" ref="eyeR">
+                      <div class="pupil" ref="pupilR"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </form>
 
             <span v-if="errorMessage" class="error-banner">
@@ -149,7 +164,7 @@
 <script setup lang="ts">
 import AppInput from "@/components/ui/AppInput.vue";
 import CButton from "@/components/CButton.vue";
-import { ref } from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import { UserLogin } from "@/typeModules/useModules";
 import { authService } from "@/service/authService";
 import { useToast } from "vue-toastification";
@@ -160,6 +175,38 @@ const useAuthService = authService();
 const isPasswordVisible = ref(false);
 const isPasswordEyeOpen = ref(false);
 const errorMessage = ref("");
+
+const eyesOn  = ref(false)
+const eyeL    = ref<HTMLElement|null>(null)
+const eyeR    = ref<HTMLElement|null>(null)
+const pupilL  = ref<HTMLElement|null>(null)
+const pupilR  = ref<HTMLElement|null>(null)
+let mx = 0, my = 0, rafId = 0, running = false
+
+function trackEye(eye: HTMLElement, pupil: HTMLElement) {
+  const r = eye.getBoundingClientRect()
+  const dx = mx - (r.left + r.width / 2)
+  const dy = my - (r.top  + r.height / 2)
+  const angle = Math.atan2(dy, dx)
+  const travel = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.18, 4.5)
+  pupil.style.transform = `translate(calc(-50% + ${(Math.cos(angle)*travel).toFixed(2)}px), calc(-50% + ${(Math.sin(angle)*travel).toFixed(2)}px))`
+}
+
+function loop() {
+  if (!running) return
+  if (eyeL.value && pupilL.value) trackEye(eyeL.value, pupilL.value)
+  if (eyeR.value && pupilR.value) trackEye(eyeR.value, pupilR.value)
+  rafId = requestAnimationFrame(loop)
+}
+
+function startEyes() { eyesOn.value = true;  running = true;  loop() }
+function stopEyes()  {
+  eyesOn.value = false; running = false; cancelAnimationFrame(rafId)
+  ;[pupilL.value, pupilR.value].forEach(p => { if (p) p.style.transform = 'translate(-50%,-50%)' })
+}
+
+onMounted(() => document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY }, { passive: true }))
+onUnmounted(() => cancelAnimationFrame(rafId))
 
 const form = ref<UserLogin>({
   username: "",
@@ -202,6 +249,73 @@ const submitLogin = async () => {
 </script>
 
 <style scoped>
+.btn-eyes-stage {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 8px;
+}
+.login-submit {
+  height: 40px;
+  border-radius: 30px;
+  transform-origin: right center !important;
+  transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1),
+  box-shadow 0.42s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+.btn-eyes-stage:hover .login-submit {
+  transform: rotate(10deg) translateY(-2px) !important;
+}
+.eyes-wrap {
+  height: 45px;
+  width: 100%;
+  justify-content: center;
+  border-radius: 30px;
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.12s;
+  z-index: -1;
+  background-color: black;
+}
+.eyes-wrap.visible { opacity: 1; }
+.eye-socket {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: #18181b;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), 0 0 0 3px #27272a;
+  overflow: hidden;
+}
+.eyeball {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  position: relative;
+}
+.pupil {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #0f172a;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.pupil::after {
+  content: '';
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  top: 1px; left: 2px;
+}
+
 .login-shell {
   position: relative;
   isolation: isolate;
