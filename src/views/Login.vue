@@ -84,8 +84,8 @@
                 <h2 class="auth-title">Tizimga kirish</h2>
                 <p class="auth-copy">Davom ettirish uchun login va parolingizni kiriting.</p>
               </div>
-              <div class="auth-icon hidden sm:flex">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              <div class="auth-icon group hidden sm:flex">
+                <i class="fa-solid fa-arrow-down arrow-icon"></i>
               </div>
             </div>
 
@@ -277,7 +277,7 @@ const submitLogin = async () => {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 16px;
+  gap: 10px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease 0.12s;
@@ -811,8 +811,23 @@ const submitLogin = async () => {
   width: 64px;
   height: 64px;
   font-size: 22px;
+  transition: all 0.4s ease;
 }
 
+.auth-icon:hover {
+  background: linear-gradient(
+      135deg,
+      #06b6d4,
+      #3b82f6,
+      #8b5cf6
+  );
+
+  box-shadow:
+      0 0 15px rgba(59,130,246,.4),
+      0 0 30px rgba(139,92,246,.25);
+
+  transform: scale(1.08);
+}
 .mobile-brand-icon {
   display: inline-flex;
   width: 72px;
@@ -849,6 +864,28 @@ const submitLogin = async () => {
   background: #14b8a6;
   box-shadow: 0 0 0 6px rgba(20, 184, 166, 0.16);
   animation: loginStatusPulse 1.5s ease-in-out infinite;
+}
+
+.group:hover .arrow-icon {
+  animation: bounceDown 1.5s infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(10px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  75% {
+    transform: translateY(6px);
+  }
 }
 
 @keyframes loginStatusPulse {
